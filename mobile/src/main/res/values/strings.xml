@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Stoic\'s Diary</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="noButton">No</string>
+    <string name="prompt">Prompt placeholder</string>
+    <string name="yesButton">Yes</string>
+
+    <!-- Fragment text -->
+    <string name="choice_fragment">Choice fragment</string>
+    <string name="calendar_fragment">Calendar fragment</string>
+    <string name="diary_fragment">Diary fragment</string>
+    <string name="tabTextChoice">Choice</string>
+    <string name="tabTextHistory">History</string>
+    <string name="tabTextDiary">Diary</string>
+</resources>
