@@ -3,15 +3,24 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
-    <string name="noButton">No</string>
-    <string name="prompt">Prompt placeholder</string>
-    <string name="yesButton">Yes</string>
 
     <!-- Fragment text -->
-    <string name="choice_fragment">Choice fragment</string>
-    <string name="calendar_fragment">Calendar fragment</string>
-    <string name="diary_fragment">Diary fragment</string>
-    <string name="tabTextChoice">Choice</string>
-    <string name="tabTextHistory">History</string>
-    <string name="tabTextDiary">Diary</string>
+    <string name="fragment_choice">Choice fragment</string>
+
+    <!-- Random prompt text -->
+    <string name="prompt_01">Generic prompt</string>
+    <string name="prompt_02">Another prompt</string>
+
+    <string name="good_01">Yes</string>
+    <string name="good_02">Indeed</string>
+
+    <string name="bad_01">No</string>
+    <string name="bad_02">Negative</string>
+
+    <string name="quote_01">Quote01</string>
+    <string name="quote_02">Quote02</string>
+    <string name="quote_03">Quote03</string>
+    <string name="quote_04">Quote04</string>
+    <string name="quote_05">Quote05</string>
+
 </resources>

@@ -1,9 +1,6 @@
 package com.appollonius.stoicsdiary;
 
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -13,14 +10,18 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Locale;
+import java.util.Random;
 
 
 /**
@@ -34,47 +35,51 @@ import java.util.ArrayList;
 public class ChoiceFragment extends android.app.Fragment implements View.OnClickListener,
         CalendarView.OnDateChangeListener {
 
-    private StoicDatabase db;
-
-    // TODO: Rename parameter arguments, choose names that match the fragment initialization parameters
-    // e.g. ARG_ITEM_NUMBER
-//    private static final String ARG_PARAM1 = "param1";
-//    private static final String ARG_PARAM2 = "param2";
-//    private String mParam1;  // TODO: Rename and change types of parameters
-//    private String mParam2;
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @ param param1 Parameter 1.
-     * @ param param2 Parameter 2.
-     * @return A new instance of fragment ChoiceFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ChoiceFragment newInstance(/*String param1, String param2*/) {
-        ChoiceFragment fragment = new ChoiceFragment();
-        Bundle args = new Bundle();
-//        args.putString(ARG_PARAM1, param1);
-//        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     public ChoiceFragment() {
         // Required empty public constructor
     }
 
+    private static final String ARG_PARAM1 = "param1";
+    private String mParam1;
+    /**
+     * Use this factory method to create a new instance of this fragment using the provided parameters.
+     * (choose names that match the fragment initialization parameters)
+     *
+     * @param param1 String TODO: Rename/change types and number of parameters, incl arguments above
+     * @return A new instance of fragment ChoiceFragment.
+     */
+    public static ChoiceFragment newInstance(String param1) {
+        ChoiceFragment fragment = new ChoiceFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_PARAM1, param1);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
+    public interface OnFragmentInteractionListener {
+        /**
+         * @param uri Uri  TODO: Update argument type and name
+         */
+        void onFragmentInteraction(Uri uri);
+    }
     private OnFragmentInteractionListener mListener;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        if (getArguments() != null) {
-//            mParam1 = getArguments().getString(ARG_PARAM1);
-//            mParam2 = getArguments().getString(ARG_PARAM2);
-//        }
-        db = new StoicDatabase(getActivity());
+        if (getArguments() != null) {
+            mParam1 = getArguments().getString(ARG_PARAM1);
+        }
     }
 
     @Override
@@ -83,16 +88,62 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
         super.onCreateView(inflater, container, savedInstanceState);
 
         View v = inflater.inflate(R.layout.fragment_choice, container, false);
+        bindEventHandlers(v);
+        initializeUI(v);
+        return v;
+    }
 
+    /**
+     * Initialization of all UI elements on startup
+     * @param v This is passed because we are calling this from onCreateView before it completes
+     */
+    private void bindEventHandlers(View v) {
         ArrayList<View> children = ((StoicActivity)getActivity()).getAllChildren(v);
         for (View child: children) {
             if (child instanceof AppCompatButton) {  // Android Activity/Fragment event handling sucks
                 child.setOnClickListener(this);
             } else if (child instanceof CalendarView) {
-                initializeCalendar((CalendarView)child);
+                ((CalendarView)child).setOnDateChangeListener(this);
             }
         }
-        return v;
+    }
+
+    /**
+     * Set other UI element behavior, including random text
+     * @param v This is passed because we are calling this from onCreateView before it completes
+     */
+    private void initializeUI(View v) {
+        final int NUM_PROMPTS = 2;
+        final int NUM_SELECTIONS = 2;
+        final int NUM_QUOTES = 5;
+        Random r = new Random();
+
+        initializeCalendar(v);
+
+        // Set text on UI elements
+        String num = String.format(Locale.US, "%02d", r.nextInt(NUM_PROMPTS) + 1);
+        TextView prompt = v.findViewById(R.id.TEXT_PROMPT);  // Set prompt to random selection
+        prompt.setText(this.getResources().getIdentifier("prompt_" + num,"string", BuildConfig.APPLICATION_ID));
+
+        num = String.format(Locale.US, "%02d", r.nextInt(NUM_SELECTIONS) + 1);
+        Button buttonYes = v.findViewById(R.id.BUTTON_YES);
+        buttonYes.setText(this.getResources().getIdentifier("good_" + num,"string", BuildConfig.APPLICATION_ID));
+        Button buttonNo = v.findViewById(R.id.BUTTON_NO);
+        buttonNo.setText(this.getResources().getIdentifier("bad_" + num,"string", BuildConfig.APPLICATION_ID));
+
+        num = String.format(Locale.US, "%02d", r.nextInt(NUM_QUOTES) + 1);
+        EditText editText = v.findViewById(R.id.EDIT_FEELS);
+        editText.setText(this.getResources().getIdentifier("quote_" + num,"string", BuildConfig.APPLICATION_ID));
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.BUTTON_YES:
+                onClickYes(); break;
+            case R.id.BUTTON_NO:
+                onClickNo(); break;
+        }
     }
 
     @Override
@@ -114,33 +165,13 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        void onFragmentInteraction(Uri uri);  // TODO: Update argument type and name
-    }
-
-    public void initializeCalendar(CalendarView calendar) {
-        calendar.setOnDateChangeListener(this);
-        calendar.setMaxDate(calendar.getDate());
-        calendar.setMinDate(getEarliestEntryDate() * 1000);  // TODO: Earliest recorded date in DB
-    }
-
     @Override
     public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
         String logString = "Date is %s (%s), value %s";
         LocalDateTime date = LocalDateTime.of(year, month + 1, dayOfMonth, 0, 0);
         view.setDate(date.toEpochSecond(ZoneOffset.UTC) * 1000);  // Actually update the calendar
 
-        Boolean dayValue = getDayValue(date.toLocalDate().toEpochDay());
+        Boolean dayValue = ((StoicActivity)getActivity()).getDayValue(date.toLocalDate().toEpochDay());
         String valueText = dayValue != null ? Boolean.toString(dayValue) : "NOT CHOSEN";
         Log.d("DateSelected",
                 String.format(logString, date, date.toLocalDate().toEpochDay(), valueText));
@@ -150,80 +181,38 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
         // Change button states based on dayValue
     }
 
+    private void onClickYes() {
+        setFeelsText(Boolean.toString(writeSelectedValue(true)));
+    }
+
+    private void onClickNo() {
+        setFeelsText(Boolean.toString(writeSelectedValue(false)));
+    }
+
     /**
-     * For convenience
-     * @param date Long
-     * @return Boolean true, false or NULL
+     *
+     * @param v This is passed because we are calling this from onCreateView before it completes
      */
-    private Boolean getDayValue(Long date) {
-        String Q_SELECTVALUE = "SELECT value from diary WHERE timestamp=%s;";
-        SQLiteDatabase dbr = db.getReadableDatabase();
-
-        Cursor cursor = dbr.rawQuery(String.format(Q_SELECTVALUE, date), null);
-        Boolean retVal = cursor.moveToFirst() ? 1 == cursor.getInt(0) : null;
-
-        cursor.close();
-        return retVal;
+    private void initializeCalendar(View v) {
+        CalendarView calendarView = v.findViewById(R.id.history);
+        calendarView.setMaxDate(calendarView.getDate());
+        calendarView.setMinDate(((StoicActivity)getActivity()).getEarliestEntryDate() * 1000);
     }
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.buttonYes:
-                onClickYes(); break;
-            case R.id.buttonNo:
-                onClickNo(); break;
-        }
-    }
-
-    public void onClickYes() {
-        setFeelsText(Boolean.toString(setSelectedValue(true)));
-    }
-
-    public void onClickNo() {
-        setFeelsText(Boolean.toString(setSelectedValue(false)));
-    }
-
-    public Boolean setSelectedValue(Boolean value) {
-        CalendarView calendarView = getView().findViewById(R.id.history);
+    /**
+     * Get the current date selected from the UI and write the value to database
+     * @param value Boolean value to write
+     * @return Boolean success of write
+     */
+    private Boolean writeSelectedValue(Boolean value) {
+        CalendarView calendarView = getActivity().findViewById(R.id.history);
         Long date = LocalDate.from(Instant.ofEpochSecond(calendarView.getDate() / 1000).atZone(ZoneOffset.UTC)).toEpochDay();
-        Long dateToo = calendarView.getDate() / 24 / 60 / 60 / 1000;
-        return setDayValue(date, value);
+        //Long dateToo = calendarView.getDate() / 86400 / 1000;
+        return ((StoicActivity)getActivity()).setDayValue(date, value);
     }
 
-    public void setFeelsText(String text) {
-        EditText t = getActivity().findViewById(R.id.feels_text);
+    private void setFeelsText(String text) {
+        EditText t = getActivity().findViewById(R.id.EDIT_FEELS);
         t.setText(text);
-    }
-
-    /**
-     * TODO Find an elegant upsert behavior, sqlite has 'INSERT OR REPLACE'
-     */
-    private Boolean setDayValue(Long date, Boolean newValue) {
-        String logString = "Setting long date %s to value %s, was %s";
-        SQLiteDatabase dbw = db.getWritableDatabase();
-        ContentValues dbValue = new ContentValues();
-        dbValue.put("value", newValue);
-        Boolean originalValue = getDayValue(date);
-        if (originalValue != null) {  // Update
-            dbw.update(StoicActivity.TABLE_BASE, dbValue, "timestamp=" + date, null);
-        } else {  // Insert
-            dbValue.put("timestamp", date);
-            dbw.insert(StoicActivity.TABLE_BASE, null, dbValue);
-        }
-        Log.d("DateSet", String.format(logString, date, newValue, originalValue));
-        dbw.close();
-        return newValue;
-    }
-
-    private long getEarliestEntryDate() {
-        Long retVal;
-        SQLiteDatabase dbr = db.getReadableDatabase();
-        Cursor c = dbr.query(StoicActivity.TABLE_BASE, new String[] { "min(timestamp)" },
-                null, null,null, null, null);
-        c.moveToFirst();
-        retVal = c.getLong(0);
-        c.close();
-        return retVal * 24 * 60 * 60;
     }
 }

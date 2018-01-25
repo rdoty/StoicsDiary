@@ -28,30 +28,30 @@
                     android:weightSum="100">
 
                     <TextView
-                        android:id="@+id/message"
+                        android:id="@+id/TEXT_PROMPT"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/activity_horizontal_margin"
-                        android:text="@string/prompt"
-                        tools:text="Prompt placeholder" />
+                        android:text="@string/prompt_01"
+                        tools:text="@string/prompt_01" />
 
                     <Button
-                        android:id="@+id/buttonYes"
+                        android:id="@+id/BUTTON_YES"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="50"
                         android:background="#00AA00"
                         android:textSize="50sp"
-                        android:text="@string/yesButton" />
+                        android:text="@string/good_01" />
 
                     <Button
-                        android:id="@+id/buttonNo"
+                        android:id="@+id/BUTTON_NO"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="50"
                         android:background="#AA0000"
                         android:textSize="50sp"
-                        android:text="@string/noButton" />
+                        android:text="@string/bad_01" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -70,8 +70,8 @@
             </LinearLayout>
 
             <EditText
-                android:id="@+id/feels_text"
-                android:labelFor="@+id/feels_text"
+                android:id="@+id/EDIT_FEELS"
+                android:labelFor="@+id/EDIT_FEELS"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="#AAAAAA"
