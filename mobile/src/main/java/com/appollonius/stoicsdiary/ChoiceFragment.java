@@ -109,6 +109,17 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
     }
 
     /**
+     *
+     * @param v This is passed because we are calling this from onCreateView before it completes
+     */
+    private void initializeCalendar(View v) {
+        CalendarView calendarView = v.findViewById(R.id.history);
+        calendarView.setMaxDate(calendarView.getDate());
+        Long minDate = ((StoicActivity)getActivity()).getEarliestEntryDate();
+        //calendarView.setMinDate((minDate * 1000);  // Skip while debugging
+    }
+
+    /**
      * Set other UI element behavior, including random text
      * @param v This is passed because we are calling this from onCreateView before it completes
      */
@@ -171,32 +182,22 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
         LocalDateTime date = LocalDateTime.of(year, month + 1, dayOfMonth, 0, 0);
         view.setDate(date.toEpochSecond(ZoneOffset.UTC) * 1000);  // Actually update the calendar
 
-        Boolean dayValue = ((StoicActivity)getActivity()).getDayValue(date.toLocalDate().toEpochDay());
+        Boolean dayValue = ((StoicActivity)getActivity()).getVerdict(date.toLocalDate().toEpochDay());
         String valueText = dayValue != null ? Boolean.toString(dayValue) : "NOT CHOSEN";
         Log.d("DateSelected",
                 String.format(logString, date, date.toLocalDate().toEpochDay(), valueText));
 
         // Update UI elements
         setFeelsText(String.format(logString, date, date.toLocalDate().toEpochDay(), valueText));
-        // Change button states based on dayValue
+        // Change button states based on dayValue -- using radiobuttons?
     }
 
     private void onClickYes() {
-        setFeelsText(Boolean.toString(writeSelectedValue(true)));
+        setFeelsText(writeSelectedValue(true) ? "SET TO TRUE" : "FAILED TO SET");
     }
 
     private void onClickNo() {
-        setFeelsText(Boolean.toString(writeSelectedValue(false)));
-    }
-
-    /**
-     *
-     * @param v This is passed because we are calling this from onCreateView before it completes
-     */
-    private void initializeCalendar(View v) {
-        CalendarView calendarView = v.findViewById(R.id.history);
-        calendarView.setMaxDate(calendarView.getDate());
-        calendarView.setMinDate(((StoicActivity)getActivity()).getEarliestEntryDate() * 1000);
+        setFeelsText(writeSelectedValue(false) ? "SET TO FALSE" : "FAILED TO SET");
     }
 
     /**

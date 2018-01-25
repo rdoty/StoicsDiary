@@ -13,21 +13,28 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 
 public class StoicActivity extends AppCompatActivity implements ChoiceFragment.OnFragmentInteractionListener {
 
-    private StoicDatabase db;
     static final String TABLE_BASE = "diary";
     static final String TABLE_DESC = "feels";
     static final String COLUMN_DAY = "time_stamp";
+    static final String COLUMN_VERDICT = "verdict";
+    static final String COLUMN_UPDATE_DATE = "last_updated";
+    static final String COLUMN_UPDATE_COUNT = "update_count";
+    static final String COLUMN_DESC_F_KEY = "diary_id";
+    static final String COLUMN_WORDS = "words";
+
+    private StoicDatabase db;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         db = new StoicDatabase(this);
-        // rebuildDatabase();  // or truncateTables();
+        rebuildDatabase();  // or truncateTables();
         setContentView(R.layout.activity_stoic);
 
         FragmentManager fm = getFragmentManager();
@@ -69,7 +76,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         }
 
         ViewGroup vg = (ViewGroup) v;
-        ArrayList<View> result = new ArrayList<>();
+        ArrayList<View> childViewList = new ArrayList<>();
 
         for (int i = 0; i < vg.getChildCount(); i++) {
             ArrayList<View> viewArrayList = new ArrayList<>();
@@ -78,9 +85,9 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             viewArrayList.add(v);
             viewArrayList.addAll(getAllChildren(child));
 
-            result.addAll(viewArrayList);
+            childViewList.addAll(viewArrayList);
         }
-        return result;
+        return childViewList;
     }
 
     /*
@@ -92,53 +99,86 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
      * @param date Long
      * @return Boolean true, false or NULL
      */
-    Boolean getDayValue(Long date) {
-        String Q_SELECTVALUE = "SELECT value from diary WHERE %s=%s;";
+    Boolean getVerdict(Long date) {
+        String Q_SELECT = String.format("SELECT %s from %s WHERE %s=%s;", COLUMN_VERDICT, TABLE_BASE, COLUMN_DAY, date);
         SQLiteDatabase dbr = db.getReadableDatabase();
 
-        Cursor cursor = dbr.rawQuery(String.format(Q_SELECTVALUE, COLUMN_DAY, date), null);
-        Boolean retVal = cursor.moveToFirst() ? 1 == cursor.getInt(0) : null;
+        Cursor cursor = dbr.rawQuery(Q_SELECT, null);
+        Boolean dayVerdict = cursor.moveToFirst() ? 1 == cursor.getInt(0) : null;
 
         cursor.close();
-        return retVal;
+        return dayVerdict;
+    }
+
+    /**
+     * For checking the current value and whether / when the value was and can be changed
+     * @param date Long
+     * @return ContentValues database key/values corresponding to the date value in COLUMN_DAY
+     */
+    ContentValues readDayValues(Long date) {
+        String[] SELECT_COLS = new String[] {COLUMN_VERDICT, COLUMN_UPDATE_DATE, COLUMN_UPDATE_COUNT};
+        String Q_SELECT = String.format("SELECT %s from %s WHERE %s=%s;",
+                String.join(",", SELECT_COLS), TABLE_BASE, COLUMN_DAY, date);
+
+        SQLiteDatabase dbr = db.getReadableDatabase();
+        ContentValues dayValues = new ContentValues();
+
+        Cursor cursor = dbr.rawQuery(Q_SELECT,null);
+        if (cursor.moveToFirst()) {
+            for (int i=0; i < cursor.getColumnCount(); i++) {
+                dayValues.put(cursor.getColumnName(i), cursor.getString(i));
+            }
+        }
+        cursor.close();
+        return dayValues;
     }
 
     /**
      * Would like to find a more elegant upsert behavior, sqlite has 'INSERT OR REPLACE'
      * @param date Long from LocalDate
-     * @param newValue Boolean value to assign
+     * @param newVerdict Boolean value to assign
      * @return Boolean whether the set was a success
      */
-    Boolean setDayValue(Long date, Boolean newValue) {
-        String logString = "Setting long date %s to value %s, was %s";
+    Boolean setDayValue(Long date, Boolean newVerdict) {
         SQLiteDatabase dbw = db.getWritableDatabase();
-        Boolean originalValue = getDayValue(date);
-        ContentValues dbValue = new ContentValues();
-        dbValue.put("value", newValue);
+        ContentValues oldValues = readDayValues(date);
+        ContentValues newValues = new ContentValues();
+        String LOG_STRING = "Setting long date %s to value %s, was %s";
+        Boolean didWriteSucceed = false;
 
-        if (originalValue != null) {  // Update
-            dbw.update(StoicActivity.TABLE_BASE, dbValue, String.format("%s=%s", COLUMN_DAY, Long.toString(date)), null);
+        newValues.put(COLUMN_VERDICT, newVerdict);
+        newValues.put(COLUMN_UPDATE_DATE, LocalDate.now().toEpochDay());
+
+        if (oldValues.size() > 0) {  // Update
+            final short updates = Short.valueOf(oldValues.getAsString(COLUMN_UPDATE_COUNT));
+            if (updates < 3) {
+                newValues.put(COLUMN_UPDATE_COUNT, updates + 1);
+                dbw.update(StoicActivity.TABLE_BASE, newValues, String.format("%s=%s", COLUMN_DAY, Long.toString(date)), null);
+                didWriteSucceed = true;
+            } // else { // What to return when update fails due to count? }
         } else {  // Insert
-            dbValue.put(COLUMN_DAY, date);
-            dbw.insert(StoicActivity.TABLE_BASE, null, dbValue);
+            newValues.put(COLUMN_DAY, date);
+            newValues.put(COLUMN_UPDATE_COUNT, 1);
+            dbw.insert(StoicActivity.TABLE_BASE, null, newValues);
+            didWriteSucceed = true;
         }
-        Log.d("DateSet", String.format(logString, date, newValue, originalValue));
+        Log.d("DateSet", String.format(LOG_STRING, date, newVerdict, oldValues.get(COLUMN_VERDICT)));
         dbw.close();
-        return newValue;
+        return didWriteSucceed;
     }
 
     /**
-     * @return Long Date
+     * @return Long Date of the first entry in the database
      */
     long getEarliestEntryDate() {
-        Long retVal;
+        Long earliestDate;
         SQLiteDatabase dbr = db.getReadableDatabase();
         Cursor c = dbr.query(StoicActivity.TABLE_BASE, new String[] { String.format("min(%s)", COLUMN_DAY) },
                 null, null,null, null, null);
         c.moveToFirst();
-        retVal = c.getLong(0);
+        earliestDate = c.getLong(0) * 86400;  // 24 * 60 * 60
         c.close();
-        return retVal * 86400;  // 24 * 60 * 60
+        return earliestDate;
     }
 
     /*
@@ -148,13 +188,17 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         SQLiteDatabase dbw = db.getWritableDatabase();
         String Q_TABLE_DROP = "DROP TABLE IF EXISTS %s;";
         String Q_TABLE_MAKE = "CREATE TABLE %s (%s);";
-        String COLUMNS_BASE = "id INTEGER PRIMARY KEY, "+COLUMN_DAY+" DATE UNIQUE, last_updated DATE, update_count TINYINT, value BOOLEAN";
-        String COLUMNS_DESC = "id INTEGER PRIMARY KEY, diary_id INTEGER, words VARCHAR(255), FOREIGN KEY (diary_id) REFERENCES %s(id)";
+        String COLUMNS_BASE = String.format(
+                "id INTEGER PRIMARY KEY, %s DATE UNIQUE, %s DATE, %s TINYINT, %s BOOLEAN",
+                COLUMN_DAY, COLUMN_UPDATE_DATE, COLUMN_UPDATE_COUNT, COLUMN_VERDICT);
+        String COLUMNS_DESC = String.format(
+                "id INTEGER PRIMARY KEY, %s INTEGER, %s VARCHAR(255), FOREIGN KEY (%s) REFERENCES %s(id)",
+                COLUMN_DESC_F_KEY, COLUMN_WORDS, COLUMN_DESC_F_KEY, TABLE_BASE);
 
         dbw.execSQL(String.format(Q_TABLE_DROP, TABLE_BASE));
         dbw.execSQL(String.format(Q_TABLE_MAKE, TABLE_BASE, COLUMNS_BASE));
         dbw.execSQL(String.format(Q_TABLE_DROP, TABLE_DESC));
-        dbw.execSQL(String.format(String.format(Q_TABLE_MAKE, TABLE_DESC, COLUMNS_DESC), TABLE_BASE));
+        dbw.execSQL(String.format(Q_TABLE_MAKE, TABLE_DESC, COLUMNS_DESC));
     }
 
     /*
