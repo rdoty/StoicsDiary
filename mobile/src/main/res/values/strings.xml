@@ -3,19 +3,23 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
+    <string name="title_activity_settings">Settings</string>
 
     <!-- Fragment text -->
     <string name="fragment_choice">Choice fragment</string>
 
-    <!-- Random prompt text -->
-    <string name="prompt_01">Generic prompt</string>
-    <string name="prompt_02">Another prompt</string>
+    <!-- Themed strings -->
+    <string name="theme_01_prompt">Generic prompt</string>
+    <string name="theme_01_good">Yes</string>
+    <string name="theme_01_bad">No</string>
 
-    <string name="good_01">Yes</string>
-    <string name="good_02">Indeed</string>
+    <string name="theme_02_prompt">Another prompt</string>
+    <string name="theme_02_good">Indeed</string>
+    <string name="theme_02_bad">Negative</string>
 
-    <string name="bad_01">No</string>
-    <string name="bad_02">Negative</string>
+    <string name="feels_tweet">Tweet</string>
+    <string name="feels_prompt_enabled">You can add your thoughts on the day here in 140 characters or less&#8230;</string>
+    <string name="feels_prompt_disabled">You must set a verdict before adding your thoughts&#8230;</string>
 
     <string name="quote_01">Quote01</string>
     <string name="quote_02">Quote02</string>
@@ -23,8 +27,6 @@
     <string name="quote_04">Quote04</string>
     <string name="quote_05">Quote05</string>
     <string name="feels_save">Save</string>
-    <string name="feels_tweet">Tweet</string>
-    <string name="title_activity_settings">Settings</string>
 
     <!-- Strings related to Settings -->
 

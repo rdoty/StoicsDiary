@@ -32,8 +32,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/activity_horizontal_margin"
-                        android:text="@string/prompt_01"
-                        tools:text="@string/prompt_01" />
+                        android:text="@string/theme_01_prompt"
+                        tools:text="@string/theme_01_prompt" />
 
                     <RadioGroup
                         android:id="@+id/VERDICT_CHOICES"
@@ -48,11 +48,11 @@
                             android:layout_weight="50"
                             android:button="@android:color/transparent"
                             android:background="@drawable/verdictbackground"
-                            android:backgroundTint="@android:color/holo_green_dark"
+                            android:backgroundTint="@color/theme_01_bg_good"
                             android:checked="false"
                             android:textSize="50sp"
                             android:gravity="center"
-                            android:text="@string/good_01" />
+                            android:text="@string/theme_01_good" />
 
                         <RadioButton
                             android:id="@+id/BUTTON_NO"
@@ -61,11 +61,11 @@
                             android:layout_weight="50"
                             android:button="@android:color/transparent"
                             android:background="@drawable/verdictbackground"
-                            android:backgroundTint="@android:color/holo_red_dark"
+                            android:backgroundTint="@color/theme_01_bg_bad"
                             android:checked="false"
                             android:textSize="50sp"
                             android:gravity="center"
-                            android:text="@string/bad_01" />
+                            android:text="@string/theme_01_bad" />
                     </RadioGroup>
                 </LinearLayout>
 
@@ -97,6 +97,8 @@
                 android:background="#AAAAAA"
                 android:ems="10"
                 android:inputType="textMultiLine"
+                android:maxLength="140"
+                android:hint="@string/feels_prompt_enabled"
                 android:labelFor="@+id/EDIT_FEELS" />
 
             <LinearLayout

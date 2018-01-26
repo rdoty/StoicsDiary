@@ -4,10 +4,12 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.ContentValues;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -30,11 +32,13 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     static final Integer MAX_CHANGES = 3;
 
     private StoicDatabase db;
-
+    SharedPreferences sp;
+    
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         db = new StoicDatabase(this);
+        sp = PreferenceManager.getDefaultSharedPreferences(this);
         //rebuildDatabase();  // or truncateTables();
         setContentView(R.layout.activity_stoic);
 
@@ -108,6 +112,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         } else {
             dayVerdict.put("isSet", true);
             dayVerdict.put("isMutable", dayValues.getAsInteger(COLUMN_UPDATE_COUNT) < MAX_CHANGES);
+            dayVerdict.put(COLUMN_UPDATE_COUNT, dayValues.getAsInteger(COLUMN_UPDATE_COUNT));
             dayVerdict.put(COLUMN_VERDICT, dayValues.getAsBoolean(COLUMN_VERDICT));
             dayVerdict.put(COLUMN_WORDS, dayValues.getAsString(COLUMN_WORDS));
         }

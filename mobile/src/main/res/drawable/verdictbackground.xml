@@ -4,15 +4,15 @@
     <item android:state_pressed="true" >
         <shape android:shape="rectangle" >
             <corners android:radius="3dip" />
-            <stroke android:width="1dip" android:color="#333333" />
-            <solid android:color="#cccccc" />
+            <stroke android:width="6dip" android:color="#ccc" />
+            <solid android:color="#ccc" />
         </shape>
     </item>
 
     <item android:state_checked="true">
         <shape android:shape="rectangle" >
             <corners android:radius="3dip" />
-            <stroke android:width="1dip" android:color="#333333" />
+            <stroke android:width="1dip" android:color="#ccc" />
             <solid android:color="#aaa" android:colorPressedHighlight="#888"/>
         </shape>
     </item>
@@ -20,7 +20,7 @@
     <item>
         <shape android:shape="rectangle"  >
             <corners android:radius="3dip" />
-            <stroke android:width="1dip" android:color="#cccccc" />
+            <stroke android:width="6dip" android:color="#ccc" />
             <solid android:color="@android:color/transparent" />
         </shape>
     </item>

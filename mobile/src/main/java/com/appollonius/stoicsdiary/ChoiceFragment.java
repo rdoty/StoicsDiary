@@ -5,6 +5,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -99,7 +100,7 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
     /**
      * Initialization of all UI elements on startup
      * Note: Android Activity/Fragment event handling sucks
-     * @param v This is passed because we are calling this from onCreateView before it completes
+     * @param v View passing this because we are calling this from onCreateView before it completes
      */
     private void bindEventHandlers(View v) {
         ArrayList<View> children = ((StoicActivity)getActivity()).getAllChildren(v);
@@ -114,7 +115,7 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
 
     /**
      *
-     * @param v This is passed because we are calling this from onCreateView before it completes
+     * @param v View passing this because we are calling this from onCreateView before it completes
      */
     private void initializeCalendar(View v) {
         CalendarView calendarView = v.findViewById(R.id.history);
@@ -125,30 +126,81 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
 
     /**
      * Set other UI element behavior, including random text
-     * @param v This is passed because we are calling this from onCreateView before it completes
+     * @param v View passing this because we are calling this from onCreateView before it completes
      */
     private void initializeUI(View v) {
-        final int NUM_PROMPTS = 2;
-        final int NUM_SELECTIONS = 2;
-        final int NUM_QUOTES = 5;
-        Random r = new Random();
-
         initializeCalendar(v);
+        initializeTheme(v);
+    }
 
-        // Set text on UI elements
-        String num = String.format(Locale.US, "%02d", r.nextInt(NUM_PROMPTS) + 1);
+    /**
+     * This includes default colors, text prompts, maybe user-provided text, too.
+     * @param v View passing this because we are calling this from onCreateView before it completes
+     */
+    private void initializeTheme(View v) {
+        ContentValues theme = getCurrentTheme();
+
         TextView prompt = v.findViewById(R.id.TEXT_PROMPT);  // Set prompt to random selection
-        prompt.setText(this.getResources().getIdentifier("prompt_" + num,"string", BuildConfig.APPLICATION_ID));
+        prompt.setText(theme.getAsString("prompt"));
 
-        num = String.format(Locale.US, "%02d", r.nextInt(NUM_SELECTIONS) + 1);
         Button buttonYes = v.findViewById(R.id.BUTTON_YES);
-        buttonYes.setText(this.getResources().getIdentifier("good_" + num,"string", BuildConfig.APPLICATION_ID));
-        Button buttonNo = v.findViewById(R.id.BUTTON_NO);
-        buttonNo.setText(this.getResources().getIdentifier("bad_" + num,"string", BuildConfig.APPLICATION_ID));
+        buttonYes.setText(theme.getAsString("text_good"));
+        //buttonYes.setBackgroundColor(theme.getAsInteger("color_bg_good"));  // Need to modify tint
+        buttonYes.setTextColor(theme.getAsInteger("color_fg_good"));
 
-        num = String.format(Locale.US, "%02d", r.nextInt(NUM_QUOTES) + 1);
-        EditText editText = v.findViewById(R.id.EDIT_FEELS);
-        editText.setText(this.getResources().getIdentifier("quote_" + num,"string", BuildConfig.APPLICATION_ID));
+        Button buttonNo = v.findViewById(R.id.BUTTON_NO);
+        buttonNo.setText(theme.getAsString("text_bad"));
+        //buttonNo.setBackgroundColor(theme.getAsInteger("color_bg_bad"));  // Need to modify tint
+        buttonNo.setTextColor(theme.getAsInteger("color_fg_bad"));
+
+        TextView debugText = v.findViewById(R.id.TEXT_DEBUG);
+        debugText.setText(getQuote(null));
+    }
+
+    /**
+     * Get the final strings associated with each themed resource
+     * @return Object All resource strings associated with the theme
+     */
+    private ContentValues getCurrentTheme() {
+        /* Example setting SharedPreferences for future reference
+        SharedPreferences.Editor e = ((StoicActivity)getActivity()).sp.edit();
+        e.putBoolean("themeId", 1);
+        e.apply();
+         */
+        Integer themeId = ((StoicActivity)getActivity()).sp.getInt("themeId", new Random().nextInt(2) + 1);
+        return getCustomTheme(themeId);  // Get ID from preferences
+    }
+
+    /**
+     *
+     * @param themeId int the ID of the theme to get
+     * @return Object All resource strings associated with the theme
+     */
+    private ContentValues getCustomTheme(int themeId) {
+        ContentValues theme = new ContentValues();
+        theme.put("id", themeId);
+        theme.put("name", String.format(Locale.US, "Random Theme #%02d", themeId));
+        theme.put("prompt", getText(getResources().getIdentifier(String.format(Locale.US, "theme_%02d_prompt", themeId),"string", BuildConfig.APPLICATION_ID)).toString());
+        theme.put("text_good", getText(getResources().getIdentifier(String.format(Locale.US, "theme_%02d_good", themeId),"string", BuildConfig.APPLICATION_ID)).toString());
+        theme.put("text_bad", getText(getResources().getIdentifier(String.format(Locale.US, "theme_%02d_bad", themeId),"string", BuildConfig.APPLICATION_ID)).toString());
+        theme.put("color_bg_app", getResources().getIdentifier(String.format(Locale.US, "theme_%02d_bg_bad", themeId),"color", BuildConfig.APPLICATION_ID));
+        theme.put("color_bg_good", getResources().getIdentifier(String.format(Locale.US, "theme_%02d_bg_good", themeId),"color", BuildConfig.APPLICATION_ID));
+        theme.put("color_bg_bad", getResources().getIdentifier(String.format(Locale.US, "theme_%02d_bg_bad", themeId),"color", BuildConfig.APPLICATION_ID));
+        theme.put("color_fg_good", getResources().getIdentifier(String.format(Locale.US, "theme_%02d_fg_good", themeId),"color", BuildConfig.APPLICATION_ID));
+        theme.put("color_fg_bad", getResources().getIdentifier(String.format(Locale.US, "theme_%02d_fg_bad", themeId),"color", BuildConfig.APPLICATION_ID));
+        return theme;
+    }
+    /**
+     * Grabs a quote from the resource
+     * @param quoteId Integer if null, gets a random quote
+     * @return String the quote to display
+     */
+    private String getQuote(@Nullable Integer quoteId) {
+        final int NUM_QUOTES = 5;  // Figure count out dynamically
+        if (null == quoteId)
+            quoteId = new Random().nextInt(NUM_QUOTES) + 1;
+        String num = String.format(Locale.US, "%02d", quoteId);
+        return this.getText(getResources().getIdentifier("quote_" + num,"string", BuildConfig.APPLICATION_ID)).toString();
     }
 
     @Override
@@ -186,33 +238,38 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
 
     @Override
     public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
-        String logFormat = "%s (%s), value %s";
-        String verdictText = "UNSET";
-        String logOutput;
-        Boolean enableSelection = true;
+        String logFormat = "%s (%s), %s updates";
+        Boolean enableVerdict = true;
+        Boolean isVerdictSet;
 
         ZonedDateTime date = LocalDateTime.of(year, month + 1, dayOfMonth, 0, 0)
                 .atZone(ZoneOffset.systemDefault());
         view.setDate(date.toInstant().toEpochMilli());  // Actually update the calendar UI
 
         // Get references to all the controls we'll be updating
-        RadioGroup verdictChoices = getActivity().findViewById(R.id.VERDICT_CHOICES);
+        RadioGroup radioGroupVerdicts = getActivity().findViewById(R.id.VERDICT_CHOICES);
+        EditText editTextFeels = getActivity().findViewById(R.id.EDIT_FEELS);
 
-        // Set UI based on data for the day, enable/disable buttons as needed
-        verdictChoices.clearCheck();
+        // Set UI based on data for the day, enable/disable controls as needed
+        radioGroupVerdicts.clearCheck();
         ContentValues dayValues = ((StoicActivity)getActivity()).getVerdict(date.toLocalDate().toEpochDay());
-        if (dayValues.getAsBoolean("isSet")) {
-            enableSelection = dayValues.getAsBoolean("isMutable");
-            verdictChoices.check(dayValues.getAsBoolean(StoicActivity.COLUMN_VERDICT) ? R.id.BUTTON_YES : R.id.BUTTON_NO);
-            verdictText = dayValues.getAsString(StoicActivity.COLUMN_VERDICT);
+        isVerdictSet = dayValues.getAsBoolean("isSet");
+        if (isVerdictSet) {
+            enableVerdict = dayValues.getAsBoolean("isMutable");
+            radioGroupVerdicts.check(dayValues.getAsBoolean(StoicActivity.COLUMN_VERDICT) ? R.id.BUTTON_YES : R.id.BUTTON_NO);
         }
-        for (View child: ((StoicActivity)getActivity()).getAllChildren(verdictChoices)) {
-            child.setEnabled(enableSelection);
+        for (View child: ((StoicActivity)getActivity()).getAllChildren(radioGroupVerdicts)) {
+            child.setEnabled(enableVerdict);
         }
-        logOutput = String.format(logFormat, date, date.toLocalDate().toEpochDay(), verdictText);
+        Integer hintResource = isVerdictSet ? R.string.feels_prompt_enabled : R.string.feels_prompt_disabled;
+        editTextFeels.setHint(getText(hintResource));
+        editTextFeels.setEnabled(isVerdictSet);
+        setFeelsText(dayValues.getAsString(StoicActivity.COLUMN_WORDS));
+
+        // Debug output
+        String logOutput = String.format(logFormat, date, date.toLocalDate().toEpochDay(), dayValues.getAsInteger(StoicActivity.COLUMN_UPDATE_COUNT));
         Log.d("DateSelected", logOutput);
         setDebugText(logOutput);
-        setFeelsText(dayValues.getAsString(StoicActivity.COLUMN_WORDS));
     }
 
     private void onClickYes() {
