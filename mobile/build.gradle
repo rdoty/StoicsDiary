@@ -30,6 +30,8 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     wearApp project(':wear')
-    implementation 'com.google.android.gms:play-services-wearable:+'
-    compile 'com.readystatesoftware.sqliteasset:sqliteassethelper:+'
+    implementation 'com.google.android.gms:play-services-wearable:11.8.0'
+    compile 'com.readystatesoftware.sqliteasset:sqliteassethelper:2.0.1'
+    testCompile 'junit:junit:4.12' // Required -- JUnit 4 framework
+    testCompile 'org.mockito:mockito-core:1.10.19' // Optional -- Mockito framework
 }

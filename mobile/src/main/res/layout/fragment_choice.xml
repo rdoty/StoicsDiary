@@ -35,23 +35,38 @@
                         android:text="@string/prompt_01"
                         tools:text="@string/prompt_01" />
 
-                    <Button
-                        android:id="@+id/BUTTON_YES"
+                    <RadioGroup
+                        android:id="@+id/VERDICT_CHOICES"
+                        android:orientation="vertical"
                         android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="50"
-                        android:background="#00AA00"
-                        android:textSize="50sp"
-                        android:text="@string/good_01" />
+                        android:layout_height="match_parent">
 
-                    <Button
-                        android:id="@+id/BUTTON_NO"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="50"
-                        android:background="#AA0000"
-                        android:textSize="50sp"
-                        android:text="@string/bad_01" />
+                        <RadioButton
+                            android:id="@+id/BUTTON_YES"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="50"
+                            android:button="@android:color/transparent"
+                            android:background="@drawable/verdictbackground"
+                            android:backgroundTint="@android:color/holo_green_dark"
+                            android:checked="false"
+                            android:textSize="50sp"
+                            android:gravity="center"
+                            android:text="@string/good_01" />
+
+                        <RadioButton
+                            android:id="@+id/BUTTON_NO"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="50"
+                            android:button="@android:color/transparent"
+                            android:background="@drawable/verdictbackground"
+                            android:backgroundTint="@android:color/holo_red_dark"
+                            android:checked="false"
+                            android:textSize="50sp"
+                            android:gravity="center"
+                            android:text="@string/bad_01" />
+                    </RadioGroup>
                 </LinearLayout>
 
                 <LinearLayout

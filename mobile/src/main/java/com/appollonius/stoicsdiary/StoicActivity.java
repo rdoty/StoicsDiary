@@ -27,6 +27,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     static final String COLUMN_UPDATE_COUNT = "update_count";
     static final String COLUMN_DESC_F_KEY = "diary_id";
     static final String COLUMN_WORDS = "words";
+    static final Integer MAX_CHANGES = 3;
 
     private StoicDatabase db;
 
@@ -34,7 +35,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         db = new StoicDatabase(this);
-        rebuildDatabase();  // or truncateTables();
+        //rebuildDatabase();  // or truncateTables();
         setContentView(R.layout.activity_stoic);
 
         FragmentManager fm = getFragmentManager();
@@ -95,18 +96,20 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
      */
 
     /**
-     * For convenience
+     * For accessing in the UI - change this to return the verdict and whether it can be changed
      * @param date Long
      * @return Boolean true, false or NULL
      */
-    Boolean getVerdict(Long date) {
-        String Q_SELECT = String.format("SELECT %s from %s WHERE %s=%s;", COLUMN_VERDICT, TABLE_BASE, COLUMN_DAY, date);
-        SQLiteDatabase dbr = db.getReadableDatabase();
-
-        Cursor cursor = dbr.rawQuery(Q_SELECT, null);
-        Boolean dayVerdict = cursor.moveToFirst() ? 1 == cursor.getInt(0) : null;
-
-        cursor.close();
+    ContentValues getVerdict(Long date) {
+        ContentValues dayValues = readDayValues(date);
+        ContentValues dayVerdict = new ContentValues();
+        if (dayValues.size() == 0) {  // Update
+            dayVerdict.put("isSet", false);
+        } else {
+            dayVerdict.put("isSet", true);
+            dayVerdict.put("isMutable", dayValues.getAsInteger(COLUMN_UPDATE_COUNT) < MAX_CHANGES);
+            dayVerdict.put(COLUMN_VERDICT, dayValues.getAsBoolean(COLUMN_VERDICT));
+        }
         return dayVerdict;
     }
 
@@ -119,9 +122,9 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         String[] SELECT_COLS = new String[] {COLUMN_VERDICT, COLUMN_UPDATE_DATE, COLUMN_UPDATE_COUNT};
         String Q_SELECT = String.format("SELECT %s from %s WHERE %s=%s;",
                 String.join(",", SELECT_COLS), TABLE_BASE, COLUMN_DAY, date);
+        ContentValues dayValues = new ContentValues();
 
         SQLiteDatabase dbr = db.getReadableDatabase();
-        ContentValues dayValues = new ContentValues();
 
         Cursor cursor = dbr.rawQuery(Q_SELECT,null);
         if (cursor.moveToFirst()) {
@@ -151,7 +154,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
 
         if (oldValues.size() > 0) {  // Update
             final short updates = Short.valueOf(oldValues.getAsString(COLUMN_UPDATE_COUNT));
-            if (updates < 3) {
+            if (updates < MAX_CHANGES) {
                 newValues.put(COLUMN_UPDATE_COUNT, updates + 1);
                 dbw.update(StoicActivity.TABLE_BASE, newValues, String.format("%s=%s", COLUMN_DAY, Long.toString(date)), null);
                 didWriteSucceed = true;

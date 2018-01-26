@@ -1,5 +1,6 @@
 package com.appollonius.stoicsdiary;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,12 +14,15 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Random;
@@ -100,7 +104,7 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
     private void bindEventHandlers(View v) {
         ArrayList<View> children = ((StoicActivity)getActivity()).getAllChildren(v);
         for (View child: children) {
-            if (child instanceof AppCompatButton) {  // Android Activity/Fragment event handling sucks
+            if (child instanceof RadioButton) {  // Android Activity/Fragment event handling sucks
                 child.setOnClickListener(this);
             } else if (child instanceof CalendarView) {
                 ((CalendarView)child).setOnDateChangeListener(this);
@@ -178,18 +182,33 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
 
     @Override
     public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
-        String logString = "Date is %s (%s), value %s";
-        LocalDateTime date = LocalDateTime.of(year, month + 1, dayOfMonth, 0, 0);
-        view.setDate(date.toEpochSecond(ZoneOffset.UTC) * 1000);  // Actually update the calendar
+        String logFormat = "Date is %s (%s), value %s";
+        String verdictText = "NOT CHOSEN";
+        String logOutput;
+        Boolean enableSelection = true;
 
-        Boolean dayValue = ((StoicActivity)getActivity()).getVerdict(date.toLocalDate().toEpochDay());
-        String valueText = dayValue != null ? Boolean.toString(dayValue) : "NOT CHOSEN";
-        Log.d("DateSelected",
-                String.format(logString, date, date.toLocalDate().toEpochDay(), valueText));
+        ZonedDateTime date = LocalDateTime.of(year, month + 1, dayOfMonth, 0, 0)
+                .atZone(ZoneOffset.systemDefault());
+        view.setDate(date.toInstant().toEpochMilli());  // Actually update the calendar UI
 
-        // Update UI elements
-        setFeelsText(String.format(logString, date, date.toLocalDate().toEpochDay(), valueText));
-        // Change button states based on dayValue -- using radiobuttons?
+        // Get references to all the controls we'll be updating
+        RadioGroup verdictChoices = getActivity().findViewById(R.id.VERDICT_CHOICES);
+
+        // Set UI based on data for the day, enable/disable buttons as needed
+        verdictChoices.clearCheck();
+        ContentValues dayValue = ((StoicActivity)getActivity()).getVerdict(date.toLocalDate().toEpochDay());
+        if (dayValue.getAsBoolean("isSet")) {
+            enableSelection = dayValue.getAsBoolean("isMutable");
+            verdictChoices.check(dayValue.getAsBoolean(StoicActivity.COLUMN_VERDICT) ? R.id.BUTTON_YES : R.id.BUTTON_NO);
+            verdictText = dayValue.getAsString(StoicActivity.COLUMN_VERDICT);
+        }
+        for (View child: ((StoicActivity)getActivity()).getAllChildren(verdictChoices)) {
+            child.setEnabled(enableSelection);
+        }
+        logOutput = String.format(logFormat, date, date.toLocalDate().toEpochDay(), verdictText);
+        Log.d("DateSelected", logOutput);
+
+        setFeelsText(logOutput);  // Change this to corresponding feels
     }
 
     private void onClickYes() {
@@ -207,8 +226,9 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
      */
     private Boolean writeSelectedValue(Boolean value) {
         CalendarView calendarView = getActivity().findViewById(R.id.history);
-        Long date = LocalDate.from(Instant.ofEpochSecond(calendarView.getDate() / 1000).atZone(ZoneOffset.UTC)).toEpochDay();
-        //Long dateToo = calendarView.getDate() / 86400 / 1000;
+        // Note thisGeneratedTheSameLongValueToo = calendarView.getDate() / 86400 / 1000;
+        Long date = LocalDate.from(Instant.ofEpochSecond(calendarView.getDate() / 1000)
+                .atZone(ZoneOffset.systemDefault())).toEpochDay();
         return ((StoicActivity)getActivity()).setDayValue(date, value);
     }
 
