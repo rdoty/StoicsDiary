@@ -45,6 +45,7 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
 
     private static final String ARG_PARAM1 = "param1";
     private String mParam1;
+    private ContentValues theme;
     /**
      * Use this factory method to create a new instance of this fragment using the provided parameters.
      * (choose names that match the fragment initialization parameters)
@@ -138,7 +139,7 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
      * @param v View passing this because we are calling this from onCreateView before it completes
      */
     private void initializeTheme(View v) {
-        ContentValues theme = getCurrentTheme();
+        theme = getCurrentTheme();
 
         TextView prompt = v.findViewById(R.id.TEXT_PROMPT);  // Set prompt to random selection
         prompt.setText(theme.getAsString("prompt"));
@@ -183,6 +184,8 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
         theme.put("prompt", getText(getResources().getIdentifier(String.format(Locale.US, "theme_%02d_prompt", themeId),"string", BuildConfig.APPLICATION_ID)).toString());
         theme.put("text_good", getText(getResources().getIdentifier(String.format(Locale.US, "theme_%02d_good", themeId),"string", BuildConfig.APPLICATION_ID)).toString());
         theme.put("text_bad", getText(getResources().getIdentifier(String.format(Locale.US, "theme_%02d_bad", themeId),"string", BuildConfig.APPLICATION_ID)).toString());
+        theme.put("text_verdict_disabled_selected", getText(getResources().getIdentifier(String.format(Locale.US, "theme_%02d_verdict_disabled_selected", themeId),"string", BuildConfig.APPLICATION_ID)).toString());
+        theme.put("text_verdict_disabled_unselected", getText(getResources().getIdentifier(String.format(Locale.US, "theme_%02d_verdict_disabled_unselected", themeId),"string", BuildConfig.APPLICATION_ID)).toString());
         theme.put("color_bg_app", getResources().getIdentifier(String.format(Locale.US, "theme_%02d_bg_bad", themeId),"color", BuildConfig.APPLICATION_ID));
         theme.put("color_bg_good", getResources().getIdentifier(String.format(Locale.US, "theme_%02d_bg_good", themeId),"color", BuildConfig.APPLICATION_ID));
         theme.put("color_bg_bad", getResources().getIdentifier(String.format(Locale.US, "theme_%02d_bg_bad", themeId),"color", BuildConfig.APPLICATION_ID));
@@ -244,23 +247,40 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
 
         ZonedDateTime date = LocalDateTime.of(year, month + 1, dayOfMonth, 0, 0)
                 .atZone(ZoneOffset.systemDefault());
-        view.setDate(date.toInstant().toEpochMilli());  // Actually update the calendar UI
+        ContentValues dayValues = ((StoicActivity)getActivity()).getVerdict(date.toLocalDate().toEpochDay());
 
         // Get references to all the controls we'll be updating
         RadioGroup radioGroupVerdicts = getActivity().findViewById(R.id.VERDICT_CHOICES);
         EditText editTextFeels = getActivity().findViewById(R.id.EDIT_FEELS);
+        RadioButton buttonYes = getActivity().findViewById(R.id.BUTTON_YES);
+        RadioButton buttonNo = getActivity().findViewById(R.id.BUTTON_NO);
 
         // Set UI based on data for the day, enable/disable controls as needed
-        radioGroupVerdicts.clearCheck();
-        ContentValues dayValues = ((StoicActivity)getActivity()).getVerdict(date.toLocalDate().toEpochDay());
+        view.setDate(date.toInstant().toEpochMilli());  // Actually update the calendar UI
+        radioGroupVerdicts.clearCheck();  // Clear previous selection in case verdict not set
+
         isVerdictSet = dayValues.getAsBoolean("isSet");
-        if (isVerdictSet) {
+        if (isVerdictSet) {  // Check the proper verdict, also confirm whether we can change it
             enableVerdict = dayValues.getAsBoolean("isMutable");
             radioGroupVerdicts.check(dayValues.getAsBoolean(StoicActivity.COLUMN_VERDICT) ? R.id.BUTTON_YES : R.id.BUTTON_NO);
         }
         for (View child: ((StoicActivity)getActivity()).getAllChildren(radioGroupVerdicts)) {
             child.setEnabled(enableVerdict);
         }
+        // Consider doing this (simplify logic)
+        buttonYes.setText(
+                (enableVerdict
+                        ? theme.getAsString("text_good")
+                        : buttonYes.isChecked()
+                            ? theme.getAsString("text_verdict_disabled_selected")
+                            : theme.getAsString("text_verdict_disabled_unselected")));
+        buttonNo.setText(
+                (enableVerdict
+                        ? theme.getAsString("text_bad")
+                        : buttonNo.isChecked()
+                        ? theme.getAsString("text_verdict_disabled_selected")
+                        : theme.getAsString("text_verdict_disabled_unselected")));
+
         Integer hintResource = isVerdictSet ? R.string.feels_prompt_enabled : R.string.feels_prompt_disabled;
         editTextFeels.setHint(getText(hintResource));
         editTextFeels.setEnabled(isVerdictSet);

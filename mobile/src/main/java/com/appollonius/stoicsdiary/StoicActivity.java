@@ -7,6 +7,7 @@ import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -33,12 +34,14 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
 
     private StoicDatabase db;
     SharedPreferences sp;
-    
+    Typeface font;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         db = new StoicDatabase(this);
         sp = PreferenceManager.getDefaultSharedPreferences(this);
+        font = Typeface.createFromAsset(getAssets(), "font-awesome-5-free-regular-400.otf");
         //rebuildDatabase();  // or truncateTables();
         setContentView(R.layout.activity_stoic);
 

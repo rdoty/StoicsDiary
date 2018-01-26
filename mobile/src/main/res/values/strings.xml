@@ -12,20 +12,24 @@
     <string name="theme_01_prompt">Generic prompt</string>
     <string name="theme_01_good">Yes</string>
     <string name="theme_01_bad">No</string>
+    <string name="theme_01_verdict_disabled_selected">&#x1f512;</string>
+    <string name="theme_01_verdict_disabled_unselected"> </string>
 
     <string name="theme_02_prompt">Another prompt</string>
     <string name="theme_02_good">Indeed</string>
     <string name="theme_02_bad">Negative</string>
+    <string name="theme_02_verdict_disabled_selected">&#x1f512;</string>
+    <string name="theme_02_verdict_disabled_unselected"> </string>
 
     <string name="feels_tweet">Tweet</string>
     <string name="feels_prompt_enabled">You can add your thoughts on the day here in 140 characters or less&#8230;</string>
-    <string name="feels_prompt_disabled">You must set a verdict before adding your thoughts&#8230;</string>
+    <string name="feels_prompt_disabled">You must choose a verdict before writing here&#8230;</string>
 
-    <string name="quote_01">Quote01</string>
-    <string name="quote_02">Quote02</string>
-    <string name="quote_03">Quote03</string>
-    <string name="quote_04">Quote04</string>
-    <string name="quote_05">Quote05</string>
+    <string name="quote_01">Quote01 &#x1f512;</string>
+    <string name="quote_02">Quote02 &#x1f512;</string>
+    <string name="quote_03">Quote03 &#x1f512;</string>
+    <string name="quote_04">Quote04 &#x1f512;</string>
+    <string name="quote_05">Quote05 &#x1f512;</string>
     <string name="feels_save">Save</string>
 
     <!-- Strings related to Settings -->
