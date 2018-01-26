@@ -6,7 +6,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.AppCompatButton;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -99,12 +98,13 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
 
     /**
      * Initialization of all UI elements on startup
+     * Note: Android Activity/Fragment event handling sucks
      * @param v This is passed because we are calling this from onCreateView before it completes
      */
     private void bindEventHandlers(View v) {
         ArrayList<View> children = ((StoicActivity)getActivity()).getAllChildren(v);
         for (View child: children) {
-            if (child instanceof RadioButton) {  // Android Activity/Fragment event handling sucks
+            if (child instanceof RadioButton || child instanceof Button) {
                 child.setOnClickListener(this);
             } else if (child instanceof CalendarView) {
                 ((CalendarView)child).setOnDateChangeListener(this);
@@ -120,7 +120,7 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
         CalendarView calendarView = v.findViewById(R.id.history);
         calendarView.setMaxDate(calendarView.getDate());
         Long minDate = ((StoicActivity)getActivity()).getEarliestEntryDate();
-        //calendarView.setMinDate((minDate * 1000);  // Skip while debugging
+        calendarView.setMinDate(minDate * 1000);
     }
 
     /**
@@ -158,6 +158,10 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
                 onClickYes(); break;
             case R.id.BUTTON_NO:
                 onClickNo(); break;
+            case R.id.BUTTON_FEELS_SAVE:
+                onClickFeelsSave(); break;
+            case R.id.BUTTON_FEELS_TWEET:
+                onClickFeelsTweet(); break;
         }
     }
 
@@ -182,8 +186,8 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
 
     @Override
     public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
-        String logFormat = "Date is %s (%s), value %s";
-        String verdictText = "NOT CHOSEN";
+        String logFormat = "%s (%s), value %s";
+        String verdictText = "UNSET";
         String logOutput;
         Boolean enableSelection = true;
 
@@ -196,27 +200,49 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
 
         // Set UI based on data for the day, enable/disable buttons as needed
         verdictChoices.clearCheck();
-        ContentValues dayValue = ((StoicActivity)getActivity()).getVerdict(date.toLocalDate().toEpochDay());
-        if (dayValue.getAsBoolean("isSet")) {
-            enableSelection = dayValue.getAsBoolean("isMutable");
-            verdictChoices.check(dayValue.getAsBoolean(StoicActivity.COLUMN_VERDICT) ? R.id.BUTTON_YES : R.id.BUTTON_NO);
-            verdictText = dayValue.getAsString(StoicActivity.COLUMN_VERDICT);
+        ContentValues dayValues = ((StoicActivity)getActivity()).getVerdict(date.toLocalDate().toEpochDay());
+        if (dayValues.getAsBoolean("isSet")) {
+            enableSelection = dayValues.getAsBoolean("isMutable");
+            verdictChoices.check(dayValues.getAsBoolean(StoicActivity.COLUMN_VERDICT) ? R.id.BUTTON_YES : R.id.BUTTON_NO);
+            verdictText = dayValues.getAsString(StoicActivity.COLUMN_VERDICT);
         }
         for (View child: ((StoicActivity)getActivity()).getAllChildren(verdictChoices)) {
             child.setEnabled(enableSelection);
         }
         logOutput = String.format(logFormat, date, date.toLocalDate().toEpochDay(), verdictText);
         Log.d("DateSelected", logOutput);
-
-        setFeelsText(logOutput);  // Change this to corresponding feels
+        setDebugText(logOutput);
+        setFeelsText(dayValues.getAsString(StoicActivity.COLUMN_WORDS));
     }
 
     private void onClickYes() {
-        setFeelsText(writeSelectedValue(true) ? "SET TO TRUE" : "FAILED TO SET");
+        setDebugText(writeSelectedValue(true) ? "SET TO TRUE" : "FAILED TO SET");
     }
 
     private void onClickNo() {
-        setFeelsText(writeSelectedValue(false) ? "SET TO FALSE" : "FAILED TO SET");
+        setDebugText(writeSelectedValue(false) ? "SET TO FALSE" : "FAILED TO SET");
+    }
+
+    private void onClickFeelsTweet() {
+
+    }
+
+    /**
+     * Note thisGeneratedTheSameLongValueToo = calendarView.getDate() / 86400 / 1000;
+     * @return Long the date currently selected in the calendar UI
+     */
+    private Long getSelectedCalendarDate() {
+        CalendarView calendarView = getActivity().findViewById(R.id.history);
+        return LocalDate.from(Instant.ofEpochSecond(calendarView.getDate() / 1000)
+                .atZone(ZoneOffset.systemDefault())).toEpochDay();
+    }
+
+    private void onClickFeelsSave() {
+        Boolean success = ((StoicActivity)getActivity()).writeDayFeels(
+                getSelectedCalendarDate(),
+                ((EditText)getActivity().findViewById(R.id.EDIT_FEELS)).getText().toString()
+        );
+        setDebugText(String.format("Did feels save? %s", success.toString()));
     }
 
     /**
@@ -225,15 +251,13 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
      * @return Boolean success of write
      */
     private Boolean writeSelectedValue(Boolean value) {
-        CalendarView calendarView = getActivity().findViewById(R.id.history);
-        // Note thisGeneratedTheSameLongValueToo = calendarView.getDate() / 86400 / 1000;
-        Long date = LocalDate.from(Instant.ofEpochSecond(calendarView.getDate() / 1000)
-                .atZone(ZoneOffset.systemDefault())).toEpochDay();
-        return ((StoicActivity)getActivity()).setDayValue(date, value);
+        return ((StoicActivity)getActivity()).writeDayValue(getSelectedCalendarDate(), value);
     }
 
     private void setFeelsText(String text) {
-        EditText t = getActivity().findViewById(R.id.EDIT_FEELS);
-        t.setText(text);
+        ((EditText)getActivity().findViewById(R.id.EDIT_FEELS)).setText(text);
+    }
+    private void setDebugText(String text) {
+        ((TextView)getActivity().findViewById(R.id.TEXT_DEBUG)).setText(text);
     }
 }

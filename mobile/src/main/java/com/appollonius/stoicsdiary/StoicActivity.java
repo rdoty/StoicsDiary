@@ -109,6 +109,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             dayVerdict.put("isSet", true);
             dayVerdict.put("isMutable", dayValues.getAsInteger(COLUMN_UPDATE_COUNT) < MAX_CHANGES);
             dayVerdict.put(COLUMN_VERDICT, dayValues.getAsBoolean(COLUMN_VERDICT));
+            dayVerdict.put(COLUMN_WORDS, dayValues.getAsString(COLUMN_WORDS));
         }
         return dayVerdict;
     }
@@ -119,9 +120,13 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
      * @return ContentValues database key/values corresponding to the date value in COLUMN_DAY
      */
     ContentValues readDayValues(Long date) {
-        String[] SELECT_COLS = new String[] {COLUMN_VERDICT, COLUMN_UPDATE_DATE, COLUMN_UPDATE_COUNT};
-        String Q_SELECT = String.format("SELECT %s from %s WHERE %s=%s;",
-                String.join(",", SELECT_COLS), TABLE_BASE, COLUMN_DAY, date);
+        String[] SELECT_COLS = new String[] {TABLE_BASE+".id", COLUMN_VERDICT, COLUMN_UPDATE_DATE, COLUMN_UPDATE_COUNT, COLUMN_WORDS};
+        String Q_SELECT = String.format("SELECT %s FROM %s LEFT OUTER JOIN %s ON %s.%s=%s.%s WHERE %s=%s;",
+                String.join(",", SELECT_COLS),
+                TABLE_BASE,
+                TABLE_DESC,
+                TABLE_DESC, COLUMN_DESC_F_KEY, TABLE_BASE, "id",
+                COLUMN_DAY, date);
         ContentValues dayValues = new ContentValues();
 
         SQLiteDatabase dbr = db.getReadableDatabase();
@@ -142,7 +147,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
      * @param newVerdict Boolean value to assign
      * @return Boolean whether the set was a success
      */
-    Boolean setDayValue(Long date, Boolean newVerdict) {
+    Boolean writeDayValue(Long date, Boolean newVerdict) {
         SQLiteDatabase dbw = db.getWritableDatabase();
         ContentValues oldValues = readDayValues(date);
         ContentValues newValues = new ContentValues();
@@ -167,6 +172,29 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         }
         Log.d("DateSet", String.format(LOG_STRING, date, newVerdict, oldValues.get(COLUMN_VERDICT)));
         dbw.close();
+        return didWriteSucceed;
+    }
+
+    /**
+     *
+     * @param date Long from LocalDate
+     * @param feels String the text to save
+     * @return Boolean whether the set was a success
+     */
+    Boolean writeDayFeels(Long date, String feels) {
+        Boolean didWriteSucceed = false;
+        SQLiteDatabase dbw = db.getWritableDatabase();
+        ContentValues oldValues = readDayValues(date);
+        ContentValues newValues = new ContentValues();
+        newValues.put(COLUMN_WORDS, feels);
+        if (oldValues.size() > 0) {  // Update
+            newValues.put(COLUMN_DESC_F_KEY, oldValues.getAsInteger("id"));
+            if (oldValues.getAsString(COLUMN_WORDS) != null) {  // update
+                didWriteSucceed = 1 == dbw.update(StoicActivity.TABLE_DESC, newValues, String.format("%s=%s", COLUMN_DESC_F_KEY, oldValues.getAsString("id")), null);
+            } else {  // insert
+                didWriteSucceed = -1 < dbw.insert(StoicActivity.TABLE_DESC, null, newValues);
+            }
+        }
         return didWriteSucceed;
     }
 
