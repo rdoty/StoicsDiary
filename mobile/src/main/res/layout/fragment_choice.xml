@@ -36,7 +36,7 @@
                         tools:text="@string/theme_01_prompt" />
 
                     <RadioGroup
-                        android:id="@+id/VERDICT_CHOICES"
+                        android:id="@+id/GROUP_CHOICES"
                         android:orientation="vertical"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent">
@@ -47,7 +47,7 @@
                             android:layout_height="0dp"
                             android:layout_weight="50"
                             android:button="@android:color/transparent"
-                            android:background="@drawable/verdictbackground"
+                            android:background="@drawable/choicebackground"
                             android:backgroundTint="@color/theme_01_bg_good"
                             android:checked="false"
                             android:textSize="50sp"
@@ -60,7 +60,7 @@
                             android:layout_height="0dp"
                             android:layout_weight="50"
                             android:button="@android:color/transparent"
-                            android:background="@drawable/verdictbackground"
+                            android:background="@drawable/choicebackground"
                             android:backgroundTint="@color/theme_01_bg_bad"
                             android:checked="false"
                             android:textSize="50sp"

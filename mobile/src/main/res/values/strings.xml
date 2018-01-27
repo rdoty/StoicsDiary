@@ -9,21 +9,23 @@
     <string name="fragment_choice">Choice fragment</string>
 
     <!-- Themed strings -->
-    <string name="theme_01_prompt">Generic prompt</string>
+    <string name="theme_01_name">Basic Text Theme</string>
+    <string name="theme_01_prompt">Was today a good day? You choose.</string>
     <string name="theme_01_good">Yes</string>
     <string name="theme_01_bad">No</string>
-    <string name="theme_01_verdict_disabled_selected">&#x1f512;</string>
-    <string name="theme_01_verdict_disabled_unselected"> </string>
+    <string name="theme_01_choice_disabled_selected">&#x1f512;</string>
+    <string name="theme_01_choice_disabled_unselected"> </string>
 
-    <string name="theme_02_prompt">Another prompt</string>
+    <string name="theme_02_name">Vulcan Text Theme</string>
+    <string name="theme_02_prompt">Was today fascinating?</string>
     <string name="theme_02_good">Indeed</string>
     <string name="theme_02_bad">Negative</string>
-    <string name="theme_02_verdict_disabled_selected">&#x1f512;</string>
-    <string name="theme_02_verdict_disabled_unselected"> </string>
+    <string name="theme_02_choice_disabled_selected">&#x1f512;</string>
+    <string name="theme_02_choice_disabled_unselected"> </string>
 
     <string name="feels_tweet">Tweet</string>
     <string name="feels_prompt_enabled">You can add your thoughts on the day here in 140 characters or less&#8230;</string>
-    <string name="feels_prompt_disabled">You must choose a verdict before writing here&#8230;</string>
+    <string name="feels_prompt_disabled">Make your choice for the selected day before writing here&#8230;</string>
 
     <string name="quote_01">Quote01 &#x1f512;</string>
     <string name="quote_02">Quote02 &#x1f512;</string>

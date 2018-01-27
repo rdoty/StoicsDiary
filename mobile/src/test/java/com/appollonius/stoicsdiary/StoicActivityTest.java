@@ -35,7 +35,7 @@ public class StoicActivityTest {
     }
 
     @Test
-    public void testGetVerdict() throws Exception {
+    public void testGetChoice() throws Exception {
     }
 
     @Test

@@ -5,6 +5,7 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.ContentValues;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
@@ -18,6 +19,8 @@ import android.view.ViewGroup;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Locale;
+import java.util.Random;
 
 
 public class StoicActivity extends AppCompatActivity implements ChoiceFragment.OnFragmentInteractionListener {
@@ -25,7 +28,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     static final String TABLE_BASE = "diary";
     static final String TABLE_DESC = "feels";
     static final String COLUMN_DAY = "time_stamp";
-    static final String COLUMN_VERDICT = "verdict";
+    static final String COLUMN_CHOICE = "choice";
     static final String COLUMN_UPDATE_DATE = "last_updated";
     static final String COLUMN_UPDATE_COUNT = "update_count";
     static final String COLUMN_DESC_F_KEY = "diary_id";
@@ -34,6 +37,8 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
 
     private StoicDatabase db;
     SharedPreferences sp;
+    ThemeColors themeColors;
+    ThemeWords themeWords;
     Typeface font;
 
     @Override
@@ -41,9 +46,11 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         super.onCreate(savedInstanceState);
         db = new StoicDatabase(this);
         sp = PreferenceManager.getDefaultSharedPreferences(this);
+        themeColors = new ThemeColors();
+        themeWords = new ThemeWords();
         font = Typeface.createFromAsset(getAssets(), "font-awesome-5-free-regular-400.otf");
 
-        if (sp.getBoolean("resetDatabaseOnStart", false)) {
+        if (!sp.getBoolean("resetDatabaseOnStart", false)) {
             rebuildDatabase();  // or truncateTables();
         }
         setContentView(R.layout.activity_stoic);
@@ -106,23 +113,23 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
      */
 
     /**
-     * For accessing in the UI - change this to return the verdict and whether it can be changed
+     * For accessing in the UI - change this to return the choice and whether it can be changed
      * @param date Long
      * @return Boolean true, false or NULL
      */
-    ContentValues getVerdict(Long date) {
+    ContentValues getChoice(Long date) {
         ContentValues dayValues = readDayValues(date);
-        ContentValues dayVerdict = new ContentValues();
-        if (dayValues.size() == 0) {  // Update
-            dayVerdict.put("isSet", false);
+        ContentValues dayChoice = new ContentValues();
+        if (dayValues.size() > 0) {  // Update
+            dayChoice.put("isSet", true);
+            dayChoice.put("isMutable", dayValues.getAsInteger(COLUMN_UPDATE_COUNT) < MAX_CHANGES);
+            dayChoice.put(COLUMN_UPDATE_COUNT, dayValues.getAsInteger(COLUMN_UPDATE_COUNT));
+            dayChoice.put(COLUMN_CHOICE, dayValues.getAsBoolean(COLUMN_CHOICE));
+            dayChoice.put(COLUMN_WORDS, dayValues.getAsString(COLUMN_WORDS));
         } else {
-            dayVerdict.put("isSet", true);
-            dayVerdict.put("isMutable", dayValues.getAsInteger(COLUMN_UPDATE_COUNT) < MAX_CHANGES);
-            dayVerdict.put(COLUMN_UPDATE_COUNT, dayValues.getAsInteger(COLUMN_UPDATE_COUNT));
-            dayVerdict.put(COLUMN_VERDICT, dayValues.getAsBoolean(COLUMN_VERDICT));
-            dayVerdict.put(COLUMN_WORDS, dayValues.getAsString(COLUMN_WORDS));
+            dayChoice.put("isSet", false);
         }
-        return dayVerdict;
+        return dayChoice;
     }
 
     /**
@@ -131,7 +138,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
      * @return ContentValues database key/values corresponding to the date value in COLUMN_DAY
      */
     ContentValues readDayValues(Long date) {
-        String[] SELECT_COLS = new String[] {TABLE_BASE+".id", COLUMN_VERDICT, COLUMN_UPDATE_DATE, COLUMN_UPDATE_COUNT, COLUMN_WORDS};
+        String[] SELECT_COLS = new String[] {TABLE_BASE+".id", COLUMN_CHOICE, COLUMN_UPDATE_DATE, COLUMN_UPDATE_COUNT, COLUMN_WORDS};
         String Q_SELECT = String.format("SELECT %s FROM %s LEFT OUTER JOIN %s ON %s.%s=%s.%s WHERE %s=%s;",
                 String.join(",", SELECT_COLS),
                 TABLE_BASE,
@@ -155,17 +162,17 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     /**
      * Would like to find a more elegant upsert behavior, sqlite has 'INSERT OR REPLACE'
      * @param date Long from LocalDate
-     * @param newVerdict Boolean value to assign
+     * @param theChoice Boolean value to assign
      * @return Boolean whether the set was a success
      */
-    Boolean writeDayValue(Long date, Boolean newVerdict) {
+    Boolean writeDayValue(Long date, Boolean theChoice) {
         SQLiteDatabase dbw = db.getWritableDatabase();
         ContentValues oldValues = readDayValues(date);
         ContentValues newValues = new ContentValues();
         String LOG_STRING = "Setting long date %s to value %s, was %s";
         Boolean didWriteSucceed = false;
 
-        newValues.put(COLUMN_VERDICT, newVerdict);
+        newValues.put(COLUMN_CHOICE, theChoice);
         newValues.put(COLUMN_UPDATE_DATE, LocalDate.now().toEpochDay());
 
         if (oldValues.size() > 0) {  // Update
@@ -181,7 +188,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             dbw.insert(StoicActivity.TABLE_BASE, null, newValues);
             didWriteSucceed = true;
         }
-        Log.d("DateSet", String.format(LOG_STRING, date, newVerdict, oldValues.get(COLUMN_VERDICT)));
+        Log.d("DateSet", String.format(LOG_STRING, date, theChoice, oldValues.get(COLUMN_CHOICE)));
         dbw.close();
         return didWriteSucceed;
     }
@@ -232,7 +239,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         String Q_TABLE_MAKE = "CREATE TABLE %s (%s);";
         String COLUMNS_BASE = String.format(
                 "id INTEGER PRIMARY KEY, %s DATE UNIQUE, %s DATE, %s TINYINT, %s BOOLEAN",
-                COLUMN_DAY, COLUMN_UPDATE_DATE, COLUMN_UPDATE_COUNT, COLUMN_VERDICT);
+                COLUMN_DAY, COLUMN_UPDATE_DATE, COLUMN_UPDATE_COUNT, COLUMN_CHOICE);
         String COLUMNS_DESC = String.format(
                 "id INTEGER PRIMARY KEY, %s INTEGER, %s VARCHAR(255), FOREIGN KEY (%s) REFERENCES %s(id)",
                 COLUMN_DESC_F_KEY, COLUMN_WORDS, COLUMN_DESC_F_KEY, TABLE_BASE);
@@ -277,4 +284,119 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     /*
      * END Database accessors
      */
+
+    /**
+     * Class container for all customizable UI element colors
+     */
+    class ThemeColors {
+        final Integer id;
+        final String name;
+        final Integer choiceColorGoodBg;
+        final Integer choiceColorGoodFg;
+        final Integer choiceColorBadBg;
+        final Integer choiceColorBadFg;
+        final Integer appColorBg;
+
+        /**
+         * Base constructor should get the themeId preference and loads the values associated
+         */
+        ThemeColors() {
+            this(sp.getInt("themeId", new Random().nextInt(2) + 1));
+        }
+
+        /**
+         * This constructor will load the preferences for the corresponding themeId
+         * Note: using temp vars to deal with final vars and possible exceptions
+         * @param themeId Integer the themeColors in the resources to load
+         */
+        ThemeColors(Integer themeId) {
+            id = themeId;  // Need to do validation on the number
+            Integer cCGB, cCGF, cCBB, cCBF, aCB;
+            cCGB = cCGF = cCBB = cCBF = aCB = null;
+
+            name = getText(getResources().getIdentifier(sfmt("theme_%02d_name"),"string", BuildConfig.APPLICATION_ID)).toString();
+            try {
+                cCGB = getResources().getIdentifier(sfmt("theme_%02d_bg_good"),"color", BuildConfig.APPLICATION_ID);
+                cCGF = getResources().getIdentifier(sfmt("theme_%02d_fg_good"),"color", BuildConfig.APPLICATION_ID);
+                cCBB = getResources().getIdentifier(sfmt("theme_%02d_bg_bad"),"color", BuildConfig.APPLICATION_ID);
+                cCBF = getResources().getIdentifier(sfmt("theme_%02d_fg_bad"),"color", BuildConfig.APPLICATION_ID);
+                aCB = getResources().getIdentifier(sfmt("theme_%02d_bg_bad"),"color", BuildConfig.APPLICATION_ID);
+            } catch (Resources.NotFoundException e) {
+                Log.d("Exception", e.getMessage());  // Report to user?
+            } finally {
+                choiceColorGoodBg = cCGB;
+                choiceColorGoodFg = cCGF;
+                choiceColorBadBg = cCBB;
+                choiceColorBadFg = cCBF;
+                appColorBg = aCB;
+            }
+        }
+
+        /**
+         * This assumes id has already been set by the constructor
+         * @param stringFormat String to be modified
+         * @return String to use in getIdentifier
+         */
+        private String sfmt(String stringFormat) {
+            return String.format(Locale.US, stringFormat, this.id);
+        }
+    }
+
+    /**
+     * Class container for all customizable UI element text
+     */
+    class ThemeWords {
+        final Integer id;
+        final String name;
+        final String prompt;
+        final String choiceTextGood;
+        final String choiceTextBad;
+        final String choiceTextDisabledSelected;
+        final String choiceTextDisabledUnselected;
+
+        /**
+         * Base constructor should get the themeId preference and loads the values associated
+         */
+        ThemeWords() {
+            this(sp.getInt("themeId", new Random().nextInt(2) + 1));
+        }
+
+        /**
+         * This constructor will load the preferences for the corresponding themeId
+         * Note: using temp vars to deal with final vars and possible exceptions
+         * @param themeId Integer the themeColors in the resources to load
+         */
+        ThemeWords(Integer themeId) {
+            id = themeId;  // Need to do validation on the number
+            String n, p, cTG, cTB, cTDS, cTDU;
+            n = p = cTG = cTB = cTDS = cTDU = null;
+
+            try {
+                n = getText(getResources().getIdentifier(sfmt("theme_%02d_name"),"string", BuildConfig.APPLICATION_ID)).toString();
+                p = getText(getResources().getIdentifier(sfmt("theme_%02d_prompt"),"string", BuildConfig.APPLICATION_ID)).toString();
+                cTG = getText(getResources().getIdentifier(sfmt("theme_%02d_good"),"string", BuildConfig.APPLICATION_ID)).toString();
+                cTB = getText(getResources().getIdentifier(sfmt("theme_%02d_bad"),"string", BuildConfig.APPLICATION_ID)).toString();
+                cTDS = getText(getResources().getIdentifier(sfmt("theme_%02d_choice_disabled_selected"),"string", BuildConfig.APPLICATION_ID)).toString();
+                cTDU = getText(getResources().getIdentifier(sfmt("theme_%02d_choice_disabled_unselected"),"string", BuildConfig.APPLICATION_ID)).toString();
+            } catch (Resources.NotFoundException e) {
+                Log.d("Exception", e.getMessage());  // Report to user?
+            } finally {
+                name = n;
+                prompt = p;
+                choiceTextGood = cTG;
+                choiceTextBad = cTB;
+                choiceTextDisabledSelected = cTDS;
+                choiceTextDisabledUnselected = cTDU;
+            }
+        }
+
+        /**
+         * This assumes id has already been set by the constructor
+         * @param stringFormat String to be modified
+         * @return String to use in getIdentifier
+         */
+        private String sfmt(String stringFormat) {
+            return String.format(Locale.US, stringFormat, this.id);
+        }
+    }
 }
