@@ -24,7 +24,7 @@
     <string name="theme_02_choice_disabled_unselected"> </string>
 
     <string name="feels_tweet">Tweet</string>
-    <string name="feels_prompt_enabled">You can add your thoughts on the day here in 140 characters or less&#8230;</string>
+    <string name="feels_prompt_enabled">Add your thoughts on the day here in 140 characters or less&#8230;</string>
     <string name="feels_prompt_disabled">Make your choice for the selected day before writing here&#8230;</string>
 
     <string name="quote_01">Quote01 &#x1f512;</string>

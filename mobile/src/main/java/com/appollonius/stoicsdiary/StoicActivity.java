@@ -17,7 +17,8 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Random;
@@ -50,7 +51,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         themeWords = new ThemeWords();
         font = Typeface.createFromAsset(getAssets(), "font-awesome-5-free-regular-400.otf");
 
-        if (!sp.getBoolean("resetDatabaseOnStart", false)) {
+        if (!sp.getBoolean("resetDatabaseOnStart", false)) {  // '!' to always reset
             rebuildDatabase();  // or truncateTables();
         }
         setContentView(R.layout.activity_stoic);
@@ -129,6 +130,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         } else {
             dayChoice.put("isSet", false);
         }
+        dayChoice.put("choiceDate", date);
         return dayChoice;
     }
 
@@ -173,7 +175,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         Boolean didWriteSucceed = false;
 
         newValues.put(COLUMN_CHOICE, theChoice);
-        newValues.put(COLUMN_UPDATE_DATE, LocalDate.now().toEpochDay());
+        newValues.put(COLUMN_UPDATE_DATE, getLongVal(LocalDateTime.now()));
 
         if (oldValues.size() > 0) {  // Update
             final short updates = Short.valueOf(oldValues.getAsString(COLUMN_UPDATE_COUNT));
@@ -217,17 +219,37 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     }
 
     /**
+     *
      * @return Long Date of the first entry in the database
      */
-    long getEarliestEntryDate() {
-        Long earliestDate;
+    Long getEarliestEntryDate() {
+        Long earliestDate = getLongVal(2018, 1, 2); // Hardcode for testing
         SQLiteDatabase dbr = db.getReadableDatabase();
         Cursor c = dbr.query(StoicActivity.TABLE_BASE, new String[] { String.format("min(%s)", COLUMN_DAY) },
                 null, null,null, null, null);
         c.moveToFirst();
-        earliestDate = c.getLong(0) * 86400;  // 24 * 60 * 60
+        //earliestDate = c.getLong(0);  // This should be from DB
         c.close();
         return earliestDate;
+    }
+
+    /**
+     *
+     * @param year int
+     * @param month int 1-12
+     * @param dayOfMonth int 1-31
+     * @return Long the date munged appropriately
+     */
+    Long getLongVal(int year, int month, int dayOfMonth) {
+        return getLongVal(LocalDateTime.of(year, month, dayOfMonth, 0, 0));
+    }
+    /**
+     * Use this to get the value we set the calendar to and the one we store in the DB
+     * @param ldt LocalDateTime an object we're using to get the expected value
+     * @return Long the date munged appropriately
+     */
+    Long getLongVal(LocalDateTime ldt) {
+        return ldt.atZone(ZoneOffset.systemDefault()).toInstant().toEpochMilli(); //.truncatedTo(ChronoUnit.DAYS)
     }
 
     /**

@@ -18,11 +18,6 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Random;
@@ -43,6 +38,7 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
         // Required empty public constructor
     }
 
+    private ContentValues selectedDayValues;
     private static final String ARG_PARAM1 = "param1";
     private String mParam1;
     /**
@@ -144,11 +140,9 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
      * @param v View passing this because we are calling this from onCreateView before it completes
      */
     private void initializeCalendar(View v) {
-        ZonedDateTime minDate = LocalDateTime.of(2018, 1, 2, 0, 0).atZone(ZoneOffset.systemDefault());
-        //minDate = ((StoicActivity)getActivity()).getEarliestEntryDate() * 1000;
         CalendarView calendarView = v.findViewById(R.id.history);
         calendarView.setMaxDate(calendarView.getDate());
-        calendarView.setMinDate(minDate.toInstant().toEpochMilli());
+        calendarView.setMinDate(((StoicActivity)getActivity()).getEarliestEntryDate());
     }
 
     /**
@@ -168,9 +162,8 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.BUTTON_YES:
-                onClickYes(); break;
             case R.id.BUTTON_NO:
-                onClickNo(); break;
+                onClickChoice(v.getId()); break;
             case R.id.BUTTON_FEELS_SAVE:
                 onClickFeelsSave(); break;
             case R.id.BUTTON_FEELS_TWEET:
@@ -199,28 +192,38 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
 
     @Override
     public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
-        String logFormat = "%s (%s), %s updates";
+        Long date = ((StoicActivity)getActivity()).getLongVal(year, month + 1, dayOfMonth);
+        view.setDate(date);  // Actually update the calendar UI
+        onWriteUpdateUI(true);  // Set UI based on data for the day, enable/disable controls as needed
+   }
+
+    private void onClickChoice(int choiceId) {
+        onWriteUpdateUI(writeSelectedValue(R.id.BUTTON_YES == choiceId));
+    }
+    /**
+     * This retrieves the values for the selected day from the database
+     * and updates the UI. This should be called after values have been
+     * written to the database.
+     * e.g. disabling buttons if there are no more changes allowed
+     */
+    private void onWriteUpdateUI(Boolean writeSuccessful) {
+        String logFormat = "Write %s - Date %s (%s), %s updates";
         Boolean enableChoice = true;
         Boolean isChoiceSet;
 
-        ZonedDateTime date = LocalDateTime.of(year, month + 1, dayOfMonth, 0, 0)
-                .atZone(ZoneOffset.systemDefault());
-        ContentValues dayValues = ((StoicActivity)getActivity()).getChoice(date.toLocalDate().toEpochDay());
-
+        selectedDayValues = ((StoicActivity)getActivity()).getChoice(getSelectedCalendarDate());
         // Get references to all the controls we'll be updating
         RadioGroup radioGroupChoices = getActivity().findViewById(R.id.GROUP_CHOICES);
         EditText editTextFeels = getActivity().findViewById(R.id.EDIT_FEELS);
         RadioButton buttonYes = getActivity().findViewById(R.id.BUTTON_YES);
         RadioButton buttonNo = getActivity().findViewById(R.id.BUTTON_NO);
 
-        // Set UI based on data for the day, enable/disable controls as needed
-        view.setDate(date.toInstant().toEpochMilli());  // Actually update the calendar UI
         radioGroupChoices.clearCheck();  // Clear previous selection in case choice not set
 
-        isChoiceSet = dayValues.getAsBoolean("isSet");
+        isChoiceSet = selectedDayValues.getAsBoolean("isSet");
         if (isChoiceSet) {  // Check the proper choice, also confirm whether we can change it
-            enableChoice = dayValues.getAsBoolean("isMutable");
-            radioGroupChoices.check(dayValues.getAsBoolean(StoicActivity.COLUMN_CHOICE) ? R.id.BUTTON_YES : R.id.BUTTON_NO);
+            enableChoice = selectedDayValues.getAsBoolean("isMutable");
+            radioGroupChoices.check(selectedDayValues.getAsBoolean(StoicActivity.COLUMN_CHOICE) ? R.id.BUTTON_YES : R.id.BUTTON_NO);
         }
         for (View child: ((StoicActivity)getActivity()).getAllChildren(radioGroupChoices)) {
             child.setEnabled(enableChoice);
@@ -236,26 +239,21 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
                 (enableChoice
                         ? ((StoicActivity)getActivity()).themeWords.choiceTextBad
                         : buttonNo.isChecked()
-                        ? ((StoicActivity)getActivity()).themeWords.choiceTextDisabledSelected
-                        : ((StoicActivity)getActivity()).themeWords.choiceTextDisabledUnselected));
+                            ? ((StoicActivity)getActivity()).themeWords.choiceTextDisabledSelected
+                            : ((StoicActivity)getActivity()).themeWords.choiceTextDisabledUnselected));
 
         Integer hintResource = isChoiceSet ? R.string.feels_prompt_enabled : R.string.feels_prompt_disabled;
         editTextFeels.setHint(getText(hintResource));
         editTextFeels.setEnabled(isChoiceSet);
-        setFeelsText(dayValues.getAsString(StoicActivity.COLUMN_WORDS));
+        setFeelsText(selectedDayValues.getAsString(StoicActivity.COLUMN_WORDS));
 
         // Debug output
-        String logOutput = String.format(logFormat, date, date.toLocalDate().toEpochDay(), dayValues.getAsInteger(StoicActivity.COLUMN_UPDATE_COUNT));
+        String logOutput = String.format(logFormat,
+                writeSuccessful, "yy/mm/dd",
+                selectedDayValues.getAsLong("choiceDate"),
+                selectedDayValues.getAsInteger(StoicActivity.COLUMN_UPDATE_COUNT));
         Log.d("DateSelected", logOutput);
         setDebugText(logOutput);
-    }
-
-    private void onClickYes() {
-        setDebugText(writeSelectedValue(true) ? "SET TO TRUE" : "FAILED TO SET");
-    }
-
-    private void onClickNo() {
-        setDebugText(writeSelectedValue(false) ? "SET TO FALSE" : "FAILED TO SET");
     }
 
     private void onClickFeelsTweet() {
@@ -263,13 +261,12 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
     }
 
     /**
-     * Note thisGeneratedTheSameLongValueToo = calendarView.getDate() / 86400 / 1000;
+     *
      * @return Long the date currently selected in the calendar UI
      */
     private Long getSelectedCalendarDate() {
         CalendarView calendarView = getActivity().findViewById(R.id.history);
-        return LocalDate.from(Instant.ofEpochSecond(calendarView.getDate() / 1000)
-                .atZone(ZoneOffset.systemDefault())).toEpochDay();
+        return calendarView.getDate();
     }
 
     private void onClickFeelsSave() {

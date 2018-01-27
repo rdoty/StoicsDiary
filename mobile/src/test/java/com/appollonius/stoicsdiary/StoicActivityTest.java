@@ -1,12 +1,10 @@
 package com.appollonius.stoicsdiary;
 
-import android.view.View;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 
 import static org.junit.Assert.*;
 
@@ -20,7 +18,7 @@ public class StoicActivityTest {
 
     @Before
     public void setUp() throws Exception {
-        //super.setUp();
+        activity = new StoicActivity();
     }
 
     @After
@@ -28,14 +26,9 @@ public class StoicActivityTest {
     }
 
     @Test
-    public void testGetAllChildren() throws Exception {
-//        View v = activity.findViewById(android.R.id.content);
-//        ArrayList<View> arrayList = StoicActivity.getAllChildren(v);
-//        assertTrue(arrayList.size() > 0);
-    }
-
-    @Test
-    public void testGetChoice() throws Exception {
+    public void testGetLongVal() throws Exception {
+        LocalDateTime zdt = LocalDateTime.of(2018,1,1,0,0,0);
+        assertEquals(activity.getLongVal(zdt), activity.getLongVal(2018, 1, 1));
     }
 
     @Test
