@@ -45,7 +45,7 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
 
     private static final String ARG_PARAM1 = "param1";
     private String mParam1;
-    private ContentValues theme;
+    private Theme theme;
     /**
      * Use this factory method to create a new instance of this fragment using the provided parameters.
      * (choose names that match the fragment initialization parameters)
@@ -130,8 +130,8 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
      * @param v View passing this because we are calling this from onCreateView before it completes
      */
     private void initializeUI(View v) {
-        initializeCalendar(v);
         initializeTheme(v);
+        initializeCalendar(v);
     }
 
     /**
@@ -139,60 +139,21 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
      * @param v View passing this because we are calling this from onCreateView before it completes
      */
     private void initializeTheme(View v) {
-        theme = getCurrentTheme();
+        theme = new Theme();
 
-        TextView prompt = v.findViewById(R.id.TEXT_PROMPT);  // Set prompt to random selection
-        prompt.setText(theme.getAsString("prompt"));
+        ((TextView)v.findViewById(R.id.TEXT_PROMPT)).setText(theme.prompt);
+        ((Button)v.findViewById(R.id.BUTTON_YES)).setText(theme.goodText);
+        ((Button)v.findViewById(R.id.BUTTON_YES)).setTextColor(theme.goodColorFg);
+        //((Button)v.findViewById(R.id.BUTTON_YES)).setBackgroundColor(theme.goodColorBg);  // Need to modify tint not color
 
-        Button buttonYes = v.findViewById(R.id.BUTTON_YES);
-        buttonYes.setText(theme.getAsString("text_good"));
-        //buttonYes.setBackgroundColor(theme.getAsInteger("color_bg_good"));  // Need to modify tint
-        buttonYes.setTextColor(theme.getAsInteger("color_fg_good"));
+        ((Button)v.findViewById(R.id.BUTTON_NO)).setText(theme.badText);
+        ((Button)v.findViewById(R.id.BUTTON_NO)).setTextColor(theme.badColorFg);
+        //((Button)v.findViewById(R.id.BUTTON_NO)).setBackgroundColor(theme.badColorBg);  // Need to modify tint not color
 
-        Button buttonNo = v.findViewById(R.id.BUTTON_NO);
-        buttonNo.setText(theme.getAsString("text_bad"));
-        //buttonNo.setBackgroundColor(theme.getAsInteger("color_bg_bad"));  // Need to modify tint
-        buttonNo.setTextColor(theme.getAsInteger("color_fg_bad"));
-
-        TextView debugText = v.findViewById(R.id.TEXT_DEBUG);
-        debugText.setText(getQuote(null));
+        ((TextView)v.findViewById(R.id.TEXT_DEBUG)).setText(getQuote(null));
+        theme = new Theme(1);
     }
 
-    /**
-     * Get the final strings associated with each themed resource
-     * @return Object All resource strings associated with the theme
-     */
-    private ContentValues getCurrentTheme() {
-        /* Example setting SharedPreferences for future reference
-        SharedPreferences.Editor e = ((StoicActivity)getActivity()).sp.edit();
-        e.putBoolean("themeId", 1);
-        e.apply();
-         */
-        Integer themeId = ((StoicActivity)getActivity()).sp.getInt("themeId", new Random().nextInt(2) + 1);
-        return getCustomTheme(themeId);  // Get ID from preferences
-    }
-
-    /**
-     *
-     * @param themeId int the ID of the theme to get
-     * @return Object All resource strings associated with the theme
-     */
-    private ContentValues getCustomTheme(int themeId) {
-        ContentValues theme = new ContentValues();
-        theme.put("id", themeId);
-        theme.put("name", String.format(Locale.US, "Random Theme #%02d", themeId));
-        theme.put("prompt", getText(getResources().getIdentifier(String.format(Locale.US, "theme_%02d_prompt", themeId),"string", BuildConfig.APPLICATION_ID)).toString());
-        theme.put("text_good", getText(getResources().getIdentifier(String.format(Locale.US, "theme_%02d_good", themeId),"string", BuildConfig.APPLICATION_ID)).toString());
-        theme.put("text_bad", getText(getResources().getIdentifier(String.format(Locale.US, "theme_%02d_bad", themeId),"string", BuildConfig.APPLICATION_ID)).toString());
-        theme.put("text_verdict_disabled_selected", getText(getResources().getIdentifier(String.format(Locale.US, "theme_%02d_verdict_disabled_selected", themeId),"string", BuildConfig.APPLICATION_ID)).toString());
-        theme.put("text_verdict_disabled_unselected", getText(getResources().getIdentifier(String.format(Locale.US, "theme_%02d_verdict_disabled_unselected", themeId),"string", BuildConfig.APPLICATION_ID)).toString());
-        theme.put("color_bg_app", getResources().getIdentifier(String.format(Locale.US, "theme_%02d_bg_bad", themeId),"color", BuildConfig.APPLICATION_ID));
-        theme.put("color_bg_good", getResources().getIdentifier(String.format(Locale.US, "theme_%02d_bg_good", themeId),"color", BuildConfig.APPLICATION_ID));
-        theme.put("color_bg_bad", getResources().getIdentifier(String.format(Locale.US, "theme_%02d_bg_bad", themeId),"color", BuildConfig.APPLICATION_ID));
-        theme.put("color_fg_good", getResources().getIdentifier(String.format(Locale.US, "theme_%02d_fg_good", themeId),"color", BuildConfig.APPLICATION_ID));
-        theme.put("color_fg_bad", getResources().getIdentifier(String.format(Locale.US, "theme_%02d_fg_bad", themeId),"color", BuildConfig.APPLICATION_ID));
-        return theme;
-    }
     /**
      * Grabs a quote from the resource
      * @param quoteId Integer if null, gets a random quote
@@ -267,19 +228,19 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
         for (View child: ((StoicActivity)getActivity()).getAllChildren(radioGroupVerdicts)) {
             child.setEnabled(enableVerdict);
         }
-        // Consider doing this (simplify logic)
+        // Consider doing this (but simplify logic)
         buttonYes.setText(
                 (enableVerdict
-                        ? theme.getAsString("text_good")
+                        ? theme.goodText
                         : buttonYes.isChecked()
-                            ? theme.getAsString("text_verdict_disabled_selected")
-                            : theme.getAsString("text_verdict_disabled_unselected")));
+                            ? theme.verdictTextDisabledSelected
+                            : theme.verdictTextDisabledUnselected));
         buttonNo.setText(
                 (enableVerdict
-                        ? theme.getAsString("text_bad")
+                        ? theme.badText
                         : buttonNo.isChecked()
-                        ? theme.getAsString("text_verdict_disabled_selected")
-                        : theme.getAsString("text_verdict_disabled_unselected")));
+                        ? theme.verdictTextDisabledSelected
+                        : theme.verdictTextDisabledUnselected));
 
         Integer hintResource = isVerdictSet ? R.string.feels_prompt_enabled : R.string.feels_prompt_disabled;
         editTextFeels.setHint(getText(hintResource));
@@ -336,5 +297,58 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
     }
     private void setDebugText(String text) {
         ((TextView)getActivity().findViewById(R.id.TEXT_DEBUG)).setText(text);
+    }
+
+    /**
+     * Class container for all customizable UI element choices
+     */
+    class Theme {
+        final Integer id;
+        final String name;
+        final String prompt;
+        final String goodText;
+        final Integer goodColorBg;
+        final Integer goodColorFg;
+        final String badText;
+        final Integer badColorBg;
+        final Integer badColorFg;
+        final Integer appColorBg;
+        final String verdictTextDisabledSelected;
+        final String verdictTextDisabledUnselected;
+
+        /**
+         * Base constructor should get the themeId preference and loads the values associated
+         */
+        Theme() {
+            this(((StoicActivity)getActivity()).sp.getInt("themeId", new Random().nextInt(2) + 1));
+        }
+
+        /**
+         * This constructor will load the preferences for the corresponding themeId
+         * @param themeId Integer the theme in the resources to load
+         */
+        Theme(Integer themeId) {
+            id = themeId;  // Need to do validation on the number
+            name = String.format(Locale.US, "Random Theme #%02d", themeId);
+            prompt = getText(getResources().getIdentifier(sfmt("theme_%02d_prompt"),"string", BuildConfig.APPLICATION_ID)).toString();
+            goodText = getText(getResources().getIdentifier(sfmt("theme_%02d_good"),"string", BuildConfig.APPLICATION_ID)).toString();
+            goodColorBg = getResources().getIdentifier(sfmt("theme_%02d_bg_good"),"color", BuildConfig.APPLICATION_ID);
+            goodColorFg = getResources().getIdentifier(sfmt("theme_%02d_fg_good"),"color", BuildConfig.APPLICATION_ID);
+            badText = getText(getResources().getIdentifier(sfmt("theme_%02d_bad"),"string", BuildConfig.APPLICATION_ID)).toString();
+            badColorBg = getResources().getIdentifier(sfmt("theme_%02d_bg_bad"),"color", BuildConfig.APPLICATION_ID);
+            badColorFg = getResources().getIdentifier(sfmt("theme_%02d_fg_bad"),"color", BuildConfig.APPLICATION_ID);
+            appColorBg = getResources().getIdentifier(sfmt("theme_%02d_bg_bad"),"color", BuildConfig.APPLICATION_ID);
+            verdictTextDisabledSelected = getText(getResources().getIdentifier(sfmt("theme_%02d_verdict_disabled_selected"),"string", BuildConfig.APPLICATION_ID)).toString();
+            verdictTextDisabledUnselected = getText(getResources().getIdentifier(sfmt("theme_%02d_verdict_disabled_unselected"),"string", BuildConfig.APPLICATION_ID)).toString();
+        }
+
+        /**
+         * This assumes id has already been set by the constructor
+         * @param stringFormat String to be modified
+         * @return String to use in getIdentifier
+         */
+        private String sfmt(String stringFormat) {
+            return String.format(Locale.US, stringFormat, this.id);
+        }
     }
 }

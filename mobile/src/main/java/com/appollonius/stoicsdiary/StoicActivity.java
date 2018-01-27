@@ -42,7 +42,10 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         db = new StoicDatabase(this);
         sp = PreferenceManager.getDefaultSharedPreferences(this);
         font = Typeface.createFromAsset(getAssets(), "font-awesome-5-free-regular-400.otf");
-        //rebuildDatabase();  // or truncateTables();
+
+        if (sp.getBoolean("resetDatabaseOnStart", false)) {
+            rebuildDatabase();  // or truncateTables();
+        }
         setContentView(R.layout.activity_stoic);
 
         FragmentManager fm = getFragmentManager();
@@ -220,10 +223,10 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         return earliestDate;
     }
 
-    /*
-     * These clear out the DB
+    /**
+     * This does what it says
      */
-    void rebuildDatabase() {
+    private void rebuildDatabase() {
         SQLiteDatabase dbw = db.getWritableDatabase();
         String Q_TABLE_DROP = "DROP TABLE IF EXISTS %s;";
         String Q_TABLE_MAKE = "CREATE TABLE %s (%s);";
@@ -240,8 +243,8 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         dbw.execSQL(String.format(Q_TABLE_MAKE, TABLE_DESC, COLUMNS_DESC));
     }
 
-    /*
-    void truncateTables() {
+    /* Other ways of clearing the data in the DB
+    private void truncateTables() {
         SQLiteDatabase dbw = db.getWritableDatabase();
         String Q_TABLETRUNC = "DELETE FROM %s; DELETE FROM SQLITE_SEQUENCE WHERE name='%s';";
         dbw.execSQL(String.format(Q_TABLETRUNC, TABLE_DESC, TABLE_DESC));
