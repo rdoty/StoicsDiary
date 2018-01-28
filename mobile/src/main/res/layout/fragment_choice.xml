@@ -90,6 +90,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
+            <TextView
+                android:id="@+id/TEXT_QUOTE"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="12sp" />
+
             <EditText
                 android:id="@+id/EDIT_FEELS"
                 android:layout_width="match_parent"

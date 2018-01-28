@@ -35,11 +35,13 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     static final String COLUMN_DESC_F_KEY = "diary_id";
     static final String COLUMN_WORDS = "words";
     static final Integer MAX_CHANGES = 3;
+    static final Integer NUM_COLOR_THEMES = 3;  // This along with the strings should live somewhere else
+    static final Integer NUM_TEXT_THEMES = 3;  // This along with the strings should live somewhere else
 
     private StoicDatabase db;
     SharedPreferences sp;
     ThemeColors themeColors;
-    ThemeWords themeWords;
+    ThemeText themeText;
     Typeface font;
 
     @Override
@@ -48,7 +50,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         db = new StoicDatabase(this);
         sp = PreferenceManager.getDefaultSharedPreferences(this);
         themeColors = new ThemeColors();
-        themeWords = new ThemeWords();
+        themeText = new ThemeText();
         font = Typeface.createFromAsset(getAssets(), "font-awesome-5-free-regular-400.otf");
 
         if (!sp.getBoolean("resetDatabaseOnStart", false)) {  // '!' to always reset
@@ -76,6 +78,13 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     public void onFragmentInteraction(Uri uri){
         //you can leave it empty
     }
+
+    /*
+    void setColorTheme(int id) { themeColors = new ThemeColors(id); }
+    void setTextTheme(int id) { themeText = new ThemeText(id); }
+    */
+    void setNextColorTheme() { themeColors = new ThemeColors((themeColors.id % (NUM_COLOR_THEMES)) + 1); }
+    void setNextTextTheme() { themeText = new ThemeText((themeText.id % (NUM_TEXT_THEMES)) + 1); }
 
     /*
      * BEGIN Database accessors
@@ -272,7 +281,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
          * Base constructor should get the themeId preference and loads the values associated
          */
         ThemeColors() {
-            this(sp.getInt("themeId", new Random().nextInt(2) + 1));
+            this(sp.getInt("colorThemeId", 1));
         }
 
         /**
@@ -283,10 +292,11 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         ThemeColors(Integer themeId) {
             id = themeId;  // Need to do validation on the number
             Integer cCGB, cCGF, cCBB, cCBF, aCB;
+            String n = null;
             cCGB = cCGF = cCBB = cCBF = aCB = null;
 
-            name = getText(getResources().getIdentifier(sfmt("theme_%02d_name"),"string", BuildConfig.APPLICATION_ID)).toString();
             try {
+                n = getText(getResources().getIdentifier(sfmt("theme_%02d_name"),"string", BuildConfig.APPLICATION_ID)).toString();
                 cCGB = getResources().getIdentifier(sfmt("theme_%02d_bg_good"),"color", BuildConfig.APPLICATION_ID);
                 cCGF = getResources().getIdentifier(sfmt("theme_%02d_fg_good"),"color", BuildConfig.APPLICATION_ID);
                 cCBB = getResources().getIdentifier(sfmt("theme_%02d_bg_bad"),"color", BuildConfig.APPLICATION_ID);
@@ -295,6 +305,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             } catch (Resources.NotFoundException e) {
                 Log.d("Exception", e.getMessage());  // Report to user?
             } finally {
+                name = n;
                 choiceColorGoodBg = cCGB;
                 choiceColorGoodFg = cCGF;
                 choiceColorBadBg = cCBB;
@@ -316,7 +327,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     /**
      * Class container for all customizable UI element text
      */
-    class ThemeWords {
+    class ThemeText {
         final Integer id;
         final String name;
         final String prompt;
@@ -328,8 +339,8 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         /**
          * Base constructor should get the themeId preference and loads the values associated
          */
-        ThemeWords() {
-            this(sp.getInt("themeId", new Random().nextInt(2) + 1));
+        ThemeText() {
+            this(sp.getInt("textThemeId", new Random().nextInt(NUM_TEXT_THEMES) + 1));
         }
 
         /**
@@ -337,7 +348,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
          * Note: using temp vars to deal with final vars and possible exceptions
          * @param themeId Integer the themeColors in the resources to load
          */
-        ThemeWords(Integer themeId) {
+        ThemeText(Integer themeId) {
             id = themeId;  // Need to do validation on the number
             String n, p, cTG, cTB, cTDS, cTDU;
             n = p = cTG = cTB = cTDS = cTDU = null;

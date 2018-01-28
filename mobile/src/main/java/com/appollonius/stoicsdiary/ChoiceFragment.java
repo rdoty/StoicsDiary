@@ -41,7 +41,14 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
         // Required empty public constructor
     }
 
+    /**
+     * Convenience to declutter some calls above
+     * @return Theme object from the activity
+     */
+    private StoicActivity.ThemeColors getTC() { return ((StoicActivity)getActivity()).themeColors; }
+    private StoicActivity.ThemeText getTW() { return ((StoicActivity)getActivity()).themeText; }
     private ContentValues selectedDayValues;
+
     private static final String ARG_PARAM1 = "param1";
     private String mParam1;
     /**
@@ -128,16 +135,16 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
      * This includes default colors, text prompts, maybe user-provided text, too.
      */
     private void initializeTheme() {
-        ((TextView)getActivity().findViewById(R.id.TEXT_PROMPT)).setText(((StoicActivity)getActivity()).themeWords.prompt);
-        ((Button)getActivity().findViewById(R.id.BUTTON_YES)).setText(((StoicActivity)getActivity()).themeWords.choiceTextGood);
-        ((Button)getActivity().findViewById(R.id.BUTTON_YES)).setTextColor(((StoicActivity)getActivity()).themeColors.choiceColorGoodFg);
-        //((Button)v.findViewById(R.id.BUTTON_YES)).setBackgroundColor(themeColors.choiceColorGoodBg);  // Need to modify tint not color
+        ((TextView)getView(R.id.TEXT_PROMPT)).setText(getTW().prompt);
+        ((TextView)getView(R.id.TEXT_QUOTE)).setText(getQuote(null));
 
-        ((Button)getActivity().findViewById(R.id.BUTTON_NO)).setText(((StoicActivity)getActivity()).themeWords.choiceTextBad);
-        ((Button)getActivity().findViewById(R.id.BUTTON_NO)).setTextColor(((StoicActivity)getActivity()).themeColors.choiceColorBadFg);
-        //((Button)v.findViewById(R.id.BUTTON_NO)).setBackgroundColor(themeColors.choiceColorBadBg);  // Need to modify tint not color
+        ((Button)getView(R.id.BUTTON_YES)).setText(getTW().choiceTextGood);
+        ((Button)getView(R.id.BUTTON_YES)).setTextColor(getTC().choiceColorGoodFg);
+        //((Button)getView(R.id.BUTTON_YES)).getBackground().setColorFilter(getTC().choiceColorGoodBg, PorterDuff.Mode.DST_OUT);
 
-        ((TextView)getActivity().findViewById(R.id.TEXT_DEBUG)).setText(getQuote(null));
+        ((Button)getView(R.id.BUTTON_NO)).setText(getTW().choiceTextBad);
+        ((Button)getView(R.id.BUTTON_NO)).setTextColor(getTC().choiceColorBadFg);
+        //((Button)getView(R.id.BUTTON_NO)).getBackground().setColorFilter(getTC().choiceColorBadBg, PorterDuff.Mode.DST_OUT);
     }
 
     /**
@@ -154,8 +161,9 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
      * @param quoteId Integer if null, gets a random quote
      * @return String the quote to display
      */
+    @NonNull
     private String getQuote(@Nullable Integer quoteId) {
-        final int NUM_QUOTES = 5;  // Figure count out dynamically
+        final int NUM_QUOTES = 6;  // Figure count out dynamically
         if (null == quoteId)
             quoteId = new Random().nextInt(NUM_QUOTES) + 1;
         String num = String.format(Locale.US, "%02d", quoteId);
@@ -206,15 +214,16 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
     }
 
     private void onClickFeelsSave() {
-        Boolean success = ((StoicActivity)getActivity()).writeDayFeels(
-                getSelectedCalendarDate(),
-                ((EditText)getActivity().findViewById(R.id.EDIT_FEELS)).getText().toString()
+        Boolean success = ((StoicActivity)getActivity()).writeDayFeels(getCalendarSelectedDate(),
+                ((EditText)getView(R.id.EDIT_FEELS)).getText().toString()
         );
         updateUI(success);
     }
 
     private void onClickFeelsTweet() {
-
+        ((StoicActivity)getActivity()).setNextColorTheme();  // For testing themes
+        ((StoicActivity)getActivity()).setNextTextTheme();  // For testing themes
+        initializeTheme();
     }
 
     /**
@@ -225,39 +234,38 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
      */
     private void updateUI(Boolean writeSuccessful) {
         String logFormat = "Write %s - Date %s (%s), %s updates";
-        Boolean enableChoice = true;
+        Boolean isChoiceEnabled = true;
         Boolean isChoiceSet;
 
-        selectedDayValues = ((StoicActivity)getActivity()).getChoice(getSelectedCalendarDate());
+        selectedDayValues = ((StoicActivity)getActivity()).getChoice(getCalendarSelectedDate());
         // Get references to all the controls we'll be updating
         RadioGroup radioGroupChoices = getActivity().findViewById(R.id.GROUP_CHOICES);
         EditText editTextFeels = getActivity().findViewById(R.id.EDIT_FEELS);
         RadioButton buttonYes = getActivity().findViewById(R.id.BUTTON_YES);
         RadioButton buttonNo = getActivity().findViewById(R.id.BUTTON_NO);
 
+        // Clean up the radio button logic here
         radioGroupChoices.clearCheck();  // Clear previous selection in case choice not set
-
         isChoiceSet = selectedDayValues.getAsBoolean("isSet");
         if (isChoiceSet) {  // Check the proper choice, also confirm whether we can change it
-            enableChoice = selectedDayValues.getAsBoolean("isMutable");
+            isChoiceEnabled = selectedDayValues.getAsBoolean("isMutable");
             radioGroupChoices.check(selectedDayValues.getAsBoolean(StoicActivity.COLUMN_CHOICE) ? R.id.BUTTON_YES : R.id.BUTTON_NO);
         }
         for (View child: Util.getAllChildren(radioGroupChoices)) {
-            child.setEnabled(enableChoice);
+            child.setEnabled(isChoiceEnabled);
         }
-        // Consider doing this (but simplify logic)
         buttonYes.setText(
-                (enableChoice
-                        ? ((StoicActivity)getActivity()).themeWords.choiceTextGood
+                (isChoiceEnabled
+                        ? getTW().choiceTextGood
                         : buttonYes.isChecked()
-                            ? ((StoicActivity)getActivity()).themeWords.choiceTextDisabledSelected
-                            : ((StoicActivity)getActivity()).themeWords.choiceTextDisabledUnselected));
+                            ? getTW().choiceTextDisabledSelected
+                            : getTW().choiceTextDisabledUnselected));
         buttonNo.setText(
-                (enableChoice
-                        ? ((StoicActivity)getActivity()).themeWords.choiceTextBad
+                (isChoiceEnabled
+                        ? ((StoicActivity)getActivity()).themeText.choiceTextBad
                         : buttonNo.isChecked()
-                            ? ((StoicActivity)getActivity()).themeWords.choiceTextDisabledSelected
-                            : ((StoicActivity)getActivity()).themeWords.choiceTextDisabledUnselected));
+                            ? getTW().choiceTextDisabledSelected
+                            : getTW().choiceTextDisabledUnselected));
 
         Integer hintResource = isChoiceSet ? R.string.feels_prompt_enabled : R.string.feels_prompt_disabled;
         editTextFeels.setHint(getText(hintResource));
@@ -277,9 +285,15 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
      *
      * @return Long the date currently selected in the calendar UI
      */
-    private Long getSelectedCalendarDate() {
-        CalendarView calendarView = getActivity().findViewById(R.id.history);
-        return calendarView.getDate();
+    @NonNull
+    private Long getCalendarSelectedDate() {
+        return ((CalendarView)getView(R.id.history)).getDate();
+    }
+    private void setFeelsText(String text) {
+        ((EditText)getView(R.id.EDIT_FEELS)).setText(text);
+    }
+    private void setDebugText(String text) {
+        ((TextView)getView(R.id.TEXT_DEBUG)).setText(text);
     }
 
     /**
@@ -288,13 +302,15 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
      * @return Boolean success of write
      */
     private Boolean writeSelectedValue(Boolean value) {
-        return ((StoicActivity)getActivity()).writeDayValue(getSelectedCalendarDate(), value);
+        return ((StoicActivity)getActivity()).writeDayValue(getCalendarSelectedDate(), value);
     }
 
-    private void setFeelsText(String text) {
-        ((EditText)getActivity().findViewById(R.id.EDIT_FEELS)).setText(text);
-    }
-    private void setDebugText(String text) {
-        ((TextView)getActivity().findViewById(R.id.TEXT_DEBUG)).setText(text);
+    /**
+     * Convenience to declutter some calls above
+     * @param id Integer of the control's ID
+     * @return View what we got - would be nice if this was the actual inherited type returned
+     */
+    private View getView(Integer id) {
+        return getActivity().findViewById(id);
     }
 }
