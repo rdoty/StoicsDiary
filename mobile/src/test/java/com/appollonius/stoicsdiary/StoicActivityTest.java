@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import java.time.LocalDateTime;
 
+import com.appollonius.stoicsdiary.StoicActivity.Util;
 import static org.junit.Assert.*;
 
 /**
@@ -15,6 +16,7 @@ import static org.junit.Assert.*;
  */
 public class StoicActivityTest {
     private StoicActivity activity;
+    private Util util;
 
     @Before
     public void setUp() throws Exception {
@@ -28,7 +30,7 @@ public class StoicActivityTest {
     @Test
     public void testGetLongVal() throws Exception {
         LocalDateTime zdt = LocalDateTime.of(2018,1,1,0,0,0);
-        assertEquals(activity.getLongVal(zdt), activity.getLongVal(2018, 1, 1));
+        assertEquals(Util.getLongVal(zdt), Util.getLongVal(2018, 1, 1));
     }
 
     @Test

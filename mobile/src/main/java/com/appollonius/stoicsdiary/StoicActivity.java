@@ -78,38 +78,6 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     }
 
     /*
-     * UTILITY METHODS BELOW
-     * Mostly shared code called from fragments
-     */
-
-    /**
-     * Modified from stackoverflow
-     * @param v View
-     * @return ArrayList of children
-     */
-    public ArrayList<View> getAllChildren(View v) {
-        if (!(v instanceof ViewGroup)) {
-            ArrayList<View> viewArrayList = new ArrayList<>();
-            viewArrayList.add(v);
-            return viewArrayList;
-        }
-
-        ViewGroup vg = (ViewGroup) v;
-        ArrayList<View> childViewList = new ArrayList<>();
-
-        for (int i = 0; i < vg.getChildCount(); i++) {
-            ArrayList<View> viewArrayList = new ArrayList<>();
-
-            View child = vg.getChildAt(i);
-            viewArrayList.add(v);
-            viewArrayList.addAll(getAllChildren(child));
-
-            childViewList.addAll(viewArrayList);
-        }
-        return childViewList;
-    }
-
-    /*
      * BEGIN Database accessors
      */
 
@@ -175,7 +143,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         Boolean didWriteSucceed = false;
 
         newValues.put(COLUMN_CHOICE, theChoice);
-        newValues.put(COLUMN_UPDATE_DATE, getLongVal(LocalDateTime.now()));
+        newValues.put(COLUMN_UPDATE_DATE, Util.getLongVal(LocalDateTime.now()));
 
         if (oldValues.size() > 0) {  // Update
             final short updates = Short.valueOf(oldValues.getAsString(COLUMN_UPDATE_COUNT));
@@ -223,7 +191,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
      * @return Long Date of the first entry in the database
      */
     Long getEarliestEntryDate() {
-        Long earliestDate = getLongVal(2018, 1, 2); // Hardcode for testing
+        Long earliestDate = Util.getLongVal(2018, 1, 2); // Hardcode for testing
         SQLiteDatabase dbr = db.getReadableDatabase();
         Cursor c = dbr.query(StoicActivity.TABLE_BASE, new String[] { String.format("min(%s)", COLUMN_DAY) },
                 null, null,null, null, null);
@@ -231,25 +199,6 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         //earliestDate = c.getLong(0);  // This should be from DB
         c.close();
         return earliestDate;
-    }
-
-    /**
-     *
-     * @param year int
-     * @param month int 1-12
-     * @param dayOfMonth int 1-31
-     * @return Long the date munged appropriately
-     */
-    Long getLongVal(int year, int month, int dayOfMonth) {
-        return getLongVal(LocalDateTime.of(year, month, dayOfMonth, 0, 0));
-    }
-    /**
-     * Use this to get the value we set the calendar to and the one we store in the DB
-     * @param ldt LocalDateTime an object we're using to get the expected value
-     * @return Long the date munged appropriately
-     */
-    Long getLongVal(LocalDateTime ldt) {
-        return ldt.atZone(ZoneOffset.systemDefault()).toInstant().toEpochMilli(); //.truncatedTo(ChronoUnit.DAYS)
     }
 
     /**
@@ -419,6 +368,62 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
          */
         private String sfmt(String stringFormat) {
             return String.format(Locale.US, stringFormat, this.id);
+        }
+    }
+
+    /**
+     * UTILITY METHODS BELOW
+     * Mostly shared code called from fragments
+     */
+    static class Util {
+        Util() {
+
+        }
+
+        /**
+         * Modified from stackoverflow
+         * @param v View
+         * @return ArrayList of children
+         */
+        static ArrayList<View> getAllChildren(View v) {
+            if (!(v instanceof ViewGroup)) {
+                ArrayList<View> viewArrayList = new ArrayList<>();
+                viewArrayList.add(v);
+                return viewArrayList;
+            }
+
+            ViewGroup vg = (ViewGroup) v;
+            ArrayList<View> childViewList = new ArrayList<>();
+
+            for (int i = 0; i < vg.getChildCount(); i++) {
+                ArrayList<View> viewArrayList = new ArrayList<>();
+
+                View child = vg.getChildAt(i);
+                viewArrayList.add(v);
+                viewArrayList.addAll(getAllChildren(child));
+
+                childViewList.addAll(viewArrayList);
+            }
+            return childViewList;
+        }
+
+        /**
+         *
+         * @param year int
+         * @param month int 1-12
+         * @param dayOfMonth int 1-31
+         * @return Long the date munged appropriately
+         */
+        static Long getLongVal(int year, int month, int dayOfMonth) {
+            return getLongVal(LocalDateTime.of(year, month, dayOfMonth, 0, 0));
+        }
+        /**
+         * Use this to get the value we set the calendar to and the one we store in the DB
+         * @param ldt LocalDateTime an object we're using to get the expected value
+         * @return Long the date munged appropriately
+         */
+        static Long getLongVal(LocalDateTime ldt) {
+            return ldt.atZone(ZoneOffset.systemDefault()).toInstant().toEpochMilli();
         }
     }
 }
