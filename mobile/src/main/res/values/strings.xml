@@ -24,7 +24,7 @@
     <string name="theme_02_choice_disabled_unselected"> </string>
 
     <string name="theme_03_name">Iconography Theme</string>
-    <string name="theme_03_prompt">Was today fascinating?</string>
+    <string name="theme_03_prompt">&#129335;</string>
     <string name="theme_03_good">&#x1f44d;</string>
     <string name="theme_03_bad">&#x1f44e;</string>
     <string name="theme_03_choice_disabled_selected">&#x1f512;</string>

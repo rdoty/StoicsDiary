@@ -16,6 +16,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+//import android.support.v4.app.Fragment;
+//import android.support.v4.app.FragmentManager;
+//import android.support.v4.app.FragmentPagerAdapter;
+//import android.support.v4.view.PagerAdapter;
+//import android.support.v4.view.ViewPager;
+//import android.support.design.widget.TabLayout;
+//import android.support.v7.widget.Toolbar;
+//import android.widget.Adapter;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -43,20 +51,55 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     ThemeColors themeColors;
     ThemeText themeText;
     Typeface font;
+//    ViewPager viewPager;
+//    TabLayout tabLayout;
+//    PagerAdapter adapter;
+//
+//    private void initToolbar() {
+//        Toolbar toolbar = findViewById(R.id.toolbar);
+//        setSupportActionBar(toolbar);
+//        //toolbar.setTitle("Tablayout Demo");
+//    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_stoic);
         db = new StoicDatabase(this);
         sp = PreferenceManager.getDefaultSharedPreferences(this);
         themeColors = new ThemeColors();
         themeText = new ThemeText();
         font = Typeface.createFromAsset(getAssets(), "font-awesome-5-free-regular-400.otf");
 
+//        initToolbar();
+//        tabLayout = findViewById(R.id.tab_layout);
+//        viewPager = findViewById(R.id.view_pager);
+//
+//        adapter = new TabAdapter(getSupportFragmentManager());
+//        viewPager.setAdapter(adapter);
+//        tabLayout.setupWithViewPager(viewPager);
+//
+//        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+//
+//            @Override
+//            public void onTabSelected(TabLayout.Tab tab) {
+//
+//            }
+//
+//            @Override
+//            public void onTabUnselected(TabLayout.Tab tab) {
+//
+//            }
+//
+//            @Override
+//            public void onTabReselected(TabLayout.Tab tab) {
+//
+//            }
+//        });
+//
         if (!sp.getBoolean("resetDatabaseOnStart", false)) {  // '!' to always reset
             rebuildDatabase();  // or truncateTables();
         }
-        setContentView(R.layout.activity_stoic);
 
         FragmentManager fm = getFragmentManager();
         Fragment fragment = fm.findFragmentById(R.id.fragment_choice);
