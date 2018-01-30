@@ -60,6 +60,9 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
     static final String CHOICE_ISMUTABLE = "isMutable";
     static final String CHOICE_DATE = "choiceDate";
     // Information for stored preferences / data / business rules
+    static final String PREF_USERNAME_KEY = "userFirstName";
+    static final String PREF_CUR_TEXT_THEME_KEY = "currentTextTheme";
+    static final String PREF_CUR_COLOR_THEME_KEY = "currentColorTheme";
     static final Integer MAX_CHANGES = 3;
     static final Integer NUM_COLOR_THEMES = 3;  // This along with the strings should live somewhere else
     static final Integer NUM_TEXT_THEMES = 3;  // This along with the strings should live somewhere else
@@ -401,7 +404,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
             emailIntent.setType("text/html");
             emailIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.email_export_subject));
-            emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, Html.fromHtml(getString(R.string.email_export_body), Html.FROM_HTML_MODE_COMPACT));
+            emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, getExportEmailBody());
             emailIntent.putExtra(Intent.EXTRA_STREAM, path);
             startActivity(Intent.createChooser(emailIntent, getText(R.string.email_export_intent)));
             return true;  // Figure out when it's safe (and simplest way) to clear out the cache
@@ -410,10 +413,32 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
     }
 
     /**
+     * Just returns the content for the body assembled from a number of resources
+     * @return String email body HTML content
+     */
+    String getExportEmailBody() {
+        final String FORMAT_BODY = "<p>%s %s,</p><br/>" +
+                "<p>%s</p><br/>" +
+                "<p>%s</p><br/>" +
+                "<p>%s</p><br/>" +
+                "<p>-- </p><br/>" +
+                "<p>%s</p><br/>"
+                ;
+
+        return Html.fromHtml(String.format(FORMAT_BODY,
+                getString(R.string.email_export_salutation),
+                sp.getString(PREF_USERNAME_KEY, getString(R.string.email_export_name_unknown)),
+                Html.fromHtml(getString(R.string.email_export_body), Html.FROM_HTML_MODE_COMPACT).toString(),
+                getString(R.string.email_export_closing),
+                String.format("%s %s", getString(R.string.email_export_signature), getString(R.string.app_name)),
+                ((ChoiceFragment)getFragmentManager().findFragmentById(R.id.fragment_choice)).getQuote()
+                ), Html.FROM_HTML_MODE_COMPACT).toString();
+    }
+
+    /**
      * Class container for all customizable UI element colors
      */
     class ThemeColors {
-        static final String CURRENT_COLOR_THEME = "currentColorTheme";
         final Integer id;
         final String name;
         final Integer choiceColorGoodBg;
@@ -426,7 +451,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
          * Base constructor should get the themeId preference and loads the values associated
          */
         ThemeColors() {
-            this(sp.getInt(CURRENT_COLOR_THEME, new Random().nextInt(NUM_COLOR_THEMES) + 1));
+            this(sp.getInt(PREF_CUR_COLOR_THEME_KEY, new Random().nextInt(NUM_COLOR_THEMES) + 1));
         }
 
         /**
@@ -473,7 +498,6 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
      * Class container for all customizable UI element text
      */
     class ThemeText {
-        static final String CURRENT_TEXT_THEME = "currentTextTheme";
         final Integer id;
         final String name;
         final String prompt;
@@ -486,7 +510,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
          * Base constructor should get the themeId preference and loads the values associated
          */
         ThemeText() {
-            this(sp.getInt(CURRENT_TEXT_THEME, new Random().nextInt(NUM_TEXT_THEMES) + 1));
+            this(sp.getInt(PREF_CUR_TEXT_THEME_KEY, new Random().nextInt(NUM_TEXT_THEMES) + 1));
         }
 
         /**

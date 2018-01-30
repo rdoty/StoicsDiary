@@ -161,7 +161,7 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
      * @return String the quote to display
      */
     @NonNull
-    private String getQuote() {
+    public String getQuote() {
         return getQuote(new Random().nextInt(StoicActivity.NUM_QUOTES) + 1);
     }
 

@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <cache-path name="export_data.csv*" path="." />
+    <cache-path name="sd_*.csv" path="." />
 </paths>
