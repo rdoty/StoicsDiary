@@ -7,6 +7,7 @@ import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -25,14 +26,21 @@ import android.view.ViewGroup;
 //import android.support.v7.widget.Toolbar;
 //import android.widget.Adapter;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Random;
 
-
-public class StoicActivity extends AppCompatActivity implements ChoiceFragment.OnFragmentInteractionListener {
+/**
+ * This is the MainActivity
+ */
+public class StoicActivity extends AppCompatActivity implements PageFragment.OnFragmentInteractionListener,
+        ChoiceFragment.OnFragmentInteractionListener {
 
     static final String TABLE_BASE = "diary";
     static final String TABLE_DESC = "feels";
@@ -97,7 +105,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
 //            }
 //        });
 //
-        if (!sp.getBoolean("resetDatabaseOnStart", false)) {  // '!' to always reset
+        if (sp.getBoolean("resetDatabaseOnStart", false)) {
             rebuildDatabase();  // or truncateTables();
         }
 
@@ -107,7 +115,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             fragment = new ChoiceFragment();
 
             FragmentTransaction ft = fm.beginTransaction();
-            ft.add(R.id.fragment_choice, fragment, "fragment_choice");
+            ft.add(R.id.fragment_choice, fragment, getString(R.string.fragment_choice));
             ft.commit();
         }
     }
@@ -304,9 +312,60 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     }
     */
 
+    ArrayList<ContentValues> getExportData() {
+        String[] SELECT_COLS = new String[] {TABLE_BASE+".id", COLUMN_DAY, COLUMN_CHOICE, COLUMN_WORDS};
+        String Q_SELECT = String.format("SELECT %s FROM %s LEFT OUTER JOIN %s ON %s.%s=%s.%s;",
+                String.join(",", SELECT_COLS),
+                TABLE_BASE, TABLE_DESC, TABLE_DESC, COLUMN_DESC_F_KEY, TABLE_BASE, "id");
+
+        SQLiteDatabase dbr = db.getReadableDatabase();
+
+        Cursor cursor = dbr.rawQuery(Q_SELECT,null);
+        ArrayList<ContentValues> retVal = new ArrayList<>();
+        ContentValues map;
+
+        while (cursor.moveToNext()) {
+            map = new ContentValues();
+            DatabaseUtils.cursorRowToContentValues(cursor, map);
+            retVal.add(map);
+        }
+        cursor.close();
+        return retVal;
+    }
     /*
      * END Database accessors
      */
+
+    /**
+     *
+     * @return String filename, null if failure
+     */
+    String exportToCSV() {
+        final String EXPORT_FILENAME = "export_data.csv";
+        PrintWriter csvWriter;
+        File tempFile;
+        ArrayList<ContentValues> exportData;
+
+        try {
+            exportData = getExportData();
+            tempFile = File.createTempFile(EXPORT_FILENAME, null, getApplicationContext().getCacheDir());
+            csvWriter = new  PrintWriter(new FileWriter(tempFile,false));
+            csvWriter.printf("%s, %s, %s\r\n", COLUMN_DAY, COLUMN_CHOICE, COLUMN_WORDS);
+            for (ContentValues data : exportData) {
+                String output = String.format("%s, %s, \"%s\"\r\n",
+                        data.getAsString(COLUMN_DAY),
+                        data.getAsString(COLUMN_CHOICE),
+                        data.getAsString(COLUMN_WORDS));
+                csvWriter.print(output);
+                Log.d("DEBUG", output);
+            }
+            csvWriter.close();
+            return tempFile.getName();
+        } catch(IOException e) {
+            Log.d("ERROR", e.getMessage());
+        }
+        return null;
+    }
 
     /**
      * Class container for all customizable UI element colors

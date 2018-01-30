@@ -7,6 +7,7 @@
 
     <!-- Fragment text -->
     <string name="fragment_choice">Choice fragment</string>
+    <string name="fragment_page">Page fragment</string>
 
     <!-- Themed strings -->
     <string name="theme_01_name">Basic Text Theme</string>
@@ -35,12 +36,12 @@
     <string name="feels_prompt_disabled">Write your thoughts on this day&#8230;\nonce you make your choice.</string>
     <string name="feels_save">Save</string>
 
-    <string name="quote_01">“If you are distressed by anything external, the pain is not due to the thing itself, but to your estimate of it; and this you have the power to revoke at any moment.”\n― Marcus Aurelius, Meditations</string>
-    <string name="quote_02">“Never let the future disturb you. You will meet it, if you have to, with the same weapons of reason which today arm you against the present.”\n― Marcus Aurelius, Meditations</string>
-    <string name="quote_03">“Complaining does not work as a strategy. We all have finite time and energy. Any time we spend whining is unlikely to help us achieve our goals. And it won\'t make us happier.”\n― Randy Pausch, The Last Lecture</string>
-    <string name="quote_04">“It is the power of the mind to be unconquerable.”\n― Seneca</string>
-    <string name="quote_05">“Until we have begun to go without them, we fail to realize how unnecessary many things are. We\'ve been using them not because we needed them but because we had them.”  ― Seneca, Letters from a Stoic</string>
-    <string name="quote_06">“It is more necessary for the soul to be cured than the body; for it is better to die than to live badly.”\n― Epictetus</string>
+    <string name="quote_01">“If you are distressed by anything external, the pain is not due to the thing itself, but to your estimate of it; and this you have the power to revoke at any moment.”\n ― Marcus Aurelius, Meditations</string>
+    <string name="quote_02">“Never let the future disturb you. You will meet it, if you have to, with the same weapons of reason which today arm you against the present.”\n ― Marcus Aurelius, Meditations</string>
+    <string name="quote_03">“Complaining does not work as a strategy. We all have finite time and energy. Any time we spend whining is unlikely to help us achieve our goals. And it won\'t make us happier.”\n ― Randy Pausch, The Last Lecture</string>
+    <string name="quote_04">“It is the power of the mind to be unconquerable.”\n ― Seneca</string>
+    <string name="quote_05">“Until we have begun to go without them, we fail to realize how unnecessary many things are. We\'ve been using them not because we needed them but because we had them.”\n ― Seneca, Letters from a Stoic</string>
+    <string name="quote_06">“It is more necessary for the soul to be cured than the body; for it is better to die than to live badly.”\n ― Epictetus</string>
 
     <!-- Strings related to Settings -->
 

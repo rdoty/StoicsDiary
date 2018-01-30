@@ -224,6 +224,7 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
         ((StoicActivity)getActivity()).setNextColorTheme();  // For testing themes
         ((StoicActivity)getActivity()).setNextTextTheme();  // For testing themes
         initializeTheme();
+        Log.d("DEBUG", ((StoicActivity)getActivity()).exportToCSV());
     }
 
     /**
@@ -245,6 +246,7 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
         RadioButton buttonNo = getActivity().findViewById(R.id.BUTTON_NO);
 
         // Clean up the radio button logic here
+        // TODO Consider hiding the unselected choice button once the choice is locked
         radioGroupChoices.clearCheck();  // Clear previous selection in case choice not set
         isChoiceSet = selectedDayValues.getAsBoolean("isSet");
         if (isChoiceSet) {  // Check the proper choice, also confirm whether we can change it
@@ -267,6 +269,7 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
                             ? getTW().choiceTextDisabledSelected
                             : getTW().choiceTextDisabledUnselected));
 
+        // Set the other controls to their proper state
         Integer hintResource = isChoiceSet ? R.string.feels_prompt_enabled : R.string.feels_prompt_disabled;
         editTextFeels.setHint(getText(hintResource));
         editTextFeels.setEnabled(isChoiceSet);
