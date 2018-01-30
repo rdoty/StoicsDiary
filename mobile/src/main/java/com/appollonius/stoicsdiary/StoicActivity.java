@@ -33,6 +33,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -349,25 +351,33 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
      */
 
     /**
-     *
+     * Export database fields into more friendly CSV format
+     * For export, format date as yyyy-mm-dd, choice as 1 / -1, words null value as empty string
      * @return File filename, null if failure
      */
     File exportToCSVFile() {
-        final String EXPORT_FILENAME = "export_data.csv";
+        final String EXPORT_FILENAME = "sd_";
+        final String HEADER_DATE = "Date";
+        final String HEADER_CHOICE = "Choice";
+        final String HEADER_WORDS = "Words";
+        final String FILE_TYPE = ".csv";
         PrintWriter csvWriter;
         File tempFile;
         ArrayList<ContentValues> exportData;
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd", Locale.getDefault());
 
         try {
             exportData = getExportData();
-            tempFile = File.createTempFile(EXPORT_FILENAME, null, getApplicationContext().getCacheDir());
-            csvWriter = new  PrintWriter(new FileWriter(tempFile,false));
-            csvWriter.printf("%s, %s, %s\r\n", COLUMN_DAY, COLUMN_CHOICE, COLUMN_WORDS);
+            // Move this from a tempfile (random filename) to internal storage with a fixed name overwritten
+            tempFile = File.createTempFile(EXPORT_FILENAME, FILE_TYPE, getApplicationContext().getCacheDir());
+            csvWriter = new PrintWriter(new FileWriter(tempFile,false));
+            csvWriter.printf("%s, %s, %s\r\n", HEADER_DATE, HEADER_CHOICE, HEADER_WORDS);
             for (ContentValues data : exportData) {
+                Date date = new Date(data.getAsLong(COLUMN_DAY));
                 String output = String.format("%s, %s, \"%s\"\r\n",
-                        data.getAsString(COLUMN_DAY),
+                        dateFormat.format(date),
                         data.getAsString(COLUMN_CHOICE).equals("1") ? "1" : "-1",
-                        data.getAsString(COLUMN_WORDS));
+                        data.getAsString(COLUMN_WORDS) == null ? "" : data.getAsString(COLUMN_WORDS));
                 csvWriter.print(output);
                 Log.d("EXPORT_ROW", output);
             }
