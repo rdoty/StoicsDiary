@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -13,7 +14,9 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -314,9 +317,9 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
 
     ArrayList<ContentValues> getExportData() {
         String[] SELECT_COLS = new String[] {TABLE_BASE+".id", COLUMN_DAY, COLUMN_CHOICE, COLUMN_WORDS};
-        String Q_SELECT = String.format("SELECT %s FROM %s LEFT OUTER JOIN %s ON %s.%s=%s.%s;",
+        String Q_SELECT = String.format("SELECT %s FROM %s LEFT OUTER JOIN %s ON %s.%s=%s.%s ORDER BY %s;",
                 String.join(",", SELECT_COLS),
-                TABLE_BASE, TABLE_DESC, TABLE_DESC, COLUMN_DESC_F_KEY, TABLE_BASE, "id");
+                TABLE_BASE, TABLE_DESC, TABLE_DESC, COLUMN_DESC_F_KEY, TABLE_BASE, "id", COLUMN_DAY);
 
         SQLiteDatabase dbr = db.getReadableDatabase();
 
@@ -338,9 +341,9 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
 
     /**
      *
-     * @return String filename, null if failure
+     * @return File filename, null if failure
      */
-    String exportToCSV() {
+    File exportToCSVFile() {
         final String EXPORT_FILENAME = "export_data.csv";
         PrintWriter csvWriter;
         File tempFile;
@@ -357,14 +360,35 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
                         data.getAsString(COLUMN_CHOICE),
                         data.getAsString(COLUMN_WORDS));
                 csvWriter.print(output);
-                Log.d("DEBUG", output);
+                Log.d("EXPORT_ROW", output);
             }
             csvWriter.close();
-            return tempFile.getName();
+            return tempFile;
         } catch(IOException e) {
             Log.d("ERROR", e.getMessage());
         }
         return null;
+    }
+
+    /**
+     * Generates a CSV file, then opens the configured email client with the file attachment
+     * @return Boolean whether the activity returned successfully. Need to try/catch to confirm tho
+     */
+    Boolean exportToEmail() {
+        File csvFile = exportToCSVFile();
+        String emailBody = "<b>Attached is the data in CSV format.</b>";
+        if (csvFile != null) {
+            Uri path = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".provider", csvFile);
+            Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
+            emailIntent.setType("text/html");
+            emailIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Stoic Diary History");
+            emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, Html.fromHtml(emailBody, Html.FROM_HTML_MODE_COMPACT));
+            emailIntent.putExtra(Intent.EXTRA_STREAM, path);
+            startActivity(Intent.createChooser(emailIntent, "Email to Friend"));
+            return true;
+        }
+        return false;
     }
 
     /**

@@ -136,7 +136,7 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
      */
     private void initializeTheme() {
         ((TextView)getView(R.id.TEXT_PROMPT)).setText(getTW().prompt);
-        ((TextView)getView(R.id.TEXT_QUOTE)).setText(getQuote(null));
+        ((TextView)getView(R.id.TEXT_QUOTE)).setText(getQuote());
 
         ((Button)getView(R.id.BUTTON_YES)).setText(getTW().choiceTextGood);
         ((Button)getView(R.id.BUTTON_YES)).setTextColor(getTC().choiceColorGoodFg);
@@ -157,15 +157,22 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
     }
 
     /**
-     * Grabs a quote from the resource
+     * Grabs a random quote from the resource file
+     * @return String the quote to display
+     */
+    @NonNull
+    private String getQuote() {
+        final int NUM_QUOTES = 6;  // Figure count out dynamically
+        return getQuote(new Random().nextInt(NUM_QUOTES) + 1);
+    }
+
+    /**
+     * Grabs a specific quote from the resource file
      * @param quoteId Integer if null, gets a random quote
      * @return String the quote to display
      */
     @NonNull
-    private String getQuote(@Nullable Integer quoteId) {
-        final int NUM_QUOTES = 6;  // Figure count out dynamically
-        if (null == quoteId)
-            quoteId = new Random().nextInt(NUM_QUOTES) + 1;
+    private String getQuote(Integer quoteId) {
         String num = String.format(Locale.US, "%02d", quoteId);
         return this.getText(getResources().getIdentifier("quote_" + num,"string", BuildConfig.APPLICATION_ID)).toString();
     }
@@ -224,7 +231,7 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
         ((StoicActivity)getActivity()).setNextColorTheme();  // For testing themes
         ((StoicActivity)getActivity()).setNextTextTheme();  // For testing themes
         initializeTheme();
-        Log.d("DEBUG", ((StoicActivity)getActivity()).exportToCSV());
+        Log.d("EXPORT_EMAIL", Boolean.toString(((StoicActivity)getActivity()).exportToEmail()));
     }
 
     /**
