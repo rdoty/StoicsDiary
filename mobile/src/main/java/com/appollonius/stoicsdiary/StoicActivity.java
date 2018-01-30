@@ -44,7 +44,7 @@ import java.util.Random;
  */
 public class StoicActivity extends AppCompatActivity implements PageFragment.OnFragmentInteractionListener,
         ChoiceFragment.OnFragmentInteractionListener {
-
+    // Database fields
     static final String TABLE_BASE = "diary";
     static final String TABLE_DESC = "feels";
     static final String COLUMN_DAY = "time_stamp";
@@ -53,15 +53,23 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
     static final String COLUMN_UPDATE_COUNT = "update_count";
     static final String COLUMN_DESC_F_KEY = "diary_id";
     static final String COLUMN_WORDS = "words";
+    // Fields used between activities/fragments
+    static final String CHOICE_ISSET = "isSet";
+    static final String CHOICE_ISMUTABLE = "isMutable";
+    static final String CHOICE_DATE = "choiceDate";
+    // Information for stored preferences / data / business rules
     static final Integer MAX_CHANGES = 3;
     static final Integer NUM_COLOR_THEMES = 3;  // This along with the strings should live somewhere else
     static final Integer NUM_TEXT_THEMES = 3;  // This along with the strings should live somewhere else
+    static final Integer NUM_QUOTES = 6;  // Figure count out dynamically
 
+    // Major internal components
     private StoicDatabase db;
     SharedPreferences sp;
     ThemeColors themeColors;
     ThemeText themeText;
     Typeface font;
+
 //    ViewPager viewPager;
 //    TabLayout tabLayout;
 //    PagerAdapter adapter;
@@ -133,7 +141,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
         //you can leave it empty
     }
 
-    /*
+    /* Unused currently. Called when user selects in preferences? Or just call updateUI?
     void setColorTheme(int id) { themeColors = new ThemeColors(id); }
     void setTextTheme(int id) { themeText = new ThemeText(id); }
     */
@@ -153,15 +161,15 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
         ContentValues dayValues = readDayValues(date);
         ContentValues dayChoice = new ContentValues();
         if (dayValues.size() > 0) {  // Update
-            dayChoice.put("isSet", true);
-            dayChoice.put("isMutable", dayValues.getAsInteger(COLUMN_UPDATE_COUNT) < MAX_CHANGES);
+            dayChoice.put(CHOICE_ISSET, true);
+            dayChoice.put(CHOICE_ISMUTABLE, dayValues.getAsInteger(COLUMN_UPDATE_COUNT) < MAX_CHANGES);
             dayChoice.put(COLUMN_UPDATE_COUNT, dayValues.getAsInteger(COLUMN_UPDATE_COUNT));
             dayChoice.put(COLUMN_CHOICE, dayValues.getAsBoolean(COLUMN_CHOICE));
             dayChoice.put(COLUMN_WORDS, dayValues.getAsString(COLUMN_WORDS));
         } else {
-            dayChoice.put("isSet", false);
+            dayChoice.put(CHOICE_ISSET, false);
         }
-        dayChoice.put("choiceDate", date);
+        dayChoice.put(CHOICE_DATE, date);
         return dayChoice;
     }
 
@@ -172,7 +180,8 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
      */
     ContentValues readDayValues(Long date) {
         String[] SELECT_COLS = new String[] {TABLE_BASE+".id", COLUMN_CHOICE, COLUMN_UPDATE_DATE, COLUMN_UPDATE_COUNT, COLUMN_WORDS};
-        String Q_SELECT = String.format("SELECT %s FROM %s LEFT OUTER JOIN %s ON %s.%s=%s.%s WHERE %s=%s;",
+        String Q_SELECT = String.format(
+                "SELECT %s FROM %s LEFT OUTER JOIN %s ON %s.%s=%s.%s WHERE %s=%s;",
                 String.join(",", SELECT_COLS),
                 TABLE_BASE,
                 TABLE_DESC,
@@ -357,7 +366,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
             for (ContentValues data : exportData) {
                 String output = String.format("%s, %s, \"%s\"\r\n",
                         data.getAsString(COLUMN_DAY),
-                        data.getAsString(COLUMN_CHOICE),
+                        data.getAsString(COLUMN_CHOICE).equals("1") ? "1" : "-1",
                         data.getAsString(COLUMN_WORDS));
                 csvWriter.print(output);
                 Log.d("EXPORT_ROW", output);
@@ -376,17 +385,16 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
      */
     Boolean exportToEmail() {
         File csvFile = exportToCSVFile();
-        String emailBody = "<b>Attached is the data in CSV format.</b>";
         if (csvFile != null) {
             Uri path = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".provider", csvFile);
             Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
             emailIntent.setType("text/html");
             emailIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Stoic Diary History");
-            emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, Html.fromHtml(emailBody, Html.FROM_HTML_MODE_COMPACT));
+            emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.email_export_subject));
+            emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, Html.fromHtml(getString(R.string.email_export_body), Html.FROM_HTML_MODE_COMPACT));
             emailIntent.putExtra(Intent.EXTRA_STREAM, path);
-            startActivity(Intent.createChooser(emailIntent, "Email to Friend"));
-            return true;
+            startActivity(Intent.createChooser(emailIntent, getText(R.string.email_export_intent)));
+            return true;  // Figure out when it's safe (and simplest way) to clear out the cache
         }
         return false;
     }
@@ -395,6 +403,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
      * Class container for all customizable UI element colors
      */
     class ThemeColors {
+        static final String CURRENT_COLOR_THEME = "currentColorTheme";
         final Integer id;
         final String name;
         final Integer choiceColorGoodBg;
@@ -407,7 +416,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
          * Base constructor should get the themeId preference and loads the values associated
          */
         ThemeColors() {
-            this(sp.getInt("colorThemeId", 1));
+            this(sp.getInt(CURRENT_COLOR_THEME, new Random().nextInt(NUM_COLOR_THEMES) + 1));
         }
 
         /**
@@ -422,12 +431,12 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
             cCGB = cCGF = cCBB = cCBF = aCB = null;
 
             try {
-                n = getText(getResources().getIdentifier(sfmt("theme_%02d_name"),"string", BuildConfig.APPLICATION_ID)).toString();
-                cCGB = getResources().getIdentifier(sfmt("theme_%02d_bg_good"),"color", BuildConfig.APPLICATION_ID);
-                cCGF = getResources().getIdentifier(sfmt("theme_%02d_fg_good"),"color", BuildConfig.APPLICATION_ID);
-                cCBB = getResources().getIdentifier(sfmt("theme_%02d_bg_bad"),"color", BuildConfig.APPLICATION_ID);
-                cCBF = getResources().getIdentifier(sfmt("theme_%02d_fg_bad"),"color", BuildConfig.APPLICATION_ID);
-                aCB = getResources().getIdentifier(sfmt("theme_%02d_bg_bad"),"color", BuildConfig.APPLICATION_ID);
+                n = getText(getResources().getIdentifier(sId("theme_%02d_name"),"string", BuildConfig.APPLICATION_ID)).toString();
+                cCGB = getResources().getIdentifier(sId("theme_%02d_bg_good"),"color", BuildConfig.APPLICATION_ID);
+                cCGF = getResources().getIdentifier(sId("theme_%02d_fg_good"),"color", BuildConfig.APPLICATION_ID);
+                cCBB = getResources().getIdentifier(sId("theme_%02d_bg_bad"),"color", BuildConfig.APPLICATION_ID);
+                cCBF = getResources().getIdentifier(sId("theme_%02d_fg_bad"),"color", BuildConfig.APPLICATION_ID);
+                aCB = getResources().getIdentifier(sId("theme_%02d_bg_bad"),"color", BuildConfig.APPLICATION_ID);
             } catch (Resources.NotFoundException e) {
                 Log.d("Exception", e.getMessage());  // Report to user?
             } finally {
@@ -445,7 +454,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
          * @param stringFormat String to be modified
          * @return String to use in getIdentifier
          */
-        private String sfmt(String stringFormat) {
+        private String sId(String stringFormat) {
             return String.format(Locale.US, stringFormat, this.id);
         }
     }
@@ -454,6 +463,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
      * Class container for all customizable UI element text
      */
     class ThemeText {
+        static final String CURRENT_TEXT_THEME = "currentTextTheme";
         final Integer id;
         final String name;
         final String prompt;
@@ -466,7 +476,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
          * Base constructor should get the themeId preference and loads the values associated
          */
         ThemeText() {
-            this(sp.getInt("textThemeId", new Random().nextInt(NUM_TEXT_THEMES) + 1));
+            this(sp.getInt(CURRENT_TEXT_THEME, new Random().nextInt(NUM_TEXT_THEMES) + 1));
         }
 
         /**

@@ -162,8 +162,7 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
      */
     @NonNull
     private String getQuote() {
-        final int NUM_QUOTES = 6;  // Figure count out dynamically
-        return getQuote(new Random().nextInt(NUM_QUOTES) + 1);
+        return getQuote(new Random().nextInt(StoicActivity.NUM_QUOTES) + 1);
     }
 
     /**
@@ -197,9 +196,7 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
             mListener = (OnFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(
-                    String.format("%s must implement OnFragmentInteractionListener",
-                            context.toString())
-            );
+                    String.format("%s must implement OnFragmentInteractionListener", context.toString()));
         }
     }
 
@@ -255,9 +252,9 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
         // Clean up the radio button logic here
         // TODO Consider hiding the unselected choice button once the choice is locked
         radioGroupChoices.clearCheck();  // Clear previous selection in case choice not set
-        isChoiceSet = selectedDayValues.getAsBoolean("isSet");
+        isChoiceSet = selectedDayValues.getAsBoolean(StoicActivity.CHOICE_ISSET);
         if (isChoiceSet) {  // Check the proper choice, also confirm whether we can change it
-            isChoiceEnabled = selectedDayValues.getAsBoolean("isMutable");
+            isChoiceEnabled = selectedDayValues.getAsBoolean(StoicActivity.CHOICE_ISMUTABLE);
             radioGroupChoices.check(selectedDayValues.getAsBoolean(StoicActivity.COLUMN_CHOICE) ? R.id.BUTTON_YES : R.id.BUTTON_NO);
         }
         for (View child: Util.getAllChildren(radioGroupChoices)) {
@@ -284,8 +281,8 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
 
         // Debug output
         String logOutput = String.format(logFormat, writeSuccessful,
-                Instant.ofEpochMilli(selectedDayValues.getAsLong("choiceDate")),
-                selectedDayValues.getAsLong("choiceDate"),
+                Instant.ofEpochMilli(selectedDayValues.getAsLong(StoicActivity.CHOICE_DATE)),
+                selectedDayValues.getAsLong(StoicActivity.CHOICE_DATE),
                 selectedDayValues.getAsInteger(StoicActivity.COLUMN_UPDATE_COUNT));
         Log.d("DateSelected", logOutput);
         setDebugText(logOutput);
