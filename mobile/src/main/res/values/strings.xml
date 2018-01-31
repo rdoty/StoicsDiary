@@ -36,13 +36,13 @@
     <string name="feels_prompt_disabled">Write your thoughts on this day&#8230;\nonce you make your choice.</string>
     <string name="feels_save">Save</string>
 
-    <string name="email_export_subject">Your Stoic\'s Diary History from Appolonious</string>
-    <string name="email_export_body">The attached CSV file contains the data from your Stoic Diary (insert web link here).</string>
-    <string name="email_export_intent">Export data in CSV format</string>
-    <string name="email_export_salutation">Hey</string>
-    <string name="email_export_name_unknown">friend</string>
-    <string name="email_export_closing">Yours in Stoicity,</string>
-    <string name="email_export_signature">Team</string>
+    <string name="export_email_subject">Your Stoic\'s Diary History from Appolonious</string>
+    <string name="export_email_body">The attached CSV file contains the data from your Stoic Diary (insert web link here).</string>
+    <string name="export_email_intent">Export data in CSV format</string>
+    <string name="export_email_salutation">Hey</string>
+    <string name="export_email_name_unknown">friend</string>
+    <string name="export_email_closing">Yours in Stoicity,</string>
+    <string name="export_email_signature">Team</string>
 
     <string name="quote_01">“If you are distressed by anything external, the pain is not due to the thing itself, but to your estimate of it; and this you have the power to revoke at any moment.”\n ― Marcus Aurelius, Meditations</string>
     <string name="quote_02">“Never let the future disturb you. You will meet it, if you have to, with the same weapons of reason which today arm you against the present.”\n ― Marcus Aurelius, Meditations</string>
@@ -122,5 +122,6 @@
     <string name="pref_ringtone_silent">Silent</string>
 
     <string name="pref_title_vibrate">Vibrate</string>
+    <string name="about_app">About Application</string>
 
 </resources>

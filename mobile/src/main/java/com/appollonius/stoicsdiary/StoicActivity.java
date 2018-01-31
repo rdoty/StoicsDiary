@@ -16,8 +16,12 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 //import android.support.v4.app.Fragment;
@@ -75,15 +79,33 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
     ThemeText themeText;
     Typeface font;
 
-//    ViewPager viewPager;
 //    TabLayout tabLayout;
+//    ViewPager viewPager;
 //    PagerAdapter adapter;
 //
-//    private void initToolbar() {
-//        Toolbar toolbar = findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
-//        //toolbar.setTitle("Tablayout Demo");
-//    }
+    private void initToolbar() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.item_pref:
+                return true;
+            case R.id.item_about:
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -95,7 +117,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
         themeText = new ThemeText();
         font = Typeface.createFromAsset(getAssets(), "font-awesome-5-free-regular-400.otf");
 
-//        initToolbar();
+        initToolbar();
 //        tabLayout = findViewById(R.id.tab_layout);
 //        viewPager = findViewById(R.id.view_pager);
 //
@@ -403,10 +425,10 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
             Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
             emailIntent.setType("text/html");
             emailIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.email_export_subject));
+            emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, getString(R.string.export_email_subject));
             emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, getExportEmailBody());
             emailIntent.putExtra(Intent.EXTRA_STREAM, path);
-            startActivity(Intent.createChooser(emailIntent, getText(R.string.email_export_intent)));
+            startActivity(Intent.createChooser(emailIntent, getText(R.string.export_email_intent)));
             return true;  // Figure out when it's safe (and simplest way) to clear out the cache
         }
         return false;
@@ -426,11 +448,11 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
                 ;
 
         return Html.fromHtml(String.format(FORMAT_BODY,
-                getString(R.string.email_export_salutation),
-                sp.getString(PREF_USERNAME_KEY, getString(R.string.email_export_name_unknown)),
-                Html.fromHtml(getString(R.string.email_export_body), Html.FROM_HTML_MODE_COMPACT).toString(),
-                getString(R.string.email_export_closing),
-                String.format("%s %s", getString(R.string.email_export_signature), getString(R.string.app_name)),
+                getString(R.string.export_email_salutation),
+                sp.getString(PREF_USERNAME_KEY, getString(R.string.export_email_name_unknown)),
+                Html.fromHtml(getString(R.string.export_email_body), Html.FROM_HTML_MODE_COMPACT).toString(),
+                getString(R.string.export_email_closing),
+                String.format("%s %s", getString(R.string.export_email_signature), getString(R.string.app_name)),
                 ((ChoiceFragment)getFragmentManager().findFragmentById(R.id.fragment_choice)).getQuote()
                 ), Html.FROM_HTML_MODE_COMPACT).toString();
     }

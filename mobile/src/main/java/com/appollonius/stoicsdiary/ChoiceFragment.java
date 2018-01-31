@@ -2,6 +2,7 @@ package com.appollonius.stoicsdiary;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -139,12 +140,14 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
         ((TextView)getView(R.id.TEXT_QUOTE)).setText(getQuote());
 
         ((Button)getView(R.id.BUTTON_YES)).setText(getTW().choiceTextGood);
-        ((Button)getView(R.id.BUTTON_YES)).setTextColor(getTC().choiceColorGoodFg);
-        //((Button)getView(R.id.BUTTON_YES)).getBackground().setColorFilter(getTC().choiceColorGoodBg, PorterDuff.Mode.DST_OUT);
+        ((Button)getView(R.id.BUTTON_YES)).setTextColor(getResources().getColor(getTC().choiceColorGoodFg, null));
+        getView(R.id.BUTTON_YES).getBackground().setColorFilter(getResources().getColor(getTC().choiceColorGoodBg, null), PorterDuff.Mode.SRC_ATOP);
+        getView(R.id.BUTTON_YES).getBackground().setTint(getResources().getColor(getTC().choiceColorGoodBg, null));
 
         ((Button)getView(R.id.BUTTON_NO)).setText(getTW().choiceTextBad);
-        ((Button)getView(R.id.BUTTON_NO)).setTextColor(getTC().choiceColorBadFg);
-        //((Button)getView(R.id.BUTTON_NO)).getBackground().setColorFilter(getTC().choiceColorBadBg, PorterDuff.Mode.DST_OUT);
+        ((Button)getView(R.id.BUTTON_NO)).setTextColor(getResources().getColor(getTC().choiceColorBadFg, null));
+        getView(R.id.BUTTON_NO).getBackground().setColorFilter(getResources().getColor(getTC().choiceColorBadBg, null), PorterDuff.Mode.SRC_ATOP);
+        getView(R.id.BUTTON_NO).getBackground().setTint(getResources().getColor(getTC().choiceColorBadBg, null));
     }
 
     /**
