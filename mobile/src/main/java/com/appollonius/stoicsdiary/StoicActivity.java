@@ -247,12 +247,14 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
         newValues.put(COLUMN_UPDATE_DATE, Util.getLongVal(LocalDateTime.now()));
 
         if (oldValues.size() > 0) {  // Update
-            final short updates = Short.valueOf(oldValues.getAsString(COLUMN_UPDATE_COUNT));
-            if (updates < MAX_CHANGES) {
-                newValues.put(COLUMN_UPDATE_COUNT, updates + 1);
-                dbw.update(StoicActivity.TABLE_BASE, newValues, String.format("%s=%s", COLUMN_DAY, Long.toString(date)), null);
-                didWriteSucceed = true;
-            } // else { // What to return when update fails due to count? }
+            if (!oldValues.getAsBoolean(COLUMN_CHOICE).equals(theChoice)) {  // #154818575
+                final short updates = Short.valueOf(oldValues.getAsString(COLUMN_UPDATE_COUNT));
+                if (updates < MAX_CHANGES) {
+                    newValues.put(COLUMN_UPDATE_COUNT, updates + 1);
+                    dbw.update(StoicActivity.TABLE_BASE, newValues, String.format("%s=%s", COLUMN_DAY, Long.toString(date)), null);
+                    didWriteSucceed = true;
+                } // else { // What to return when update fails due to count? }
+            }
         } else {  // Insert
             newValues.put(COLUMN_DAY, date);
             newValues.put(COLUMN_UPDATE_COUNT, 1);
