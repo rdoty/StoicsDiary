@@ -155,8 +155,9 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
      */
     private void initializeCalendar() {
         CalendarView calendarView = getActivity().findViewById(R.id.history);
-        calendarView.setMaxDate(calendarView.getDate());
+        calendarView.setMaxDate(Util.getLongVal(calendarView.getDate()));
         calendarView.setMinDate(((StoicActivity)getActivity()).getEarliestEntryDate());
+        calendarView.setDate(Util.getLongVal(calendarView.getDate()));  // Update calendar with normalized value
     }
 
     /**
@@ -211,11 +212,13 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
 
     @Override
     public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
-        Long date = Util.getLongVal(year, month + 1, dayOfMonth);
-        view.setDate(date);  // Actually update the calendar UI
+        view.setDate(Util.getLongVal(year, month + 1, dayOfMonth));  // Update calendar with normalized value
         updateUI(true);  // Set UI based on data for the day, enable/disable controls as needed
    }
 
+    /**
+     * @param choiceId int The id of the choice button selected
+     */
     private void onClickChoice(int choiceId) {
         updateUI(writeSelectedValue(R.id.BUTTON_YES == choiceId));
     }

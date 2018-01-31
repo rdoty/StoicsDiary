@@ -42,8 +42,10 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Locale;
 import java.util.Random;
+import java.util.TimeZone;
 
 /**
  * This is the MainActivity
@@ -290,12 +292,12 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
      * @return Long Date of the first entry in the database
      */
     Long getEarliestEntryDate() {
-        Long earliestDate = Util.getLongVal(2018, 1, 2); // Hardcode for testing
+        Long earliestDate = Util.getLongVal(2017, 12, 2); // Hardcode for testing
         SQLiteDatabase dbr = db.getReadableDatabase();
         Cursor c = dbr.query(StoicActivity.TABLE_BASE, new String[] { String.format("min(%s)", COLUMN_DAY) },
                 null, null,null, null, null);
         c.moveToFirst();
-        //earliestDate = c.getLong(0);  // This should be from DB
+        //earliestDate = c.getLong(0);  // When done testing, this should be from DB
         c.close();
         return earliestDate;
     }
@@ -615,7 +617,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
          * @param year int
          * @param month int 1-12
          * @param dayOfMonth int 1-31
-         * @return Long the date munged appropriately
+         * @return Long the date munged appropriately that we'll use for storing and comparison
          */
         static Long getLongVal(int year, int month, int dayOfMonth) {
             return getLongVal(LocalDateTime.of(year, month, dayOfMonth, 0, 0));
@@ -623,10 +625,23 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
         /**
          * Use this to get the value we set the calendar to and the one we store in the DB
          * @param ldt LocalDateTime an object we're using to get the expected value
-         * @return Long the date munged appropriately
+         * @return Long the date munged appropriately that we'll use for storing and comparison
          */
         static Long getLongVal(LocalDateTime ldt) {
             return ldt.atZone(ZoneOffset.systemDefault()).toInstant().toEpochMilli();
+        }
+
+        /**
+         * Take the long date value we get from the CalendarView and normalize it so we're always
+         * comparing/saving the same value in the database.
+         * @param date Long the current date/time, which we'll chop according to the methods here
+         * @return Long the date value that we'll use for storing and comparison
+         */
+        static Long getLongVal(Long date) {
+            Calendar cal = Calendar.getInstance();
+            cal.setTimeZone(TimeZone.getDefault());
+            cal.setTimeInMillis(date);
+            return Util.getLongVal(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DAY_OF_MONTH));
         }
     }
 }
