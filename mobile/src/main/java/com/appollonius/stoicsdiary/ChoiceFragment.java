@@ -197,10 +197,6 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
                 onClickFeelsSave(); break;
             case R.id.BUTTON_FEELS_TWEET:
                 onClickFeelsTweet(); break;
-            case R.id.BUTTON_EXPORT:
-                onClickExport(); break;
-            case R.id.BUTTON_THEME:
-                onClickThemeRotate(); break;
         }
     }
 
