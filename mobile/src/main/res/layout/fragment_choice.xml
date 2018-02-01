@@ -122,7 +122,27 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentBottom="true"
-                    android:text="@string/feels_save" />
+                    android:text="@string/button_save" />
+
+                <!-- START These export button belongs in the settings area -->
+                <Button
+                    android:id="@+id/BUTTON_EXPORT"
+                    style="@style/Widget.AppCompat.Button.Borderless"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_toEndOf="@id/BUTTON_FEELS_SAVE"
+                    android:text="@string/button_export" />
+
+                <Button
+                    android:id="@+id/BUTTON_THEME"
+                    style="@style/Widget.AppCompat.Button.Borderless"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_toEndOf="@id/BUTTON_EXPORT"
+                    android:text="@string/button_theme" />
+                <!-- END These export button belongs in the settings area -->
 
                 <Button
                     android:id="@+id/BUTTON_FEELS_TWEET"
@@ -132,7 +152,7 @@
                     android:layout_alignEnd="@id/BUTTON_FEELS_SAVE"
                     android:layout_alignParentBottom="true"
                     android:layout_alignParentEnd="true"
-                    android:text="@string/feels_tweet" />
+                    android:text="@string/button_tweet" />
             </RelativeLayout>
 
         </LinearLayout>

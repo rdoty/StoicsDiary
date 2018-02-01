@@ -190,6 +190,10 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
                 onClickFeelsSave(); break;
             case R.id.BUTTON_FEELS_TWEET:
                 onClickFeelsTweet(); break;
+            case R.id.BUTTON_EXPORT:
+                onClickExport(); break;
+            case R.id.BUTTON_THEME:
+                onClickThemeRotate(); break;
         }
     }
 
@@ -224,17 +228,22 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
     }
 
     private void onClickFeelsSave() {
-        Boolean success = ((StoicActivity)getActivity()).writeDayFeels(getCalendarSelectedDate(),
-                ((EditText)getView(R.id.EDIT_FEELS)).getText().toString()
-        );
-        updateUI(success);
+        updateUI(((StoicActivity)getActivity()).writeDayFeels(getCalendarSelectedDate(),
+                ((EditText)getView(R.id.EDIT_FEELS)).getText().toString()));
     }
 
     private void onClickFeelsTweet() {
+        ((StoicActivity)getActivity()).notifyUser();
+    }
+
+    private void onClickExport() {
+        Log.d("EXPORT_EMAIL", Boolean.toString(((StoicActivity)getActivity()).exportToEmail()));
+    }
+
+    private void onClickThemeRotate() {
         ((StoicActivity)getActivity()).setNextColorTheme();  // For testing themes
         ((StoicActivity)getActivity()).setNextTextTheme();  // For testing themes
         initializeTheme();
-        Log.d("EXPORT_EMAIL", Boolean.toString(((StoicActivity)getActivity()).exportToEmail()));
     }
 
     /**
@@ -256,7 +265,6 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
         RadioButton buttonNo = getActivity().findViewById(R.id.BUTTON_NO);
 
         // Clean up the radio button logic here
-        // TODO Consider hiding the unselected choice button once the choice is locked
         radioGroupChoices.clearCheck();  // Clear previous selection in case choice not set
         isChoiceSet = selectedDayValues.getAsBoolean(StoicActivity.CHOICE_ISSET);
         if (isChoiceSet) {  // Check the proper choice, also confirm whether we can change it

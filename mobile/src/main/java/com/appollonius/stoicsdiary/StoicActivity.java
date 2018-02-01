@@ -1,9 +1,14 @@
 package com.appollonius.stoicsdiary;
 
+import android.app.AlarmManager;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -14,6 +19,8 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -82,6 +89,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
     ThemeColors themeColors;
     ThemeText themeText;
     Typeface font;
+    Integer mLatestNotificationId;  // Tracking this so we can reference/delete at runtime if necessary
 
 //    TabLayout tabLayout;
 //    ViewPager viewPager;
@@ -151,6 +159,8 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
             rebuildDatabase();  // or truncateTables();
         }
         deleteAllTempCacheFiles();
+        initializeNotificationChannel();
+        initializeDailyReminder();
 
         FragmentManager fm = getFragmentManager();
         Fragment fragment = fm.findFragmentById(R.id.fragment_choice);
@@ -474,6 +484,84 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
                 String.format("%s %s", getString(R.string.export_email_signature), getString(R.string.app_name)),
                 ((ChoiceFragment)getFragmentManager().findFragmentById(R.id.fragment_choice)).getQuote()
                 ), Html.FROM_HTML_MODE_COMPACT).toString();
+    }
+
+    void initializeNotificationChannel() {
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if (mNotificationManager != null) {
+            String id = getString(R.string.channel_id);  // of the channel.
+            CharSequence name = getString(R.string.channel_name);  // user-visible
+            String description = getString(R.string.channel_description);  // user-visible
+            NotificationChannel mChannel = new NotificationChannel(id, name, NotificationManager.IMPORTANCE_DEFAULT);
+
+            // Configure the notification channel.
+            mChannel.setDescription(description);
+            mChannel.enableLights(true);
+            mChannel.setLightColor(R.color.colorNotificationLight);  // if the device supports this feature.
+            mChannel.enableVibration(true);
+            mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+            mNotificationManager.createNotificationChannel(mChannel);
+        } else {
+            Log.d("ERROR", "Could not initializeNotificationChannel, NOTIFICATION_SERVICE null");
+        }
+    }
+
+    /**
+     * This just fires off a test notification at the moment.
+     */
+    void notifyUser() {
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if (mNotificationManager != null) {
+            NotificationCompat.Builder mBuilder =
+                    new NotificationCompat.Builder(this, getString(R.string.channel_id))
+                            .setSmallIcon(R.drawable.common_google_signin_btn_icon_light)
+                            .setContentTitle(getText(R.string.notification_title))
+                            .setContentText(getText(R.string.notification_text));
+            // Creates an explicit intent for an Activity in your app
+            Intent resultIntent = new Intent(this, StoicActivity.class);
+
+            // The stack builder object will contain an artificial back stack
+            // for the started Activity. This ensures that navigating backward
+            // from the Activity leads out of your app to the Home screen.
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+            // Adds the back stack for the Intent (but not the Intent itself)
+            stackBuilder.addParentStack(StoicActivity.class);
+            // Adds the Intent that starts the Activity to the top of the stack
+            stackBuilder.addNextIntent(resultIntent);
+            PendingIntent resultPendingIntent =
+                    stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+            mBuilder.setContentIntent(resultPendingIntent);
+
+            // mNotificationId is a unique integer your app uses to identify the
+            // notification. For example, to cancel the notification, you can pass its ID
+            // number to NotificationManager.cancel().
+            Random random = new Random();
+            mLatestNotificationId = random.nextInt();
+            mNotificationManager.notify(mLatestNotificationId, mBuilder.build());
+        }
+    }
+
+    /**
+     * This method checks the currently set preferences, and updates the scheduled
+     * notifications accordingly.
+     */
+    void initializeDailyReminder() {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        if (alarmManager != null) {
+            Intent myIntent = new Intent(StoicActivity.this, StoicActivity.class);
+            PendingIntent pending = PendingIntent.getService(StoicActivity.this, 0, myIntent, 0);
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.HOUR_OF_DAY, sp.getInt("notification_hour", 21));
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), 24 * 60 * 60 * 1000, pending);  //set repeating every 24 hours
+        } else {
+            Log.d("ERROR", "initializeDailyReminder failed to getSystemService(ALARM_SERVICE)");
+        }
     }
 
     /**
