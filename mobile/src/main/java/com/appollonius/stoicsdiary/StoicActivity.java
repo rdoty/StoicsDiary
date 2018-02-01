@@ -42,6 +42,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.Random;
@@ -73,6 +74,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
     static final Integer NUM_COLOR_THEMES = 3;  // This along with the strings should live somewhere else
     static final Integer NUM_TEXT_THEMES = 3;  // This along with the strings should live somewhere else
     static final Integer NUM_QUOTES = 6;  // Figure count out dynamically
+    static final String EXPORT_FILENAME = "sd_export.csv";
 
     // Major internal components
     private StoicDatabase db;
@@ -145,9 +147,10 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
 //            }
 //        });
 //
-        if (sp.getBoolean("resetDatabaseOnStart", false)) {
+        if (sp.getBoolean("resetDatabaseOnStart", false)) {  // Should fire from a settings button instead
             rebuildDatabase();  // or truncateTables();
         }
+        deleteAllTempCacheFiles();
 
         FragmentManager fm = getFragmentManager();
         Fragment fragment = fm.findFragmentById(R.id.fragment_choice);
@@ -380,26 +383,38 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
      */
 
     /**
+     * Right now we just have the one CSV file for exporting data, but there
+     * may be more in the future. Call this at app start to clear out any cruft
+     */
+    void deleteAllTempCacheFiles() {
+        Boolean filesWereDeleted = false;  // Don't really care about this value TBH
+        // All files in the cache folder
+        ArrayList<File> files = new ArrayList<>(Arrays.asList(getApplicationContext().getCacheDir().listFiles()));
+        // Add any internal files we know we want to delete below
+        files.add(new File(getApplicationContext().getFilesDir(), EXPORT_FILENAME));
+
+        for (File cacheFile : files) {
+            filesWereDeleted = cacheFile.exists() && cacheFile.delete();
+        }
+        Log.d("DEBUG", String.format("deleteAllTempCacheFiles: %s", filesWereDeleted));
+    }
+
+    /**
      * Export database fields into more friendly CSV format
      * For export, format date as yyyy-mm-dd, choice as 1 / -1, words null value as empty string
      * @return File filename, null if failure
      */
     File exportToCSVFile() {
-        final String EXPORT_FILENAME = "sd_";
         final String HEADER_DATE = "Date";
         final String HEADER_CHOICE = "Choice";
         final String HEADER_WORDS = "Words";
-        final String FILE_TYPE = ".csv";
-        PrintWriter csvWriter;
-        File tempFile;
-        ArrayList<ContentValues> exportData;
+
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd", Locale.getDefault());
 
         try {
-            exportData = getExportData();
-            // Move this from a tempfile (random filename) to internal storage with a fixed name overwritten
-            tempFile = File.createTempFile(EXPORT_FILENAME, FILE_TYPE, getApplicationContext().getCacheDir());
-            csvWriter = new PrintWriter(new FileWriter(tempFile,false));
+            ArrayList<ContentValues> exportData = getExportData();
+            File internalFile = new File(getApplicationContext().getFilesDir(), EXPORT_FILENAME);
+            PrintWriter csvWriter = new PrintWriter(new FileWriter(internalFile,false));
             csvWriter.printf("%s, %s, %s\r\n", HEADER_DATE, HEADER_CHOICE, HEADER_WORDS);
             for (ContentValues data : exportData) {
                 Date date = new Date(data.getAsLong(COLUMN_DAY));
@@ -411,7 +426,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
                 Log.d("EXPORT_ROW", output);
             }
             csvWriter.close();
-            return tempFile;
+            return internalFile;
         } catch(IOException e) {
             Log.d("ERROR", e.getMessage());
         }
