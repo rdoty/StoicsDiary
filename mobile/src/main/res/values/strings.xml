@@ -38,7 +38,7 @@
     <string name="button_export">Export</string>
     <string name="button_theme">Rotate</string>
     <string name="menu_about">About Application</string>
-    <string name="menu_settings">About Application</string>
+    <string name="menu_settings">Settings</string>
 
     <string name="export_email_subject">Your Stoic\'s Diary History from Appolonious</string>
     <string name="export_email_body">The attached CSV file contains the data from your Stoic Diary (insert web link here).</string>
@@ -64,24 +64,37 @@
     <!-- Strings related to Settings -->
 
     <!-- Example General settings -->
+    <string name="pref_export_key">initiate_export</string>
+    <string name="pref_export_title">Export data to CSV</string>
+    <string name="pref_export_summary">Selecting this will generate a CSV and send it to any configured application</string>
+
     <string name="pref_header_general">General</string>
 
     <string name="pref_title_display_name">Display name</string>
     <string name="pref_default_display_name">John Smith</string>
 
-    <string name="pref_title_social_recommendations">Enable social recommendations</string>
-    <string name="pref_description_social_recommendations">Recommendations for people to contact based on your message history</string>
-
-    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
-    <string-array name="pref_example_list_titles">
-        <item>Always</item>
-        <item>When possible</item>
-        <item>Never</item>
+    <string name="pref_title_color_theme">Select your color theme</string>
+    <string-array name="pref_color_theme_titles">
+        <item>Basic</item>
+        <item>Weird</item>
+        <item>Unhelpful</item>
     </string-array>
-    <string-array name="pref_example_list_values">
+    <string-array name="pref_color_theme_values">
         <item>1</item>
-        <item>0</item>
-        <item>-1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
+    <string name="pref_title_text_theme">Select your text theme</string>
+    <string-array name="pref_text_theme_titles">
+        <item>Basic</item>
+        <item>Vulcan</item>
+        <item>Emoji</item>
+    </string-array>
+    <string-array name="pref_text_theme_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
     </string-array>
 
     <!-- Example settings for Data & Sync -->
@@ -108,8 +121,10 @@
 
     <string name="pref_title_choice_reminders">Reminders to make your choice</string>
     <string name="pref_title_choice_reminder_times">Hour to remind</string>
+    <string name="pref_choice_reminder_disabled">Disabled</string>
+    <!-- Internationalize the time titles -->
     <string-array name="pref_choice_reminder_titles">
-        <item>Disabled</item>
+        <item>@string/pref_choice_reminder_disabled</item>
         <item>8:00 PM</item>
         <item>9:00 PM</item>
         <item>10:00 PM</item>

@@ -74,7 +74,9 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
     static final String CHOICE_ISMUTABLE = "isMutable";
     static final String CHOICE_DATE = "choiceDate";
     // Information for stored preferences / data / business rules
-    static final String PREF_USERNAME_KEY = "userFirstName";
+    static final String PREF_USERNAME_KEY = "displayName";
+    static final String EXTRA_EXPORT_FLAG = "initiate_export";
+
     static final String PREF_CUR_TEXT_THEME_KEY = "currentTextTheme";
     static final String PREF_CUR_COLOR_THEME_KEY = "currentColorTheme";
     static final Integer MAX_CHANGES = 3;
@@ -117,6 +119,18 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            if (extras.getBoolean(getString(R.string.pref_export_key), false)) {
+                getIntent().putExtra(getString(R.string.pref_export_key), false);
+                exportToEmail();
+            }
         }
     }
 
@@ -196,7 +210,10 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
     */
     void setNextColorTheme() { themeColors = new ThemeColors((themeColors.id % (NUM_COLOR_THEMES)) + 1); }
     void setNextTextTheme() { themeText = new ThemeText((themeText.id % (NUM_TEXT_THEMES)) + 1); }
-
+    void updateThemes() {
+        themeColors = new ThemeColors();
+        themeText = new ThemeText();
+    }
     /*
      * BEGIN Database accessors
      */
@@ -587,7 +604,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
          * Base constructor should get the themeId preference and loads the values associated
          */
         ThemeColors() {
-            this(sp.getInt(PREF_CUR_COLOR_THEME_KEY, new Random().nextInt(NUM_COLOR_THEMES) + 1));
+            this(Integer.valueOf(sp.getString(PREF_CUR_COLOR_THEME_KEY, "1")));
         }
 
         /**
@@ -646,7 +663,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
          * Base constructor should get the themeId preference and loads the values associated
          */
         ThemeText() {
-            this(sp.getInt(PREF_CUR_TEXT_THEME_KEY, new Random().nextInt(NUM_TEXT_THEMES) + 1));
+            this(Integer.valueOf(sp.getString(PREF_CUR_TEXT_THEME_KEY, "1")));
         }
 
         /**

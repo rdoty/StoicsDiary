@@ -102,6 +102,13 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        ((StoicActivity)getActivity()).updateThemes();
+        initializeUI();
+    }
+
+    @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         bindEventHandlers();
