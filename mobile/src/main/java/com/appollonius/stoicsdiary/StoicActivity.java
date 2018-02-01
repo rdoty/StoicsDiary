@@ -111,12 +111,19 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.item_pref:
+                onClickPreferences();
                 return true;
             case R.id.item_about:
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void onClickPreferences() {
+        Intent myIntent = new Intent(StoicActivity.this, SettingsActivity.class);
+        myIntent.putExtra("key", "value"); //Optional parameters
+        StoicActivity.this.startActivity(myIntent);
     }
 
     @Override
