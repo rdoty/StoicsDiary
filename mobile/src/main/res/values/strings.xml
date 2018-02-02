@@ -10,26 +10,30 @@
     <string name="fragment_page">Page fragment</string>
 
     <!-- Themed strings -->
-    <string name="theme_01_name">Basic Text Theme</string>
-    <string name="theme_01_prompt">Was today a good day? You choose.</string>
-    <string name="theme_01_good">Yes</string>
-    <string name="theme_01_bad">No</string>
-    <string name="theme_01_choice_disabled_selected">&#x1f512;</string>
-    <string name="theme_01_choice_disabled_unselected"> </string>
+    <string name="theme_color_01_name">Basic Color Theme</string>
+    <string name="theme_color_02_name">Ugly Color Theme</string>
+    <string name="theme_color_03_name">Unhelpful Theme</string>
 
-    <string name="theme_02_name">Vulcan Text Theme</string>
-    <string name="theme_02_prompt">Was today fascinating?</string>
-    <string name="theme_02_good">Indeed</string>
-    <string name="theme_02_bad">Negative</string>
-    <string name="theme_02_choice_disabled_selected">&#x1f512;</string>
-    <string name="theme_02_choice_disabled_unselected"> </string>
+    <string name="theme_text_01_name">Basic Text Theme</string>
+    <string name="theme_text_01_prompt">Was today a good day? You choose.</string>
+    <string name="theme_text_01_good">Yes</string>
+    <string name="theme_text_01_bad">No</string>
+    <string name="theme_text_01_choice_disabled_selected">&#x1f512;</string>
+    <string name="theme_text_01_choice_disabled_unselected"> </string>
 
-    <string name="theme_03_name">Iconography Theme</string>
-    <string name="theme_03_prompt">&#129335;</string>
-    <string name="theme_03_good">&#x1f44d;</string>
-    <string name="theme_03_bad">&#x1f44e;</string>
-    <string name="theme_03_choice_disabled_selected">&#x1f512;</string>
-    <string name="theme_03_choice_disabled_unselected"> </string>
+    <string name="theme_text_02_name">Vulcan Text Theme</string>
+    <string name="theme_text_02_prompt">Was today fascinating?</string>
+    <string name="theme_text_02_good">Indeed</string>
+    <string name="theme_text_02_bad">Negative</string>
+    <string name="theme_text_02_choice_disabled_selected">&#x1f512;</string>
+    <string name="theme_text_02_choice_disabled_unselected"> </string>
+
+    <string name="theme_text_03_name">Iconography Theme</string>
+    <string name="theme_text_03_prompt">&#129335;</string>
+    <string name="theme_text_03_good">&#x1f44d;</string>
+    <string name="theme_text_03_bad">&#x1f44e;</string>
+    <string name="theme_text_03_choice_disabled_selected">&#x1f512;</string>
+    <string name="theme_text_03_choice_disabled_unselected"> </string>
 
     <string name="feels_prompt_enabled">Write your thoughts on this day&#8230;\nin 140 characters or less.</string>
     <string name="feels_prompt_disabled">Write your thoughts on this day&#8230;\nonce you make your choice.</string>
@@ -75,9 +79,9 @@
 
     <string name="pref_title_color_theme">Select your color theme</string>
     <string-array name="pref_color_theme_titles">
-        <item>Basic</item>
-        <item>Weird</item>
-        <item>Unhelpful</item>
+        <item>@string/theme_color_01_name</item>
+        <item>@string/theme_color_02_name</item>
+        <item>@string/theme_color_03_name</item>
     </string-array>
     <string-array name="pref_color_theme_values">
         <item>1</item>
@@ -87,9 +91,9 @@
 
     <string name="pref_title_text_theme">Select your text theme</string>
     <string-array name="pref_text_theme_titles">
-        <item>Basic</item>
-        <item>Vulcan</item>
-        <item>Emoji</item>
+        <item>@string/theme_text_01_name</item>
+        <item>@string/theme_text_02_name</item>
+        <item>@string/theme_text_03_name</item>
     </string-array>
     <string-array name="pref_text_theme_values">
         <item>1</item>

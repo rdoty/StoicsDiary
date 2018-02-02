@@ -32,8 +32,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/activity_horizontal_margin"
-                        android:text="@string/theme_01_prompt"
-                        tools:text="@string/theme_01_prompt" />
+                        android:text="@string/theme_text_01_prompt"
+                        tools:text="@string/theme_text_01_prompt" />
 
                     <RadioGroup
                         android:id="@+id/GROUP_CHOICES"
@@ -52,7 +52,7 @@
                             android:checked="false"
                             android:textSize="50sp"
                             android:gravity="center"
-                            android:text="@string/theme_01_good" />
+                            android:text="@string/theme_text_01_good" />
 
                         <RadioButton
                             android:id="@+id/BUTTON_NO"
@@ -65,7 +65,7 @@
                             android:checked="false"
                             android:textSize="50sp"
                             android:gravity="center"
-                            android:text="@string/theme_01_bad" />
+                            android:text="@string/theme_text_01_bad" />
                     </RadioGroup>
                 </LinearLayout>
 

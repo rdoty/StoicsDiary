@@ -619,7 +619,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
             cCGB = cCGF = cCBB = cCBF = aCB = null;
 
             try {
-                n = getText(getResources().getIdentifier(sId("theme_%02d_name"),"string", BuildConfig.APPLICATION_ID)).toString();
+                n = getText(getResources().getIdentifier(sId("theme_color_%02d_name"),"string", BuildConfig.APPLICATION_ID)).toString();
                 cCGB = getResources().getIdentifier(sId("theme_%02d_bg_good"),"color", BuildConfig.APPLICATION_ID);
                 cCGF = getResources().getIdentifier(sId("theme_%02d_fg_good"),"color", BuildConfig.APPLICATION_ID);
                 cCBB = getResources().getIdentifier(sId("theme_%02d_bg_bad"),"color", BuildConfig.APPLICATION_ID);
@@ -677,12 +677,12 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
             n = p = cTG = cTB = cTDS = cTDU = null;
 
             try {
-                n = getText(getResources().getIdentifier(sfmt("theme_%02d_name"),"string", BuildConfig.APPLICATION_ID)).toString();
-                p = getText(getResources().getIdentifier(sfmt("theme_%02d_prompt"),"string", BuildConfig.APPLICATION_ID)).toString();
-                cTG = getText(getResources().getIdentifier(sfmt("theme_%02d_good"),"string", BuildConfig.APPLICATION_ID)).toString();
-                cTB = getText(getResources().getIdentifier(sfmt("theme_%02d_bad"),"string", BuildConfig.APPLICATION_ID)).toString();
-                cTDS = getText(getResources().getIdentifier(sfmt("theme_%02d_choice_disabled_selected"),"string", BuildConfig.APPLICATION_ID)).toString();
-                cTDU = getText(getResources().getIdentifier(sfmt("theme_%02d_choice_disabled_unselected"),"string", BuildConfig.APPLICATION_ID)).toString();
+                n = getText(getResources().getIdentifier(sfmt("theme_text_%02d_name"),"string", BuildConfig.APPLICATION_ID)).toString();
+                p = getText(getResources().getIdentifier(sfmt("theme_text_%02d_prompt"),"string", BuildConfig.APPLICATION_ID)).toString();
+                cTG = getText(getResources().getIdentifier(sfmt("theme_text_%02d_good"),"string", BuildConfig.APPLICATION_ID)).toString();
+                cTB = getText(getResources().getIdentifier(sfmt("theme_text_%02d_bad"),"string", BuildConfig.APPLICATION_ID)).toString();
+                cTDS = getText(getResources().getIdentifier(sfmt("theme_text_%02d_choice_disabled_selected"),"string", BuildConfig.APPLICATION_ID)).toString();
+                cTDU = getText(getResources().getIdentifier(sfmt("theme_text_%02d_choice_disabled_unselected"),"string", BuildConfig.APPLICATION_ID)).toString();
             } catch (Resources.NotFoundException e) {
                 Log.d("Exception", e.getMessage());  // Report to user?
             } finally {
