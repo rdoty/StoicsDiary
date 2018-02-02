@@ -5,6 +5,23 @@
     <string name="title_notifications">Notifications</string>
     <string name="title_activity_settings">Settings</string>
 
+    <!-- https://developer.android.com/guide/topics/resources/string-resource.html#FormattingAndStyling -->
+    <string name="app_about_text" formatted="true">
+        &lt;p>
+        &lt;b>This&lt;/b> is where I type a lot of text about the application.
+        &lt;/p>
+        &lt;br/>
+        &lt;p>
+        I\'m going to have a couple of paragraphs, maybe, and at the bottom
+        I\'ll append the version number and I guess some copyright information.
+        &lt;/p>
+        &lt;br/>
+        &lt;br/>
+        &lt;p>
+        Version %s
+        &lt;/p>
+    </string>
+
     <!-- Fragment text -->
     <string name="fragment_choice">Choice fragment</string>
     <string name="fragment_page">Page fragment</string>

@@ -9,6 +9,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -24,6 +25,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.util.Log;
@@ -113,6 +115,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
                 onClickPreferences();
                 return true;
             case R.id.item_about:
+                onClickAppAbout();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -135,6 +138,14 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
         Intent myIntent = new Intent(StoicActivity.this, SettingsActivity.class);
         myIntent.putExtra("key", "value"); //Optional parameters
         StoicActivity.this.startActivity(myIntent);
+    }
+
+    private void onClickAppAbout() {
+        final AlertDialog.Builder alertbox = new AlertDialog.Builder(this);
+        String aboutText = getString(R.string.app_about_text, BuildConfig.VERSION_NAME);
+        alertbox.setMessage(Html.fromHtml(aboutText, Html.FROM_HTML_MODE_COMPACT));
+        alertbox.setNeutralButton("Ok", new DialogInterface.OnClickListener() { public void onClick(DialogInterface arg0, int arg1) { } } );
+        alertbox.show();
     }
 
     @Override
@@ -625,15 +636,6 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
                 appColorBg = aCB;
             }
         }
-
-        /**
-         * This assumes id has already been set by the constructor
-         * @param stringFormat String to be modified
-         * @return String to use in getIdentifier
-         */
-        private String sId(String stringFormat) {
-            return String.format(Locale.US, stringFormat, this.id);
-        }
     }
 
     /**
@@ -685,15 +687,6 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
                 choiceTextDisabledSelected = cTDS;
                 choiceTextDisabledUnselected = cTDU;
             }
-        }
-
-        /**
-         * This assumes id has already been set by the constructor
-         * @param stringFormat String to be modified
-         * @return String to use in getIdentifier
-         */
-        private String sfmt(String stringFormat) {
-            return String.format(Locale.US, stringFormat, this.id);
         }
     }
 
