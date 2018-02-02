@@ -28,6 +28,9 @@
             android:positiveButtonText="@null"
             android:title="@string/pref_title_choice_reminders" />
 
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Themes">
         <ListPreference
             android:defaultValue="1"
             android:entries="@array/pref_color_theme_titles"

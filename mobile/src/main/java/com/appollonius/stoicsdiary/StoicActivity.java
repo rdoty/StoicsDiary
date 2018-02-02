@@ -97,10 +97,6 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
 //    ViewPager viewPager;
 //    PagerAdapter adapter;
 //
-    private void initToolbar() {
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -150,7 +146,6 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
         themeText = new ThemeText();
         font = Typeface.createFromAsset(getAssets(), "font-awesome-5-free-regular-400.otf");
 
-        initToolbar();
 //        tabLayout = findViewById(R.id.tab_layout);
 //        viewPager = findViewById(R.id.view_pager);
 //

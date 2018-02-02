@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -10,9 +10,13 @@
         <item name="windowNoTitle">false</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="Theme.AppCompat.NoActionBar"></style>
+    <style name="AppTheme.AppBarOverlay" parent="Theme.AppCompat.DayNight.DarkActionBar">
+        <!-- Customize your theme here. -->
+    </style>
 
-    <style name="AppTheme.PopupOverlay"></style>
+    <style name="AppTheme.PopupOverlay">
+        <!-- Customize your theme here. -->
+    </style>
 
     <style name="CustomTabLayout" parent="Widget.Design.TabLayout">
         <item name="tabIndicatorColor">@android:color/white</item>
