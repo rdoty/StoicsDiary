@@ -5,22 +5,4 @@
     <color name="colorAccent">#FF4081</color>
     <color name="colorNotificationLight">#FF0000</color>
 
-    <!-- custom theme colors -->
-    <color name="theme_01_bg_app">@android:color/background_dark</color>
-    <color name="theme_01_bg_good">@android:color/holo_green_dark</color>
-    <color name="theme_01_fg_good">@android:color/holo_red_dark</color>
-    <color name="theme_01_bg_bad">@android:color/holo_red_dark</color>
-    <color name="theme_01_fg_bad">@android:color/holo_green_dark</color>
-
-    <color name="theme_02_bg_app">@android:color/background_dark</color>
-    <color name="theme_02_bg_good">@android:color/holo_green_light</color>
-    <color name="theme_02_fg_good">@android:color/holo_orange_dark</color>
-    <color name="theme_02_bg_bad">@android:color/holo_orange_dark</color>
-    <color name="theme_02_fg_bad">@android:color/holo_green_light</color>
-
-    <color name="theme_03_bg_app">@android:color/background_dark</color>
-    <color name="theme_03_bg_good">@android:color/holo_purple</color>
-    <color name="theme_03_fg_good">@android:color/holo_blue_bright</color>
-    <color name="theme_03_bg_bad">@android:color/holo_blue_bright</color>
-    <color name="theme_03_fg_bad">@android:color/holo_purple</color>
 </resources>

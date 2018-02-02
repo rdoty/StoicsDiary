@@ -16,7 +16,7 @@
             android:weightSum="100">
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:weightSum="50">
@@ -25,7 +25,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:orientation="vertical"
-                    android:weightSum="100">
+                    android:weightSum="0">
 
                     <TextView
                         android:id="@+id/TEXT_PROMPT"
@@ -48,11 +48,11 @@
                             android:layout_weight="50"
                             android:button="@android:color/transparent"
                             android:background="@drawable/choicebackground"
-                            android:backgroundTint="@color/theme_01_bg_good"
+                            android:backgroundTint="@android:color/holo_green_dark"
                             android:checked="false"
-                            android:textSize="50sp"
+                            android:textSize="40sp"
                             android:gravity="center"
-                            android:text="@string/theme_text_01_good" />
+                            android:text="" />
 
                         <RadioButton
                             android:id="@+id/BUTTON_NO"
@@ -61,11 +61,11 @@
                             android:layout_weight="50"
                             android:button="@android:color/transparent"
                             android:background="@drawable/choicebackground"
-                            android:backgroundTint="@color/theme_01_bg_bad"
+                            android:backgroundTint="@android:color/holo_red_dark"
                             android:checked="false"
-                            android:textSize="50sp"
+                            android:textSize="40sp"
                             android:gravity="center"
-                            android:text="@string/theme_text_01_bad" />
+                            android:text="" />
                     </RadioGroup>
                 </LinearLayout>
 
@@ -73,7 +73,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:weightSum="50">
+                    android:weightSum="1">
 
                     <CalendarView
                         android:id="@+id/history"

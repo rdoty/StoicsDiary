@@ -12,9 +12,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -23,7 +25,6 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
@@ -139,6 +140,8 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("VERSION", String.format("%s, v%s", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE));
+
         setContentView(R.layout.activity_stoic);
         db = new StoicDatabase(this);
         sp = PreferenceManager.getDefaultSharedPreferences(this);
@@ -154,23 +157,11 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
 //        tabLayout.setupWithViewPager(viewPager);
 //
 //        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-//
-//            @Override
-//            public void onTabSelected(TabLayout.Tab tab) {
-//
-//            }
-//
-//            @Override
-//            public void onTabUnselected(TabLayout.Tab tab) {
-//
-//            }
-//
-//            @Override
-//            public void onTabReselected(TabLayout.Tab tab) {
-//
-//            }
+//            @Override public void onTabSelected(TabLayout.Tab tab) { }
+//            @Override public void onTabUnselected(TabLayout.Tab tab) { }
+//            @Override public void onTabReselected(TabLayout.Tab tab) { }
 //        });
-//
+
         if (sp.getBoolean("resetDatabaseOnStart", false)) {  // Should fire from a settings button instead
             rebuildDatabase();  // or truncateTables();
         }
@@ -609,17 +600,20 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
          */
         ThemeColors(Integer themeId) {
             id = themeId;  // Need to do validation on the number
+            String style = String.format(Locale.US, "StoicColorTheme_%02d", themeId);
             Integer cCGB, cCGF, cCBB, cCBF, aCB;
             String n = null;
             cCGB = cCGF = cCBB = cCBF = aCB = null;
 
             try {
-                n = getText(getResources().getIdentifier(sId("theme_color_%02d_name"),"string", BuildConfig.APPLICATION_ID)).toString();
-                cCGB = getResources().getIdentifier(sId("theme_%02d_bg_good"),"color", BuildConfig.APPLICATION_ID);
-                cCGF = getResources().getIdentifier(sId("theme_%02d_fg_good"),"color", BuildConfig.APPLICATION_ID);
-                cCBB = getResources().getIdentifier(sId("theme_%02d_bg_bad"),"color", BuildConfig.APPLICATION_ID);
-                cCBF = getResources().getIdentifier(sId("theme_%02d_fg_bad"),"color", BuildConfig.APPLICATION_ID);
-                aCB = getResources().getIdentifier(sId("theme_%02d_bg_bad"),"color", BuildConfig.APPLICATION_ID);
+                TypedArray ta = obtainStyledAttributes(getResources().getIdentifier(style, "style", getPackageName()), R.styleable.StoicColorStyle);
+                n = ta.getString(R.styleable.StoicTextStyle_displayName);
+                aCB = ta.getColor(R.styleable.StoicColorStyle_colorPrimary, Color.TRANSPARENT);
+                cCGB = ta.getColor(R.styleable.StoicColorStyle_colorGoodBg, Color.TRANSPARENT);
+                cCGF = ta.getColor(R.styleable.StoicColorStyle_colorGoodFg, Color.TRANSPARENT);
+                cCBB = ta.getColor(R.styleable.StoicColorStyle_colorBadBg, Color.TRANSPARENT);
+                cCBF = ta.getColor(R.styleable.StoicColorStyle_colorBadFg, Color.TRANSPARENT);
+                ta.recycle();
             } catch (Resources.NotFoundException e) {
                 Log.d("Exception", e.getMessage());  // Report to user?
             } finally {
@@ -668,16 +662,19 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
          */
         ThemeText(Integer themeId) {
             id = themeId;  // Need to do validation on the number
+            String style = String.format(Locale.US, "StoicTextTheme_%02d", themeId);
             String n, p, cTG, cTB, cTDS, cTDU;
             n = p = cTG = cTB = cTDS = cTDU = null;
 
             try {
-                n = getText(getResources().getIdentifier(sfmt("theme_text_%02d_name"),"string", BuildConfig.APPLICATION_ID)).toString();
-                p = getText(getResources().getIdentifier(sfmt("theme_text_%02d_prompt"),"string", BuildConfig.APPLICATION_ID)).toString();
-                cTG = getText(getResources().getIdentifier(sfmt("theme_text_%02d_good"),"string", BuildConfig.APPLICATION_ID)).toString();
-                cTB = getText(getResources().getIdentifier(sfmt("theme_text_%02d_bad"),"string", BuildConfig.APPLICATION_ID)).toString();
-                cTDS = getText(getResources().getIdentifier(sfmt("theme_text_%02d_choice_disabled_selected"),"string", BuildConfig.APPLICATION_ID)).toString();
-                cTDU = getText(getResources().getIdentifier(sfmt("theme_text_%02d_choice_disabled_unselected"),"string", BuildConfig.APPLICATION_ID)).toString();
+                TypedArray ta = obtainStyledAttributes(getResources().getIdentifier(style, "style", getPackageName()), R.styleable.StoicTextStyle);
+                n = ta.getString(R.styleable.StoicTextStyle_displayName);
+                p = ta.getString(R.styleable.StoicTextStyle_choicePrompt);
+                cTG = ta.getString(R.styleable.StoicTextStyle_choiceGood);
+                cTB = ta.getString(R.styleable.StoicTextStyle_choiceBad);
+                cTDS = ta.getString(R.styleable.StoicTextStyle_choiceDisabledSelected);
+                cTDU = ta.getString(R.styleable.StoicTextStyle_choiceDisabledUnselected);
+                ta.recycle();
             } catch (Resources.NotFoundException e) {
                 Log.d("Exception", e.getMessage());  // Report to user?
             } finally {

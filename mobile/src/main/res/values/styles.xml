@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.DayNight.DarkActionBar">
+    <style name="AppTheme" parent="android:Theme.Material.Light.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -35,8 +35,65 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">true</item>
+        <item name="windowNoTitle">false</item>
+    </style>
+
+    <style name="StoicColorTheme_01">
+        <item name="displayName">@string/theme_color_01_name</item>
+        <item name="colorPrimary">@android:color/background_dark</item>
+        <item name="colorAccent">@android:color/holo_blue_light</item>
+        <item name="colorGoodBg">@android:color/holo_green_dark</item>
+        <item name="colorGoodFg">@android:color/holo_red_dark</item>
+        <item name="colorBadBg">@android:color/holo_red_dark</item>
+        <item name="colorBadFg">@android:color/holo_green_dark</item>
+    </style>
+
+    <style name="StoicColorTheme_02">
+        <item name="displayName">@string/theme_color_02_name</item>
+        <item name="colorPrimary">@android:color/background_dark</item>
+        <item name="colorAccent">@android:color/holo_blue_light</item>
+        <item name="colorGoodBg">@android:color/holo_green_light</item>
+        <item name="colorGoodFg">@android:color/holo_orange_dark</item>
+        <item name="colorBadBg">@android:color/holo_orange_dark</item>
+        <item name="colorBadFg">@android:color/holo_green_light</item>
+    </style>
+
+    <style name="StoicColorTheme_03">
+        <item name="displayName">@string/theme_color_03_name</item>
+        <item name="colorPrimary">@android:color/background_dark</item>
+        <item name="colorAccent">@android:color/holo_blue_light</item>
+        <item name="colorGoodBg">@android:color/holo_purple</item>
+        <item name="colorGoodFg">@android:color/holo_blue_bright</item>
+        <item name="colorBadBg">@android:color/holo_blue_bright</item>
+        <item name="colorBadFg">@android:color/holo_purple</item>
+    </style>
+
+    <style name="StoicTextTheme_01">
+        <item name="displayName">@string/theme_text_01_name</item>
+        <item name="choicePrompt">@string/theme_text_01_prompt</item>
+        <item name="choiceGood">@string/theme_text_01_good</item>
+        <item name="choiceBad">@string/theme_text_01_bad</item>
+        <item name="choiceDisabledSelected">&#x1f512;</item>
+        <item name="choiceDisabledUnselected"> </item>
+    </style>
+
+    <style name="StoicTextTheme_02">
+        <item name="displayName">@string/theme_text_02_name</item>
+        <item name="choicePrompt">@string/theme_text_02_prompt</item>
+        <item name="choiceGood">@string/theme_text_02_good</item>
+        <item name="choiceBad">@string/theme_text_02_bad</item>
+        <item name="choiceDisabledSelected">&#x1f512;</item>
+        <item name="choiceDisabledUnselected"> </item>
+    </style>
+
+    <style name="StoicTextTheme_03">
+        <item name="displayName">@string/theme_text_03_name</item>
+        <item name="choicePrompt">@string/theme_text_03_prompt</item>
+        <item name="choiceGood">@string/theme_text_03_good</item>
+        <item name="choiceBad">@string/theme_text_03_bad</item>
+        <item name="choiceDisabledSelected">&#x1f512;</item>
+        <item name="choiceDisabledUnselected"> </item>
     </style>
 
 </resources>

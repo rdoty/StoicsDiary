@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="CustomLayout">
+        <attr name="text" format="string" />
+    </declare-styleable>
+
+    <declare-styleable name="StoicColorStyle" >
+        <attr name="displayName" />
+        <attr name="colorPrimary" />
+        <attr name="colorAccent" />
+        <attr name="colorGoodFg" />
+        <attr name="colorGoodBg" />
+        <attr name="colorBadFg" />
+        <attr name="colorBadBg" />
+    </declare-styleable>
+
+    <declare-styleable name="StoicTextStyle" >
+        <attr name="displayName" />
+        <attr name="choicePrompt" />
+        <attr name="choiceGood" />
+        <attr name="choiceBad" />
+        <attr name="choiceDisabledSelected" />
+        <attr name="choiceDisabledUnselected" />
+    </declare-styleable>
+ </resources>
