@@ -79,7 +79,7 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
      */
     public interface OnFragmentInteractionListener {
         /**
-         * @param uri Uri  TODO: Update argument type and name
+         * @param uri Uri  TO DO Update argument type and name
          */
         void onFragmentInteraction(Uri uri);
     }
@@ -237,16 +237,6 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
 
     private void onClickFeelsTweet() {
         ((StoicActivity)getActivity()).notifyUser();
-    }
-
-    private void onClickExport() {
-        Log.d("EXPORT_EMAIL", Boolean.toString(((StoicActivity)getActivity()).exportToEmail()));
-    }
-
-    private void onClickThemeRotate() {
-        ((StoicActivity)getActivity()).setNextColorTheme();  // For testing themes
-        ((StoicActivity)getActivity()).setNextTextTheme();  // For testing themes
-        initializeTheme();
     }
 
     /**

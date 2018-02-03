@@ -2,6 +2,7 @@ package com.appollonius.stoicsdiary;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -11,6 +12,7 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.text.Html;
 import android.view.MenuItem;
 
 
@@ -121,22 +123,43 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                to their values. When their values change, their summaries are
                updated to reflect the new value, per the Android Design guidelines.
              */
-            bindPreferenceSummaryToValue(findPreference(StoicActivity.PREF_USERNAME_KEY));
+            bindPreferenceSummaryToValue(findPreference(StoicActivity.PREF_KEY_USERNAME));
             bindPreferenceSummaryToValue(findPreference("reminder_time"));
-            bindPreferenceSummaryToValue(findPreference(StoicActivity.PREF_CUR_COLOR_THEME_KEY));
-            bindPreferenceSummaryToValue(findPreference(StoicActivity.PREF_CUR_TEXT_THEME_KEY));
-            findPreference(StoicActivity.EXTRA_EXPORT_FLAG)
+            bindPreferenceSummaryToValue(findPreference(StoicActivity.PREF_KEY_CUR_COLOR_THEME));
+            bindPreferenceSummaryToValue(findPreference(StoicActivity.PREF_KEY_CUR_TEXT_THEME));
+            findPreference(StoicActivity.INTENT_EXTRA_EXPORT)
                     .setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     // The best way to do this?
                     Intent intent = new Intent(getActivity(), StoicActivity.class);
-                    intent.putExtra(StoicActivity.EXTRA_EXPORT_FLAG, true);
+                    intent.putExtra(StoicActivity.INTENT_EXTRA_EXPORT, true);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
                     return true;
                 }
             });
+            findPreference(StoicActivity.INTENT_EXTRA_RESET_DB)
+                    .setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                        @Override
+                        public boolean onPreferenceClick(Preference preference) {
+                            final android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getContext());
+                            String aboutText = getString(R.string.app_reset_db);
+                            builder.setMessage(Html.fromHtml(aboutText, Html.FROM_HTML_MODE_COMPACT));
+                            builder.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface arg0, int arg1) {
+                                    Intent intent = new Intent(getActivity(), StoicActivity.class);
+                                    intent.putExtra(StoicActivity.INTENT_EXTRA_RESET_DB, true);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    startActivity(intent);
+                                }
+                            } );
+                            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface arg0, int arg1) { } } );
+                            builder.show();
+                            return false;
+                        }
+                    });
         }
 
         @Override

@@ -25,6 +25,12 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.FileProvider;
+//import android.support.v4.app.Fragment;
+//import android.support.v4.app.FragmentManager;
+//import android.support.v4.app.FragmentPagerAdapter;
+//import android.support.v4.view.PagerAdapter;
+//import android.support.v4.view.ViewPager;
+//import android.support.v7.widget.Toolbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
@@ -34,13 +40,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-//import android.support.v4.app.Fragment;
-//import android.support.v4.app.FragmentManager;
-//import android.support.v4.app.FragmentPagerAdapter;
-//import android.support.v4.view.PagerAdapter;
-//import android.support.v4.view.ViewPager;
 //import android.support.design.widget.TabLayout;
-//import android.support.v7.widget.Toolbar;
 //import android.widget.Adapter;
 
 import java.io.File;
@@ -77,14 +77,14 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
     static final String CHOICE_ISMUTABLE = "isMutable";
     static final String CHOICE_DATE = "choiceDate";
     // Information for stored preferences / data / business rules
-    static final String PREF_USERNAME_KEY = "displayName";
-    static final String EXTRA_EXPORT_FLAG = "initiate_export";
+    static final String INTENT_EXTRA_EXPORT = "initiate_export";  // Same as pref_export_key
+    static final String INTENT_EXTRA_RESET_DB = "reset_db";  // Save as @string/pref_reset_key
 
-    static final String PREF_CUR_TEXT_THEME_KEY = "currentTextTheme";
-    static final String PREF_CUR_COLOR_THEME_KEY = "currentColorTheme";
+    static final String PREF_KEY_USERNAME = "displayName";  // Same as
+    static final String PREF_KEY_CUR_TEXT_THEME = "currentTextTheme";
+    static final String PREF_KEY_CUR_COLOR_THEME = "currentColorTheme";
+
     static final Integer MAX_CHANGES = 3;
-    static final Integer NUM_COLOR_THEMES = 3;  // This along with the strings should live somewhere else
-    static final Integer NUM_TEXT_THEMES = 3;  // This along with the strings should live somewhere else
     static final Integer NUM_QUOTES = 6;  // Figure count out dynamically
     static final String EXPORT_FILENAME = "sd_export.csv";
 
@@ -99,7 +99,6 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
 //    TabLayout tabLayout;
 //    ViewPager viewPager;
 //    PagerAdapter adapter;
-//
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -127,9 +126,14 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
         super.onResume();
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            if (extras.getBoolean(getString(R.string.pref_export_key), false)) {
-                getIntent().putExtra(getString(R.string.pref_export_key), false);
+            if (extras.getBoolean(INTENT_EXTRA_EXPORT, false)) {
+                getIntent().removeExtra(INTENT_EXTRA_EXPORT);
                 exportToEmail();
+            }
+            if (extras.getBoolean(INTENT_EXTRA_RESET_DB, false)) {
+                getIntent().removeExtra(INTENT_EXTRA_RESET_DB);
+                rebuildDatabase();  // or truncateTables();
+                Log.d("DB", "Database was reset by user.");
             }
         }
     }
@@ -173,9 +177,6 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
 //            @Override public void onTabReselected(TabLayout.Tab tab) { }
 //        });
 
-        if (sp.getBoolean("resetDatabaseOnStart", false)) {  // Should fire from a settings button instead
-            rebuildDatabase();  // or truncateTables();
-        }
         deleteAllTempCacheFiles();
         initializeNotificationChannel();
         initializeDailyReminder();
@@ -201,16 +202,6 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
         //you can leave it empty
     }
 
-    /* Unused currently. Called when user selects in preferences? Or just call updateUI?
-    void setColorTheme(int id) { themeColors = new ThemeColors(id); }
-    void setTextTheme(int id) { themeText = new ThemeText(id); }
-    */
-    void setNextColorTheme() { themeColors = new ThemeColors((themeColors.id % (NUM_COLOR_THEMES)) + 1); }
-    void setNextTextTheme() { themeText = new ThemeText((themeText.id % (NUM_TEXT_THEMES)) + 1); }
-    void updateThemes() {
-        themeColors = new ThemeColors();
-        themeText = new ThemeText();
-    }
     /*
      * BEGIN Database accessors
      */
@@ -466,9 +457,8 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
 
     /**
      * Generates a CSV file, then opens the configured email client with the file attachment
-     * @return Boolean whether the activity returned successfully. Need to try/catch to confirm tho
      */
-    Boolean exportToEmail() {
+    void exportToEmail() {
         File csvFile = exportToCSVFile();
         if (csvFile != null) {
             Uri path = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".provider", csvFile);
@@ -479,9 +469,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
             emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, getExportEmailBody());
             emailIntent.putExtra(Intent.EXTRA_STREAM, path);
             startActivity(Intent.createChooser(emailIntent, getText(R.string.export_email_intent)));
-            return true;  // Figure out when it's safe (and simplest way) to clear out the cache
         }
-        return false;
     }
 
     /**
@@ -499,7 +487,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
 
         return Html.fromHtml(String.format(FORMAT_BODY,
                 getString(R.string.export_email_salutation),
-                sp.getString(PREF_USERNAME_KEY, getString(R.string.export_email_name_unknown)),
+                sp.getString(PREF_KEY_USERNAME, getString(R.string.export_email_name_unknown)),
                 Html.fromHtml(getString(R.string.export_email_body), Html.FROM_HTML_MODE_COMPACT).toString(),
                 getString(R.string.export_email_closing),
                 String.format("%s %s", getString(R.string.export_email_signature), getString(R.string.app_name)),
@@ -559,8 +547,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
             // mNotificationId is a unique integer your app uses to identify the
             // notification. For example, to cancel the notification, you can pass its ID
             // number to NotificationManager.cancel().
-            Random random = new Random();
-            mLatestNotificationId = random.nextInt();
+            mLatestNotificationId = new Random().nextInt();
             mNotificationManager.notify(mLatestNotificationId, mBuilder.build());
         }
     }
@@ -585,6 +572,18 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
         }
     }
 
+    /* Unused currently. Called when user selects in preferences? Or just call updateUI?
+    static final Integer NUM_COLOR_THEMES = 3;  // This along with the strings should live somewhere else
+    static final Integer NUM_TEXT_THEMES = 3;  // This along with the strings should live somewhere else
+    void setColorTheme(int id) { themeColors = new ThemeColors(id); }
+    void setTextTheme(int id) { themeText = new ThemeText(id); }
+    void setNextColorTheme() { themeColors = new ThemeColors((themeColors.id % (NUM_COLOR_THEMES)) + 1); }
+    void setNextTextTheme() { themeText = new ThemeText((themeText.id % (NUM_TEXT_THEMES)) + 1); }
+    */
+    void updateThemes() {
+        themeColors = new ThemeColors();
+        themeText = new ThemeText();
+    }
     /**
      * Class container for all customizable UI element colors
      */
@@ -601,7 +600,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
          * Base constructor should get the themeId preference and loads the values associated
          */
         ThemeColors() {
-            this(Integer.valueOf(sp.getString(PREF_CUR_COLOR_THEME_KEY, "1")));
+            this(Integer.valueOf(sp.getString(PREF_KEY_CUR_COLOR_THEME, "1")));
         }
 
         /**
@@ -654,7 +653,7 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
          * Base constructor should get the themeId preference and loads the values associated
          */
         ThemeText() {
-            this(Integer.valueOf(sp.getString(PREF_CUR_TEXT_THEME_KEY, "1")));
+            this(Integer.valueOf(sp.getString(PREF_KEY_CUR_TEXT_THEME, "1")));
         }
 
         /**

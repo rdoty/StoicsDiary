@@ -21,12 +21,15 @@
         Version %s
         &lt;/p>
     </string>
+    <string name="app_reset_db" formatted="true">
+        This is the text warning about clearing out the database. Blah, blah, blah.
+    </string>
 
     <!-- Fragment text -->
     <string name="fragment_choice">Choice fragment</string>
     <string name="fragment_page">Page fragment</string>
 
-    <!-- Themed strings -->
+    <!-- Themed strings for translation -->
     <string name="theme_color_01_name">Basic Color Theme</string>
     <string name="theme_color_02_name">Ugly Color Theme</string>
     <string name="theme_color_03_name">Unhelpful Theme</string>
@@ -82,6 +85,10 @@
     <string name="pref_export_key">initiate_export</string>
     <string name="pref_export_title">Export data to CSV</string>
     <string name="pref_export_summary">Selecting this will generate a CSV and send it to any configured application</string>
+
+    <string name="pref_reset_key">reset_db</string>
+    <string name="pref_reset_title">Reset diary database</string>
+    <string name="pref_reset_summary">Selecting this will delete the database</string>
 
     <string name="pref_header_general">General</string>
 

@@ -4,14 +4,14 @@
         <!-- NOTE: EditTextPreference accepts EditText attributes. -->
         <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
         <EditTextPreference
-            android:capitalize="words"
-            android:defaultValue="@string/pref_default_display_name"
-            android:inputType="textCapWords"
             android:key="displayName"
+            android:defaultValue="@string/pref_default_display_name"
+            android:title="@string/pref_title_display_name"
+            android:capitalize="words"
+            android:inputType="textCapWords"
             android:maxLines="1"
             android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="@string/pref_title_display_name" />
+            android:singleLine="true" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Notifications">
@@ -20,44 +20,52 @@
         <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->
         <!-- key 'reminder_time' is bound in DataSyncPreferenceFragment onCreate -->
         <ListPreference
+            android:key="reminder_time"
             android:defaultValue=" "
+            android:title="@string/pref_title_choice_reminders"
             android:entries="@array/pref_choice_reminder_titles"
             android:entryValues="@array/pref_choice_reminder_values"
-            android:key="reminder_time"
             android:negativeButtonText="@null"
-            android:positiveButtonText="@null"
-            android:title="@string/pref_title_choice_reminders" />
+            android:positiveButtonText="@null" />
 
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Themes">
         <ListPreference
+            android:key="currentColorTheme"
             android:defaultValue="1"
+            android:title="@string/pref_title_color_theme"
             android:entries="@array/pref_color_theme_titles"
             android:entryValues="@array/pref_color_theme_values"
-            android:key="currentColorTheme"
             android:negativeButtonText="@null"
-            android:positiveButtonText="@null"
-            android:title="@string/pref_title_color_theme" />
+            android:positiveButtonText="@null" />
 
         <ListPreference
+            android:key="currentTextTheme"
             android:defaultValue="1"
+            android:title="@string/pref_title_text_theme"
             android:entries="@array/pref_text_theme_titles"
             android:entryValues="@array/pref_text_theme_values"
-            android:key="currentTextTheme"
             android:negativeButtonText="@null"
-            android:positiveButtonText="@null"
-            android:title="@string/pref_title_text_theme" />
+            android:positiveButtonText="@null" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Sync &amp; Data">
         <!-- NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to dismiss it. -->
         <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->
-        <Preference android:id="@+id/BUTTON_EXPORT"
+        <Preference
+            android:id="@+id/BUTTON_EXPORT"
             android:key="@string/pref_export_key"
             android:title="@string/pref_export_title"
             android:summary="@string/pref_export_summary" >
-            <!--<intent android:action="android.settings.SYNC_SETTINGS" />-->
+        </Preference>
+
+        <Preference
+            android:id="@+id/BUTTON_RESET_DB"
+            android:key="@string/pref_reset_key"
+            android:title="@string/pref_reset_title"
+            android:summary="@string/pref_reset_summary" >
+            <!-- TO DO add confirmation dialog here -->
         </Preference>
 
         <!-- This preference simply launches an intent when selected. Use this UI sparingly, per
