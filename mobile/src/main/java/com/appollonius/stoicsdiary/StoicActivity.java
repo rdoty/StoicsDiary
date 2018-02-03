@@ -319,13 +319,15 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
      * @return Long Date of the first entry in the database
      */
     Long getEarliestEntryDate() {
-        Long earliestDate = Util.getLongVal(2017, 12, 2); // Hardcode for testing
-        SQLiteDatabase dbr = db.getReadableDatabase();
-        Cursor c = dbr.query(StoicActivity.TABLE_BASE, new String[] { String.format("min(%s)", COLUMN_DAY) },
-                null, null,null, null, null);
-        c.moveToFirst();
-        //earliestDate = c.getLong(0);  // When done testing, this should be from DB
-        c.close();
+        Long earliestDate = Util.getLongVal(2017, 12, 2); // Hardcode debug
+        if (!isDebugMode()) {
+            SQLiteDatabase dbr = db.getReadableDatabase();
+            Cursor c = dbr.query(StoicActivity.TABLE_BASE, new String[] { String.format("min(%s)", COLUMN_DAY) },
+                    null, null,null, null, null);
+            c.moveToFirst();
+            earliestDate = c.getLong(0);
+            c.close();
+        }
         return earliestDate;
     }
 
@@ -570,6 +572,10 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
         } else {
             Log.d("ERROR", "initializeDailyReminder failed to getSystemService(ALARM_SERVICE)");
         }
+    }
+
+    public Boolean isDebugMode() {
+        return sp.getBoolean(getString(R.string.pref_debug_key), false);
     }
 
     /* Unused currently. Called when user selects in preferences? Or just call updateUI?

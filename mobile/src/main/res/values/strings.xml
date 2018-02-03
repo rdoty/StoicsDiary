@@ -90,6 +90,9 @@
     <string name="pref_reset_title">Reset diary database</string>
     <string name="pref_reset_summary">Selecting this will delete the database</string>
 
+    <string name="pref_debug_key">reset_db</string>
+    <string name="pref_debug_title">Debug Mode</string>
+
     <string name="pref_header_general">General</string>
 
     <string name="pref_title_display_name">Display name</string>

@@ -74,5 +74,10 @@
             <intent android:action="android.settings.SYNC_SETTINGS" />
         </Preference>
     </PreferenceCategory>
+    <PreferenceCategory android:title="Support">
+        <SwitchPreference
+            android:key="@string/pref_debug_key"
+            android:title="@string/pref_debug_title" />
+    </PreferenceCategory>
 
 </PreferenceScreen>
