@@ -1,9 +1,6 @@
 package com.appollonius.stoicsdiary;
 
 import android.app.AlarmManager;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -25,12 +22,8 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.FileProvider;
-//import android.support.v4.app.Fragment;
-//import android.support.v4.app.FragmentManager;
-//import android.support.v4.app.FragmentPagerAdapter;
-//import android.support.v4.view.PagerAdapter;
-//import android.support.v4.view.ViewPager;
-//import android.support.v7.widget.Toolbar;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
@@ -40,8 +33,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-//import android.support.design.widget.TabLayout;
-//import android.widget.Adapter;
+import android.support.design.widget.TabLayout;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -54,6 +46,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.TimeZone;
@@ -61,7 +54,7 @@ import java.util.TimeZone;
 /**
  * This is the MainActivity
  */
-public class StoicActivity extends AppCompatActivity implements PageFragment.OnFragmentInteractionListener,
+public class StoicActivity extends AppCompatActivity implements HistoryFragment.OnFragmentInteractionListener,
         ChoiceFragment.OnFragmentInteractionListener {
     // Database fields
     static final String TABLE_BASE = "diary";
@@ -96,9 +89,68 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
     Typeface font;
     Integer mLatestNotificationId;  // Tracking this so we can reference/delete at runtime if necessary
 
-//    TabLayout tabLayout;
-//    ViewPager viewPager;
-//    PagerAdapter adapter;
+    TabLayout tabLayout;
+    ViewPager viewPager;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.d("VERSION", String.format("%s, v%s", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE));
+
+        setContentView(R.layout.activity_stoic);
+        db = new StoicDatabase(this);
+        sp = PreferenceManager.getDefaultSharedPreferences(this);
+        themeColors = new ThemeColors();
+        themeText = new ThemeText();
+        font = Typeface.createFromAsset(getAssets(), "font-awesome-5-free-regular-400.otf");
+
+        viewPager = findViewById(R.id.viewpager);
+        setupViewPager(viewPager);
+
+        tabLayout = findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(viewPager);
+
+        deleteAllTempCacheFiles();
+        initializeNotificationChannel();
+        initializeDailyReminder();
+    }
+
+    private void setupViewPager(ViewPager viewPager) {
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        adapter.addFragment(new ChoiceFragment(), "CHOICE");
+        adapter.addFragment(new HistoryFragment(), "HISTORY");
+        adapter.addFragment(new HistoryFragment(), "SUMMARY");
+        viewPager.setAdapter(adapter);
+    }
+
+    class ViewPagerAdapter extends FragmentPagerAdapter {
+        private final List<android.support.v4.app.Fragment> mFragmentList = new ArrayList<>();
+        private final List<String> mFragmentTitleList = new ArrayList<>();
+
+        ViewPagerAdapter(android.support.v4.app.FragmentManager manager) {
+            super(manager);
+        }
+
+        @Override
+        public android.support.v4.app.Fragment getItem(int position) {
+            return mFragmentList.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return mFragmentList.size();
+        }
+
+        void addFragment(android.support.v4.app.Fragment fragment, String title) {
+            mFragmentList.add(fragment);
+            mFragmentTitleList.add(title);
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return mFragmentTitleList.get(position);
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -152,45 +204,6 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
         alertbox.show();
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Log.d("VERSION", String.format("%s, v%s", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE));
-
-        setContentView(R.layout.activity_stoic);
-        db = new StoicDatabase(this);
-        sp = PreferenceManager.getDefaultSharedPreferences(this);
-        themeColors = new ThemeColors();
-        themeText = new ThemeText();
-        font = Typeface.createFromAsset(getAssets(), "font-awesome-5-free-regular-400.otf");
-
-//        tabLayout = findViewById(R.id.tab_layout);
-//        viewPager = findViewById(R.id.view_pager);
-//
-//        adapter = new TabAdapter(getSupportFragmentManager());
-//        viewPager.setAdapter(adapter);
-//        tabLayout.setupWithViewPager(viewPager);
-//
-//        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-//            @Override public void onTabSelected(TabLayout.Tab tab) { }
-//            @Override public void onTabUnselected(TabLayout.Tab tab) { }
-//            @Override public void onTabReselected(TabLayout.Tab tab) { }
-//        });
-
-        deleteAllTempCacheFiles();
-        initializeNotificationChannel();
-        initializeDailyReminder();
-
-        FragmentManager fm = getFragmentManager();
-        Fragment fragment = fm.findFragmentById(R.id.fragment_choice);
-        if (fragment == null) {
-            fragment = new ChoiceFragment();
-
-            FragmentTransaction ft = fm.beginTransaction();
-            ft.add(R.id.fragment_choice, fragment, getString(R.string.fragment_choice));
-            ft.commit();
-        }
-    }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -494,10 +507,54 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
                 Html.fromHtml(getString(R.string.export_email_body), Html.FROM_HTML_MODE_COMPACT).toString(),
                 getString(R.string.export_email_closing),
                 String.format("%s %s", getString(R.string.export_email_signature), getString(R.string.app_name)),
-                ((ChoiceFragment)getFragmentManager().findFragmentById(R.id.fragment_choice)).getQuote()
-                ), Html.FROM_HTML_MODE_COMPACT).toString();
+                "QUOTE HERE"), Html.FROM_HTML_MODE_COMPACT).toString();
     }
 
+/*
+    / **
+     *
+     * @return String email body HTML content
+     * /
+    String getFeedbackEmailBody() {
+        final String FORMAT_BODY = "<p>%s %s,</p><br/>" +
+                "<p>%s</p><br/>" +
+                "<p>%s</p><br/>" +
+                "<p>%s</p><br/>" +
+                "<p>-- </p><br/>" +
+                "<p>%s</p><br/>"
+                ;
+
+        return Html.fromHtml(String.format(
+                FORMAT_BODY,
+                getString(R.string.export_email_salutation), getString(R.string.app_name),
+                "TO DO",
+                "TO DO",
+                "TO DO",
+                "TO DO"), Html.FROM_HTML_MODE_COMPACT).toString();
+    }
+
+    / **
+     *
+     * @return String email body HTML content
+     * /
+    String getTranslationEmailBody() {
+        final String FORMAT_BODY = "<p>%s %s,</p><br/>" +
+                "<p>%s</p><br/>" +
+                "<p>%s</p><br/>" +
+                "<p>%s</p><br/>" +
+                "<p>-- </p><br/>" +
+                "<p>%s</p><br/>"
+                ;
+
+        return Html.fromHtml(String.format(
+                FORMAT_BODY,
+                getString(R.string.export_email_salutation), getString(R.string.app_name),
+                "TO DO",
+                "TO DO",
+                "TO DO",
+                "TO DO"), Html.FROM_HTML_MODE_COMPACT).toString();
+    }
+*/
     void initializeNotificationChannel() {
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -579,14 +636,16 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
         return sp.getBoolean(getString(R.string.pref_debug_key), false);
     }
 
-    /* Unused currently. Called when user selects in preferences? Or just call updateUI?
-    static final Integer NUM_COLOR_THEMES = 3;  // This along with the strings should live somewhere else
-    static final Integer NUM_TEXT_THEMES = 3;  // This along with the strings should live somewhere else
-    void setColorTheme(int id) { themeColors = new ThemeColors(id); }
-    void setTextTheme(int id) { themeText = new ThemeText(id); }
-    void setNextColorTheme() { themeColors = new ThemeColors((themeColors.id % (NUM_COLOR_THEMES)) + 1); }
-    void setNextTextTheme() { themeText = new ThemeText((themeText.id % (NUM_TEXT_THEMES)) + 1); }
-    */
+    /**
+     * (re-)sets the themes to whatever is configured in preferences
+     * Below are other related theme functionality that might be handy in the future
+     final Integer NUM_COLOR_THEMES = getResources().getStringArray(R.array.pref_color_theme_values).length;
+     final Integer NUM_TEXT_THEMES = getResources().getStringArray(R.array.pref_text_theme_values).length;
+     void setColorTheme(int id) { themeColors = new ThemeColors(id); }
+     void setTextTheme(int id) { themeText = new ThemeText(id); }
+     void setNextColorTheme() { themeColors = new ThemeColors((themeColors.id % (NUM_COLOR_THEMES)) + 1); }
+     void setNextTextTheme() { themeText = new ThemeText((themeText.id % (NUM_TEXT_THEMES)) + 1); }
+     */
     void updateThemes() {
         themeColors = new ThemeColors();
         themeText = new ThemeText();

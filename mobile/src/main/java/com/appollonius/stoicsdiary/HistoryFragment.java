@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,12 +13,12 @@ import android.view.ViewGroup;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link PageFragment.OnFragmentInteractionListener} interface
+ * {@link HistoryFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link PageFragment#newInstance} factory method to
+ * Use the {@link HistoryFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class PageFragment extends android.app.Fragment {
+public class HistoryFragment extends android.support.v4.app.Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -27,7 +28,7 @@ public class PageFragment extends android.app.Fragment {
     private String mParam1;
     private String mParam2;
 
-    public PageFragment() {
+    public HistoryFragment() {
         // Required empty public constructor
     }
 
@@ -37,11 +38,11 @@ public class PageFragment extends android.app.Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment PageFragment.
+     * @return A new instance of fragment HistoryFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static PageFragment newInstance(String param1, String param2) {
-        PageFragment fragment = new PageFragment();
+    public static HistoryFragment newInstance(String param1, String param2) {
+        HistoryFragment fragment = new HistoryFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -75,12 +76,12 @@ public class PageFragment extends android.app.Fragment {
     private OnFragmentInteractionListener mListener;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         /* https://github.com/codepath/android_guides/wiki/Google-Play-Style-Tabs-using-TabLayout */
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_choice, container, false);
+        return inflater.inflate(R.layout.fragment_history, container, false);
     }
 
     // TODO: Rename method, update argument and hook method into UI event

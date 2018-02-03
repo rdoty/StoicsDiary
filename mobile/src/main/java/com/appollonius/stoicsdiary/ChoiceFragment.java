@@ -35,7 +35,7 @@ import com.appollonius.stoicsdiary.StoicActivity.Util;
  * Use the {@link ChoiceFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class ChoiceFragment extends android.app.Fragment implements View.OnClickListener,
+public class ChoiceFragment extends android.support.v4.app.Fragment implements View.OnClickListener,
         CalendarView.OnDateChangeListener {
 
     public ChoiceFragment() {
@@ -94,7 +94,7 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
 

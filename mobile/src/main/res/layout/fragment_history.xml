@@ -3,12 +3,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:parentActivityName="com.appollonius.stoicsdiary.StoicActivity"
-    tools:context="com.appollonius.stoicsdiary.PageFragment">
+    tools:context="com.appollonius.stoicsdiary.HistoryFragment">
 
     <!-- TODO: Update blank fragment layout -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/fragment_page" />
+        android:text="@string/fragment_history" />
 
 </FrameLayout>

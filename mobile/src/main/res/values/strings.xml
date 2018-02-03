@@ -27,7 +27,7 @@
 
     <!-- Fragment text -->
     <string name="fragment_choice">Choice fragment</string>
-    <string name="fragment_page">Page fragment</string>
+    <string name="fragment_history">History fragment</string>
 
     <!-- Themed strings for translation -->
     <string name="theme_color_01_name">Basic Color Theme</string>
