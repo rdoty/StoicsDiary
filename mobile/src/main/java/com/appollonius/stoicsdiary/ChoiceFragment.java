@@ -256,6 +256,7 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
         EditText editTextFeels = getActivity().findViewById(R.id.EDIT_FEELS);
         RadioButton buttonYes = getActivity().findViewById(R.id.BUTTON_YES);
         RadioButton buttonNo = getActivity().findViewById(R.id.BUTTON_NO);
+        TextView debugText = getActivity().findViewById(R.id.TEXT_DEBUG);
 
         // Clean up the radio button logic here
         radioGroupChoices.clearCheck();  // Clear previous selection in case choice not set
@@ -291,8 +292,11 @@ public class ChoiceFragment extends android.app.Fragment implements View.OnClick
                 Instant.ofEpochMilli(selectedDayValues.getAsLong(StoicActivity.CHOICE_DATE)),
                 selectedDayValues.getAsLong(StoicActivity.CHOICE_DATE),
                 selectedDayValues.getAsInteger(StoicActivity.COLUMN_UPDATE_COUNT));
-        Log.d("DateSelected", logOutput);
+        debugText.setVisibility(((StoicActivity) getActivity()).isDebugMode()
+                ? View.VISIBLE
+                : View.GONE);
         setDebugText(logOutput);
+        Log.d("DateSelected", logOutput);
     }
 
     /**
