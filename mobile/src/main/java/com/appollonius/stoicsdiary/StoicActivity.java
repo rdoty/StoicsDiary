@@ -320,12 +320,13 @@ public class StoicActivity extends AppCompatActivity implements PageFragment.OnF
      */
     Long getEarliestEntryDate() {
         Long earliestDate = Util.getLongVal(2017, 12, 2); // Hardcode debug
+        Long noEntryDate = Util.getLongVal(LocalDateTime.now());
         if (!isDebugMode()) {
             SQLiteDatabase dbr = db.getReadableDatabase();
             Cursor c = dbr.query(StoicActivity.TABLE_BASE, new String[] { String.format("min(%s)", COLUMN_DAY) },
                     null, null,null, null, null);
             c.moveToFirst();
-            earliestDate = c.getLong(0);
+            earliestDate = c.isNull(0) ? noEntryDate : c.getLong(0);
             c.close();
         }
         return earliestDate;
