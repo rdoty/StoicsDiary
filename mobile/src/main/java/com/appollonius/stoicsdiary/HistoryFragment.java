@@ -91,7 +91,7 @@ public class HistoryFragment extends android.support.v4.app.Fragment implements 
     @Override
     public void onResume() {
         super.onResume();
-        mA.updateThemes();
+        mA.updateUI(getView());
     }
 
     @Override

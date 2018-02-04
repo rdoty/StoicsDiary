@@ -117,7 +117,6 @@ public class ChoiceFragment extends android.support.v4.app.Fragment implements V
     @Override
     public void onResume() {
         super.onResume();
-        mA.updateThemes();
         mA.updateUI(getView());
     }
 

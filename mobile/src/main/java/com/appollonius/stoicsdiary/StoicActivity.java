@@ -699,7 +699,66 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     }
 
     /**
-     * (re-)sets the themes to whatever is configured in preferences
+     * This includes default colors, text prompts, maybe user-provided text, too.
+     */
+    void updateUI(View v) {
+        // Brute force reset themes to preferences on any UI update - shouldn't be costly
+        themeColors = new ThemeColors();
+        themeText = new ThemeText();
+
+        RadioGroup radioGroupChoices = v.findViewById(R.id.GROUP_CHOICES);
+        RadioButton yB = v.findViewById(R.id.BUTTON_YES);
+        RadioButton nB = v.findViewById(R.id.BUTTON_NO);
+
+        ContentValues selectedDayValues = getChoice(getCurrentDay());
+        Boolean isChoiceSet = selectedDayValues.getAsBoolean(StoicActivity.CHOICE_ISSET);
+        Boolean isChoiceEnabled = true;
+        if (radioGroupChoices != null) {
+            radioGroupChoices.clearCheck();  // Clear previous selection in case choice not set
+            if (isChoiceSet) {  // Check the proper choice, also confirm whether we can change it
+                isChoiceEnabled = selectedDayValues.getAsBoolean(StoicActivity.CHOICE_ISMUTABLE);
+                radioGroupChoices.check(selectedDayValues.getAsBoolean(StoicActivity.COLUMN_CHOICE) ? R.id.BUTTON_YES : R.id.BUTTON_NO);
+            } else {  // Prompt if today is selected but no choice has been made
+                if (Util.getLongVal(LocalDateTime.now()).equals(getCurrentDay())) {
+                    Toast.makeText(this, themeText.prompt, Toast.LENGTH_LONG).show();
+                }
+            }
+            for (View child: Util.getAllChildren(radioGroupChoices)) {
+                child.setEnabled(isChoiceEnabled);
+            }
+            yB.setText(
+                    (isChoiceEnabled
+                            ? themeText.choiceTextGood
+                            : yB.isChecked()
+                            ? themeText.choiceTextDisabledSelected
+                            : themeText.choiceTextDisabledUnselected));
+            yB.setVisibility((!isChoiceEnabled && !yB.isChecked()) ? View.GONE : View.VISIBLE);
+            yB.setTextColor(themeColors.choiceColorGoodFg);
+            yB.getBackground().setColorFilter(themeColors.choiceColorGoodBg, PorterDuff.Mode.SRC_ATOP);
+            yB.getBackground().setTint(themeColors.choiceColorGoodBg);
+
+            nB.setText(
+                    (isChoiceEnabled
+                            ? themeText.choiceTextBad
+                            : nB.isChecked()
+                            ? themeText.choiceTextDisabledSelected
+                            : themeText.choiceTextDisabledUnselected));
+            nB.setVisibility((!isChoiceEnabled && !nB.isChecked()) ? View.GONE : View.VISIBLE);
+            nB.setTextColor(themeColors.choiceColorBadFg);
+            nB.getBackground().setColorFilter(themeColors.choiceColorBadBg, PorterDuff.Mode.SRC_ATOP);
+            nB.getBackground().setTint(themeColors.choiceColorBadBg);
+        }
+        // Set the other controls to their proper state
+        EditText editTextFeels = v.findViewById(R.id.EDIT_FEELS);
+        if (editTextFeels != null) {
+            editTextFeels.setHint(getText(isChoiceSet ? R.string.feels_prompt_enabled : R.string.feels_prompt_disabled));
+            editTextFeels.setEnabled(isChoiceSet);
+            editTextFeels.setText(selectedDayValues.getAsString(StoicActivity.COLUMN_WORDS));
+        }
+    }
+
+    /**
+     * Class container for all customizable UI element colors
      * Below are other related theme functionality that might be handy in the future
      final Integer NUM_COLOR_THEMES = getResources().getStringArray(R.array.pref_color_theme_values).length;
      final Integer NUM_TEXT_THEMES = getResources().getStringArray(R.array.pref_text_theme_values).length;
@@ -707,13 +766,6 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
      void setTextTheme(int id) { themeText = new ThemeText(id); }
      void setNextColorTheme() { themeColors = new ThemeColors((themeColors.id % (NUM_COLOR_THEMES)) + 1); }
      void setNextTextTheme() { themeText = new ThemeText((themeText.id % (NUM_TEXT_THEMES)) + 1); }
-     */
-    void updateThemes() {
-        themeColors = new ThemeColors();
-        themeText = new ThemeText();
-    }
-    /**
-     * Class container for all customizable UI element colors
      */
     class ThemeColors {
         final Integer id;
@@ -817,60 +869,6 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         }
     }
 
-    /**
-     * This includes default colors, text prompts, maybe user-provided text, too.
-     */
-    void updateUI(View v) {
-        RadioGroup radioGroupChoices = v.findViewById(R.id.GROUP_CHOICES);
-        RadioButton yB = v.findViewById(R.id.BUTTON_YES);
-        RadioButton nB = v.findViewById(R.id.BUTTON_NO);
-
-        ContentValues selectedDayValues = getChoice(getCurrentDay());
-        Boolean isChoiceSet = selectedDayValues.getAsBoolean(StoicActivity.CHOICE_ISSET);
-        Boolean isChoiceEnabled = true;
-        if (radioGroupChoices != null) {
-            radioGroupChoices.clearCheck();  // Clear previous selection in case choice not set
-            if (isChoiceSet) {  // Check the proper choice, also confirm whether we can change it
-                isChoiceEnabled = selectedDayValues.getAsBoolean(StoicActivity.CHOICE_ISMUTABLE);
-                radioGroupChoices.check(selectedDayValues.getAsBoolean(StoicActivity.COLUMN_CHOICE) ? R.id.BUTTON_YES : R.id.BUTTON_NO);
-            } else {  // Prompt if today is selected but no choice has been made
-                if (Util.getLongVal(LocalDateTime.now()).equals(getCurrentDay())) {
-                    Toast.makeText(this, themeText.prompt, Toast.LENGTH_LONG).show();
-                }
-            }
-            for (View child: Util.getAllChildren(radioGroupChoices)) {
-                child.setEnabled(isChoiceEnabled);
-            }
-            yB.setText(
-                    (isChoiceEnabled
-                            ? themeText.choiceTextGood
-                            : yB.isChecked()
-                                ? themeText.choiceTextDisabledSelected
-                                : themeText.choiceTextDisabledUnselected));
-            yB.setVisibility((!isChoiceEnabled && !yB.isChecked()) ? View.GONE : View.VISIBLE);
-            yB.setTextColor(themeColors.choiceColorGoodFg);
-            yB.getBackground().setColorFilter(themeColors.choiceColorGoodBg, PorterDuff.Mode.SRC_ATOP);
-            yB.getBackground().setTint(themeColors.choiceColorGoodBg);
-
-            nB.setText(
-                    (isChoiceEnabled
-                            ? themeText.choiceTextBad
-                            : nB.isChecked()
-                                ? themeText.choiceTextDisabledSelected
-                                : themeText.choiceTextDisabledUnselected));
-            nB.setVisibility((!isChoiceEnabled && !nB.isChecked()) ? View.GONE : View.VISIBLE);
-            nB.setTextColor(themeColors.choiceColorBadFg);
-            nB.getBackground().setColorFilter(themeColors.choiceColorBadBg, PorterDuff.Mode.SRC_ATOP);
-            nB.getBackground().setTint(themeColors.choiceColorBadBg);
-        }
-        // Set the other controls to their proper state
-        EditText editTextFeels = v.findViewById(R.id.EDIT_FEELS);
-        if (editTextFeels != null) {
-            editTextFeels.setHint(getText(isChoiceSet ? R.string.feels_prompt_enabled : R.string.feels_prompt_disabled));
-            editTextFeels.setEnabled(isChoiceSet);
-            editTextFeels.setText(selectedDayValues.getAsString(StoicActivity.COLUMN_WORDS));
-        }
-    }
     /**
      * UTILITY METHODS BELOW
      * Mostly shared code called from fragments
