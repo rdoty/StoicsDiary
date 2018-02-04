@@ -50,6 +50,7 @@
     <string name="theme_text_03_good">&#x1f44d;</string>
     <string name="theme_text_03_bad">&#x1f44e;</string>
 
+    <string name="choice_buttons_disabled">You can only set a choice for any given day three times.</string>
     <string name="feels_prompt_enabled">Write your thoughts on this day&#8230;\nin 140 characters or less.</string>
     <string name="feels_prompt_disabled">Write your thoughts on this day&#8230;\nonce you make your choice.</string>
     <string name="button_save">Save</string>

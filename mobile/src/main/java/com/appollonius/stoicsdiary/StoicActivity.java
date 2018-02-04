@@ -134,6 +134,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     void initializeCurrentDay() { currentDay = Util.getLongVal(LocalDateTime.now()); }
     void setCurrentDay(Long currentDay) { this.currentDay = currentDay; }
     Long getCurrentDay() { return currentDay; }
+    Integer getCurrentTab() { return viewPager.getCurrentItem(); }
 
     private void setupViewPager(ViewPager viewPager) {
         final ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
@@ -144,7 +145,6 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                //Log.d("DEBUG", String.format("Scrolled Tab #%d", position));
             }
 
             @Override
@@ -157,9 +157,6 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
 
             @Override
             public void onPageScrollStateChanged(int state) {
-//                if (state == ViewPager.SCROLL_STATE_IDLE) {
-//                    Log.d("DEBUG", "ScrollStateChanged to IDLE");
-//                }
             }
         });
     }
@@ -625,24 +622,18 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
                             .setSmallIcon(R.drawable.common_google_signin_btn_icon_light)
                             .setContentTitle(getText(R.string.notification_title))
                             .setContentText(getText(R.string.notification_text));
-            // Creates an explicit intent for an Activity in your app
+
             Intent resultIntent = new Intent(this, StoicActivity.class);
 
-            // The stack builder object will contain an artificial back stack
-            // for the started Activity. This ensures that navigating backward
-            // from the Activity leads out of your app to the Home screen.
             TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-            // Adds the back stack for the Intent (but not the Intent itself)
-            stackBuilder.addParentStack(StoicActivity.class);
-            // Adds the Intent that starts the Activity to the top of the stack
-            stackBuilder.addNextIntent(resultIntent);
+            stackBuilder.addParentStack(StoicActivity.class);  // Adds the back stack for the Intent
+            stackBuilder.addNextIntent(resultIntent);  // Adds the Intent that starts the Activity to the top of the stack
             PendingIntent resultPendingIntent =
                     stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
             mBuilder.setContentIntent(resultPendingIntent);
 
-            // mNotificationId is a unique integer your app uses to identify the
-            // notification. For example, to cancel the notification, you can pass its ID
-            // number to NotificationManager.cancel().
+            // mNotificationId is a unique integer your app uses to identify the notification.
+            // e.g. to cancel the notification, call NotificationManager.cancel(mLatestNotificationId).
             mLatestNotificationId = new Random().nextInt();
             mNotificationManager.notify(mLatestNotificationId, mBuilder.build());
         }
@@ -694,9 +685,9 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
 
     /**
      * This includes default colors, text prompts, maybe user-provided text, too.
+     * Now always reset themes to preferences on any UI update - shouldn't be costly
      */
     void updateUI(View v) {
-        // Brute force reset themes to preferences on any UI update - shouldn't be costly
         themeColors = new ThemeColors();
         themeText = new ThemeText();
 
@@ -741,6 +732,9 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             nB.setTextColor(themeColors.choiceColorBadFg);
             nB.getBackground().setColorFilter(themeColors.choiceColorBadBg, PorterDuff.Mode.SRC_ATOP);
             nB.getBackground().setTint(themeColors.choiceColorBadBg);
+            if (!isChoiceEnabled && getCurrentTab() == 0) {  // Only show this on choice tab
+                Toast.makeText(this, getString(R.string.choice_buttons_disabled), Toast.LENGTH_SHORT).show();
+            }
         }
         // Set the other controls to their proper state
         EditText editTextFeels = v.findViewById(R.id.EDIT_FEELS);
@@ -755,11 +749,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
      * Class container for all customizable UI element colors
      * Below are other related theme functionality that might be handy in the future
      final Integer NUM_COLOR_THEMES = getResources().getStringArray(R.array.pref_color_theme_values).length;
-     final Integer NUM_TEXT_THEMES = getResources().getStringArray(R.array.pref_text_theme_values).length;
-     void setColorTheme(int id) { themeColors = new ThemeColors(id); }
-     void setTextTheme(int id) { themeText = new ThemeText(id); }
      void setNextColorTheme() { themeColors = new ThemeColors((themeColors.id % (NUM_COLOR_THEMES)) + 1); }
-     void setNextTextTheme() { themeText = new ThemeText((themeText.id % (NUM_TEXT_THEMES)) + 1); }
      */
     class ThemeColors {
         final Integer id;
@@ -813,6 +803,9 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
 
     /**
      * Class container for all customizable UI element text
+     * Below are other related theme functionality that might be handy in the future
+     final Integer NUM_TEXT_THEMES = getResources().getStringArray(R.array.pref_text_theme_values).length;
+     void setNextTextTheme() { themeText = new ThemeText((themeText.id % (NUM_TEXT_THEMES)) + 1); }
      */
     class ThemeText {
         final Integer id;

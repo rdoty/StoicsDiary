@@ -30,6 +30,12 @@
             android:orientation="vertical"
             android:weightSum="1">
 
+            <TextView
+                android:id="@+id/TEXT_QUOTE"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18sp" />
+
             <RadioGroup
                 android:id="@+id/GROUP_CHOICES"
                 android:orientation="horizontal"
@@ -62,12 +68,6 @@
                     android:textSize="20sp"
                     android:text="@string/theme_text_01_bad" />
             </RadioGroup>
-
-            <TextView
-                android:id="@+id/TEXT_QUOTE"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="18sp" />
 
             <RelativeLayout
                 android:id="@+id/FEELS_LAYOUT_BUTTONS"
