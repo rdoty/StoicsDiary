@@ -41,15 +41,17 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
-import java.util.TimeZone;
 
 /**
  * This is the MainActivity
@@ -91,6 +93,7 @@ public class StoicActivity extends AppCompatActivity implements HistoryFragment.
 
     TabLayout tabLayout;
     ViewPager viewPager;
+    private Long currentDay;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -111,8 +114,20 @@ public class StoicActivity extends AppCompatActivity implements HistoryFragment.
         tabLayout.setupWithViewPager(viewPager);
 
         deleteAllTempCacheFiles();
+        initializeCurrentDay();
         initializeNotificationChannel();
         initializeDailyReminder();
+    }
+
+    private void initializeCurrentDay() {
+        currentDay = Util.getLongVal(LocalDateTime.now());
+    }
+    Long getCurrentDay() {
+        return currentDay;
+    }
+
+    void setCurrentDay(Long currentDay) {
+        this.currentDay = currentDay;
     }
 
     private void setupViewPager(ViewPager viewPager) {
@@ -801,14 +816,6 @@ public class StoicActivity extends AppCompatActivity implements HistoryFragment.
         static Long getLongVal(int year, int month, int dayOfMonth) {
             return getLongVal(LocalDateTime.of(year, month, dayOfMonth, 0, 0));
         }
-        /**
-         * Use this to get the value we set the calendar to and the one we store in the DB
-         * @param ldt LocalDateTime an object we're using to get the expected value
-         * @return Long the date munged appropriately that we'll use for storing and comparison
-         */
-        static Long getLongVal(LocalDateTime ldt) {
-            return ldt.atZone(ZoneOffset.systemDefault()).toInstant().toEpochMilli();
-        }
 
         /**
          * Take the long date value we get from the CalendarView and normalize it so we're always
@@ -817,10 +824,17 @@ public class StoicActivity extends AppCompatActivity implements HistoryFragment.
          * @return Long the date value that we'll use for storing and comparison
          */
         static Long getLongVal(Long date) {
-            Calendar cal = Calendar.getInstance();
-            cal.setTimeZone(TimeZone.getDefault());
-            cal.setTimeInMillis(date);
-            return Util.getLongVal(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DAY_OF_MONTH));
+            return Util.getLongVal(LocalDateTime.ofInstant(Instant.ofEpochMilli(date), ZoneId.systemDefault()));
         }
+
+        /**
+         * Use this to get the value we set the calendar to and the one we store in the DB
+         * @param ldt LocalDateTime an object we're using to get the expected value
+         * @return Long the date munged appropriately that we'll use for storing and comparison
+         */
+        static Long getLongVal(LocalDateTime ldt) {
+            return ldt.truncatedTo(ChronoUnit.DAYS).atZone(ZoneOffset.systemDefault()).toInstant().toEpochMilli();
+        }
+
     }
 }

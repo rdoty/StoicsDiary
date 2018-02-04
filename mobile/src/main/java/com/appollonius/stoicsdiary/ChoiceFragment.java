@@ -20,6 +20,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Random;
@@ -38,9 +39,7 @@ import com.appollonius.stoicsdiary.StoicActivity.Util;
 public class ChoiceFragment extends android.support.v4.app.Fragment implements View.OnClickListener,
         CalendarView.OnDateChangeListener {
 
-    public ChoiceFragment() {
-        // Required empty public constructor
-    }
+    public ChoiceFragment() { }  // Required empty public constructor
 
     /**
      * Convenience to declutter some calls above
@@ -162,9 +161,9 @@ public class ChoiceFragment extends android.support.v4.app.Fragment implements V
      */
     private void initializeCalendar() {
         CalendarView calendarView = getActivity().findViewById(R.id.history);
-        calendarView.setMaxDate(Util.getLongVal(calendarView.getDate()));
+        calendarView.setMaxDate(Util.getLongVal(LocalDateTime.now()));
         calendarView.setMinDate(((StoicActivity)getActivity()).getEarliestEntryDate());
-        calendarView.setDate(Util.getLongVal(calendarView.getDate()));  // Update calendar with normalized value
+        calendarView.setDate(Util.getLongVal(((StoicActivity)getActivity()).getCurrentDay()));
     }
 
     /**
@@ -219,7 +218,8 @@ public class ChoiceFragment extends android.support.v4.app.Fragment implements V
 
     @Override
     public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
-        view.setDate(Util.getLongVal(year, month + 1, dayOfMonth));  // Update calendar with normalized value
+        ((StoicActivity)getActivity()).setCurrentDay(Util.getLongVal(year, month + 1, dayOfMonth));
+        view.setDate(((StoicActivity)getActivity()).getCurrentDay());  // Update calendar with normalized value
         updateUI(true);  // Set UI based on data for the day, enable/disable controls as needed
    }
 
@@ -231,7 +231,7 @@ public class ChoiceFragment extends android.support.v4.app.Fragment implements V
     }
 
     private void onClickFeelsSave() {
-        updateUI(((StoicActivity)getActivity()).writeDayFeels(getCalendarSelectedDate(),
+        updateUI(((StoicActivity)getActivity()).writeDayFeels(((StoicActivity)getActivity()).getCurrentDay(),
                 ((EditText)getView(R.id.EDIT_FEELS)).getText().toString()));
     }
 
@@ -250,7 +250,7 @@ public class ChoiceFragment extends android.support.v4.app.Fragment implements V
         Boolean isChoiceEnabled = true;
         Boolean isChoiceSet;
 
-        selectedDayValues = ((StoicActivity)getActivity()).getChoice(getCalendarSelectedDate());
+        selectedDayValues = ((StoicActivity)getActivity()).getChoice(((StoicActivity)getActivity()).getCurrentDay());
         // Get references to all the controls we'll be updating
         RadioGroup radioGroupChoices = getActivity().findViewById(R.id.GROUP_CHOICES);
         EditText editTextFeels = getActivity().findViewById(R.id.EDIT_FEELS);
@@ -299,14 +299,6 @@ public class ChoiceFragment extends android.support.v4.app.Fragment implements V
         Log.d("DateSelected", logOutput);
     }
 
-    /**
-     *
-     * @return Long the date currently selected in the calendar UI
-     */
-    @NonNull
-    private Long getCalendarSelectedDate() {
-        return ((CalendarView)getView(R.id.history)).getDate();
-    }
     private void setFeelsText(String text) {
         ((EditText)getView(R.id.EDIT_FEELS)).setText(text);
     }
@@ -320,7 +312,7 @@ public class ChoiceFragment extends android.support.v4.app.Fragment implements V
      * @return Boolean success of write
      */
     private Boolean writeSelectedValue(Boolean value) {
-        return ((StoicActivity)getActivity()).writeDayValue(getCalendarSelectedDate(), value);
+        return ((StoicActivity)getActivity()).writeDayValue(((StoicActivity)getActivity()).getCurrentDay(), value);
     }
 
     /**
