@@ -21,7 +21,7 @@ public class TabAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
 //        switch (position) {
 //            case 0:
-//                return (Fragment)ChoiceFragment.newInstance("");
+//                return (Fragment)HistoryFragment.newInstance("");
 //        }
         return null;
     }

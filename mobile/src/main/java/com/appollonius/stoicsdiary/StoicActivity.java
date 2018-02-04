@@ -56,8 +56,8 @@ import java.util.Random;
 /**
  * This is the MainActivity
  */
-public class StoicActivity extends AppCompatActivity implements HistoryFragment.OnFragmentInteractionListener,
-        ChoiceFragment.OnFragmentInteractionListener {
+public class StoicActivity extends AppCompatActivity implements ChoiceFragment.OnFragmentInteractionListener,
+        HistoryFragment.OnFragmentInteractionListener, SummaryFragment.OnFragmentInteractionListener {
     // Database fields
     static final String TABLE_BASE = "diary";
     static final String TABLE_DESC = "feels";
@@ -134,7 +134,7 @@ public class StoicActivity extends AppCompatActivity implements HistoryFragment.
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.addFragment(new ChoiceFragment(), "CHOICE");
         adapter.addFragment(new HistoryFragment(), "HISTORY");
-        adapter.addFragment(new HistoryFragment(), "SUMMARY");
+        adapter.addFragment(new SummaryFragment(), "SUMMARY");
         viewPager.setAdapter(adapter);
     }
 
