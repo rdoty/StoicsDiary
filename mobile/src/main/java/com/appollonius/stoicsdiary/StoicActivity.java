@@ -120,21 +120,20 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         tabLayout.setupWithViewPager(viewPager);
 
         deleteAllTempCacheFiles();
+
         initializeCurrentDay();
+        initializeStartingTab();
         initializeNotificationChannel();
         initializeDailyReminder();
     }
 
-    private void initializeCurrentDay() {
-        currentDay = Util.getLongVal(LocalDateTime.now());
-    }
-    Long getCurrentDay() {
-        return currentDay;
+    private void initializeStartingTab() {
+        viewPager.setCurrentItem(getChoice(getCurrentDay()).getAsBoolean(CHOICE_ISSET) ? 1 : 0);
     }
 
-    void setCurrentDay(Long currentDay) {
-        this.currentDay = currentDay;
-    }
+    void initializeCurrentDay() { currentDay = Util.getLongVal(LocalDateTime.now()); }
+    void setCurrentDay(Long currentDay) { this.currentDay = currentDay; }
+    Long getCurrentDay() { return currentDay; }
 
     private void setupViewPager(ViewPager viewPager) {
         final ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
@@ -232,6 +231,12 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         }
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) { super.onSaveInstanceState(outState); }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) { } // you can leave it empty
+
     private void onClickPreferences() {
         Intent myIntent = new Intent(StoicActivity.this, SettingsActivity.class);
         myIntent.putExtra("key", "value"); //Optional parameters
@@ -244,17 +249,6 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         alertbox.setMessage(Html.fromHtml(aboutText, Html.FROM_HTML_MODE_COMPACT));
         alertbox.setNeutralButton("Ok", new DialogInterface.OnClickListener() { public void onClick(DialogInterface arg0, int arg1) { } } );
         alertbox.show();
-    }
-
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);  // Auto-generated method stub
-    }
-
-    @Override
-    public void onFragmentInteraction(Uri uri){
-        //you can leave it empty
     }
 
     /*
