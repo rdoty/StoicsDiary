@@ -39,6 +39,7 @@ import android.support.design.widget.TabLayout;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -832,6 +833,10 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             if (isChoiceSet) {  // Check the proper choice, also confirm whether we can change it
                 isChoiceEnabled = selectedDayValues.getAsBoolean(StoicActivity.CHOICE_ISMUTABLE);
                 radioGroupChoices.check(selectedDayValues.getAsBoolean(StoicActivity.COLUMN_CHOICE) ? R.id.BUTTON_YES : R.id.BUTTON_NO);
+            } else {  // Prompt if today is selected but no choice has been made
+                if (Util.getLongVal(LocalDateTime.now()).equals(getCurrentDay())) {
+                    Toast.makeText(this, themeText.prompt, Toast.LENGTH_LONG).show();
+                }
             }
             for (View child: Util.getAllChildren(radioGroupChoices)) {
                 child.setEnabled(isChoiceEnabled);

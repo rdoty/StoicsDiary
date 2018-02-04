@@ -82,7 +82,6 @@ public class ChoiceFragment extends android.support.v4.app.Fragment implements V
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         bindEventHandlers();
-        Toast.makeText(getContext(), mA.themeText.prompt, Toast.LENGTH_LONG).show();
     }
 
     /**
