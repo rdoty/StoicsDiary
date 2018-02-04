@@ -1,88 +1,67 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="com.appollonius.stoicsdiary.HistoryFragment">
 
-    <android.support.v4.widget.NestedScrollView
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/linearLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:layout_height="wrap_content"
+        android:weightSum="0">
+
+        <CalendarView
+            android:id="@+id/history"
+            android:layout_width="0dp"
+            android:layout_height="300dp"
+            android:clipToPadding="false"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.25"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </android.support.constraint.ConstraintLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:weightSum="100">
+            android:weightSum="1">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+            <RadioGroup
+                android:id="@+id/GROUP_CHOICES"
                 android:orientation="horizontal"
-                android:weightSum="50">
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
 
-                <LinearLayout
+                <RadioButton
+                    android:id="@+id/BUTTON_YES"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:weightSum="0">
+                    android:layout_weight="50"
+                    android:button="@android:color/transparent"
+                    android:background="@drawable/choicebackground"
+                    android:backgroundTint="@android:color/holo_green_dark"
+                    android:checked="false"
+                    android:gravity="center"
+                    android:textSize="20sp"
+                    android:text="@string/theme_text_01_good" />
 
-                    <TextView
-                        android:id="@+id/TEXT_PROMPT"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/activity_horizontal_margin"
-                        android:text="@string/theme_text_01_prompt"
-                        tools:text="@string/theme_text_01_prompt" />
-
-                    <RadioGroup
-                        android:id="@+id/GROUP_CHOICES"
-                        android:orientation="vertical"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent">
-
-                        <RadioButton
-                            android:id="@+id/BUTTON_YES"
-                            android:layout_width="match_parent"
-                            android:layout_height="0dp"
-                            android:layout_weight="50"
-                            android:button="@android:color/transparent"
-                            android:background="@drawable/choicebackground"
-                            android:backgroundTint="@android:color/holo_green_dark"
-                            android:checked="false"
-                            android:textSize="40sp"
-                            android:gravity="center"
-                            android:text="" />
-
-                        <RadioButton
-                            android:id="@+id/BUTTON_NO"
-                            android:layout_width="match_parent"
-                            android:layout_height="0dp"
-                            android:layout_weight="50"
-                            android:button="@android:color/transparent"
-                            android:background="@drawable/choicebackground"
-                            android:backgroundTint="@android:color/holo_red_dark"
-                            android:checked="false"
-                            android:textSize="40sp"
-                            android:gravity="center"
-                            android:text="" />
-                    </RadioGroup>
-                </LinearLayout>
-
-                <LinearLayout
+                <RadioButton
+                    android:id="@+id/BUTTON_NO"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:weightSum="1">
-
-                    <CalendarView
-                        android:id="@+id/history"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-
-                </LinearLayout>
-
-            </LinearLayout>
+                    android:layout_height="match_parent"
+                    android:layout_weight="50"
+                    android:button="@android:color/transparent"
+                    android:background="@drawable/choicebackground"
+                    android:backgroundTint="@android:color/holo_red_dark"
+                    android:checked="false"
+                    android:gravity="center"
+                    android:textSize="20sp"
+                    android:text="@string/theme_text_01_bad" />
+            </RadioGroup>
 
             <TextView
                 android:id="@+id/TEXT_QUOTE"
@@ -94,15 +73,18 @@
                 android:id="@+id/FEELS_LAYOUT_BUTTONS"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_gravity="bottom">
+                android:layout_gravity="bottom"
+                android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/TEXT_DEBUG"
-                    android:textSize="12sp"
-                    android:layout_above="@id/EDIT_FEELS"
+                    android:id="@+id/TEXT_PROMPT"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignBottom="@id/EDIT_FEELS"
+                    android:text="@string/theme_text_01_prompt"
+                    tools:text="@string/theme_text_01_prompt" />
 
                 <EditText
                     android:id="@+id/EDIT_FEELS"
@@ -114,7 +96,8 @@
                     android:hint="@string/feels_prompt_enabled"
                     android:inputType="textMultiLine"
                     android:labelFor="@+id/EDIT_FEELS"
-                    android:maxLength="140" />
+                    android:maxLength="140"
+                    android:visibility="visible" />
 
                 <Button
                     android:id="@+id/BUTTON_FEELS_SAVE"
@@ -134,8 +117,5 @@
                     android:layout_alignParentEnd="true"
                     android:text="@string/button_tweet" />
             </RelativeLayout>
-
         </LinearLayout>
-    </android.support.v4.widget.NestedScrollView>
-
-</FrameLayout>
+</LinearLayout>

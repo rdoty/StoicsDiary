@@ -15,10 +15,12 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.FileProvider;
@@ -34,6 +36,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.support.design.widget.TabLayout;
+import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -131,11 +136,32 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     }
 
     private void setupViewPager(ViewPager viewPager) {
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(new ChoiceFragment(), "CHOICE");
-        adapter.addFragment(new HistoryFragment(), "HISTORY");
-        adapter.addFragment(new SummaryFragment(), "SUMMARY");
+        final ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        adapter.addFragment(ChoiceFragment.newInstance(""), "CHOICE");
+        adapter.addFragment(HistoryFragment.newInstance(""), "HISTORY");
+        adapter.addFragment(SummaryFragment.newInstance(""), "SUMMARY");
         viewPager.setAdapter(adapter);
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                //Log.d("DEBUG", String.format("Scrolled Tab #%d", position));
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                Log.d("DEBUG", String.format("Selected Tab #%d", position));
+                if (adapter.getItem(position).getView() != null) {
+                    updateUI(adapter.getItem(position).getView());
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+//                if (state == ViewPager.SCROLL_STATE_IDLE) {
+//                    Log.d("DEBUG", "ScrollStateChanged to IDLE");
+//                }
+            }
+        });
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
@@ -522,7 +548,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
                 Html.fromHtml(getString(R.string.export_email_body), Html.FROM_HTML_MODE_COMPACT).toString(),
                 getString(R.string.export_email_closing),
                 String.format("%s %s", getString(R.string.export_email_signature), getString(R.string.app_name)),
-                "QUOTE HERE"), Html.FROM_HTML_MODE_COMPACT).toString();
+                getQuote()), Html.FROM_HTML_MODE_COMPACT).toString();
     }
 
 /*
@@ -652,6 +678,26 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     }
 
     /**
+     * Grabs a random quote from the resource file
+     * @return String the quote to display
+     */
+    @NonNull
+    public String getQuote() {
+        return getQuote(new Random().nextInt(StoicActivity.NUM_QUOTES) + 1);
+    }
+
+    /**
+     * Grabs a specific quote from the resource file
+     * @param quoteId Integer if null, gets a random quote
+     * @return String the quote to display
+     */
+    @NonNull
+    private String getQuote(Integer quoteId) {
+        String num = String.format(Locale.US, "%02d", quoteId);
+        return this.getText(getResources().getIdentifier("quote_" + num,"string", BuildConfig.APPLICATION_ID)).toString();
+    }
+
+    /**
      * (re-)sets the themes to whatever is configured in preferences
      * Below are other related theme functionality that might be handy in the future
      final Integer NUM_COLOR_THEMES = getResources().getStringArray(R.array.pref_color_theme_values).length;
@@ -770,6 +816,56 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         }
     }
 
+    /**
+     * This includes default colors, text prompts, maybe user-provided text, too.
+     */
+    void updateUI(View v) {
+        RadioGroup radioGroupChoices = v.findViewById(R.id.GROUP_CHOICES);
+        RadioButton yB = v.findViewById(R.id.BUTTON_YES);
+        RadioButton nB = v.findViewById(R.id.BUTTON_NO);
+
+        ContentValues selectedDayValues = getChoice(getCurrentDay());
+        Boolean isChoiceSet = selectedDayValues.getAsBoolean(StoicActivity.CHOICE_ISSET);
+        Boolean isChoiceEnabled = true;
+        if (radioGroupChoices != null) {
+            radioGroupChoices.clearCheck();  // Clear previous selection in case choice not set
+            if (isChoiceSet) {  // Check the proper choice, also confirm whether we can change it
+                isChoiceEnabled = selectedDayValues.getAsBoolean(StoicActivity.CHOICE_ISMUTABLE);
+                radioGroupChoices.check(selectedDayValues.getAsBoolean(StoicActivity.COLUMN_CHOICE) ? R.id.BUTTON_YES : R.id.BUTTON_NO);
+            }
+            for (View child: Util.getAllChildren(radioGroupChoices)) {
+                child.setEnabled(isChoiceEnabled);
+            }
+            yB.setText(
+                    (isChoiceEnabled
+                            ? themeText.choiceTextGood
+                            : yB.isChecked()
+                                ? themeText.choiceTextDisabledSelected
+                                : themeText.choiceTextDisabledUnselected));
+            yB.setVisibility((!isChoiceEnabled && !yB.isChecked()) ? View.GONE : View.VISIBLE);
+            yB.setTextColor(themeColors.choiceColorGoodFg);
+            yB.getBackground().setColorFilter(themeColors.choiceColorGoodBg, PorterDuff.Mode.SRC_ATOP);
+            yB.getBackground().setTint(themeColors.choiceColorGoodBg);
+
+            nB.setText(
+                    (isChoiceEnabled
+                            ? themeText.choiceTextBad
+                            : nB.isChecked()
+                                ? themeText.choiceTextDisabledSelected
+                                : themeText.choiceTextDisabledUnselected));
+            nB.setVisibility((!isChoiceEnabled && !nB.isChecked()) ? View.GONE : View.VISIBLE);
+            nB.setTextColor(themeColors.choiceColorBadFg);
+            nB.getBackground().setColorFilter(themeColors.choiceColorBadBg, PorterDuff.Mode.SRC_ATOP);
+            nB.getBackground().setTint(themeColors.choiceColorBadBg);
+        }
+        // Set the other controls to their proper state
+        EditText editTextFeels = v.findViewById(R.id.EDIT_FEELS);
+        if (editTextFeels != null) {
+            editTextFeels.setHint(getText(isChoiceSet ? R.string.feels_prompt_enabled : R.string.feels_prompt_disabled));
+            editTextFeels.setEnabled(isChoiceSet);
+            editTextFeels.setText(selectedDayValues.getAsString(StoicActivity.COLUMN_WORDS));
+        }
+    }
     /**
      * UTILITY METHODS BELOW
      * Mostly shared code called from fragments
