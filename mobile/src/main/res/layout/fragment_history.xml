@@ -4,108 +4,116 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.appollonius.stoicsdiary.HistoryFragment">
+    tools:context="com.appollonius.stoicsdiary.HistoryFragment" >
 
     <android.support.constraint.ConstraintLayout
-        android:id="@+id/linearLayout"
+        android:id="@+id/history_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:weightSum="0">
+        android:orientation="horizontal"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="-32dp"
+        android:layout_marginBottom="-64dp"
+        android:scaleX=".8"
+        android:scaleY=".8">
 
         <CalendarView
             android:id="@+id/history"
-            android:layout_width="0dp"
-            android:layout_height="300dp"
-            android:clipToPadding="false"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.25"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-    </android.support.constraint.ConstraintLayout>
-
-        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:weightSum="1">
+            android:layout_gravity="center_horizontal"
+            />
 
-            <TextView
-                android:id="@+id/TEXT_QUOTE"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="18sp" />
+    </android.support.constraint.ConstraintLayout>
 
-            <RadioGroup
-                android:id="@+id/GROUP_CHOICES"
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
+    <TextView
+        android:id="@+id/TEXT_QUOTE"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="18sp" />
 
-                <RadioButton
-                    android:id="@+id/BUTTON_YES"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_weight="50"
-                    android:button="@android:color/transparent"
-                    android:background="@drawable/choicebackground"
-                    android:backgroundTint="@android:color/holo_green_dark"
-                    android:checked="false"
-                    android:gravity="center"
-                    android:textSize="20sp"
-                    android:text="@string/theme_text_01_good" />
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/FEELS_LAYOUT"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="bottom"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:orientation="horizontal">
 
-                <RadioButton
-                    android:id="@+id/BUTTON_NO"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_weight="50"
-                    android:button="@android:color/transparent"
-                    android:background="@drawable/choicebackground"
-                    android:backgroundTint="@android:color/holo_red_dark"
-                    android:checked="false"
-                    android:gravity="center"
-                    android:textSize="20sp"
-                    android:text="@string/theme_text_01_bad" />
-            </RadioGroup>
+        <RadioGroup
+            android:id="@+id/GROUP_CHOICES"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:start="@id/EDIT_FEELS"
+            app:layout_constraintBottom_toTopOf="@+id/EDIT_FEELS"
+            app:layout_constraintStart_toStartOf="parent">
 
-            <RelativeLayout
-                android:id="@+id/FEELS_LAYOUT_BUTTONS"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:orientation="horizontal">
+            <RadioButton
+                android:id="@+id/BUTTON_YES"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="50"
+                android:background="@drawable/choicebackground"
+                android:backgroundTint="@android:color/holo_green_dark"
+                android:button="@android:color/transparent"
+                android:checked="false"
+                android:gravity="center"
+                android:text="@string/theme_text_01_good"
+                android:textSize="20sp" />
 
-                <EditText
-                    android:id="@+id/EDIT_FEELS"
-                    android:layout_width="match_parent"
-                    android:layout_height="90dp"
-                    android:layout_above="@+id/BUTTON_FEELS_SAVE"
-                    android:layout_alignParentStart="true"
-                    android:background="#AAAAAA"
-                    android:hint="@string/feels_prompt_enabled"
-                    android:inputType="textMultiLine"
-                    android:labelFor="@+id/EDIT_FEELS"
-                    android:maxLength="140"
-                    android:visibility="visible" />
+            <RadioButton
+                android:id="@+id/BUTTON_NO"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="50"
+                android:background="@drawable/choicebackground"
+                android:backgroundTint="@android:color/holo_red_dark"
+                android:button="@android:color/transparent"
+                android:checked="false"
+                android:gravity="center"
+                android:text="@string/theme_text_01_bad"
+                android:textSize="20sp" />
+        </RadioGroup>
 
-                <Button
-                    android:id="@+id/BUTTON_FEELS_SAVE"
-                    style="@style/Widget.AppCompat.Button.Borderless"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:text="@string/button_save" />
+        <EditText
+            android:id="@+id/EDIT_FEELS"
+            android:layout_width="match_parent"
+            android:layout_height="90dp"
+            android:layout_above="@+id/BUTTON_FEELS_SAVE"
+            android:layout_alignParentStart="true"
+            android:background="#AAAAAA"
+            android:hint="@string/feels_prompt_enabled"
+            android:inputType="textMultiLine"
+            android:labelFor="@+id/EDIT_FEELS"
+            android:maxLength="140"
+            android:visibility="visible"
+            app:layout_constraintBottom_toTopOf="@+id/BUTTON_FEELS_SAVE"
+            app:layout_constraintStart_toStartOf="parent" />
 
-                <Button
-                    android:id="@+id/BUTTON_FEELS_TWEET"
-                    style="@style/Widget.AppCompat.Button.Borderless"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignEnd="@id/BUTTON_FEELS_SAVE"
-                    android:layout_alignParentBottom="true"
-                    android:layout_alignParentEnd="true"
-                    android:text="@string/button_tweet" />
-            </RelativeLayout>
-        </LinearLayout>
+        <Button
+            android:id="@+id/BUTTON_FEELS_SAVE"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="8dp"
+            android:text="@string/button_save"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <Button
+            android:id="@+id/BUTTON_FEELS_TWEET"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignEnd="@id/BUTTON_FEELS_SAVE"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="8dp"
+            android:text="@string/button_tweet"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+    </android.support.constraint.ConstraintLayout>
 </LinearLayout>
