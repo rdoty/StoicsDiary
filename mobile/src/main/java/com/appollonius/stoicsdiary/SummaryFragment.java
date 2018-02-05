@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 
 
 /**
@@ -18,7 +19,7 @@ import android.view.ViewGroup;
  * Use the {@link SummaryFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class SummaryFragment extends android.support.v4.app.Fragment {
+public class SummaryFragment extends android.support.v4.app.ListFragment {
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -70,8 +71,12 @@ public class SummaryFragment extends android.support.v4.app.Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_summary, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_summary, container,false);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                mA, android.R.layout.simple_list_item_1, getSummaryStats());
+        setListAdapter(adapter);
+        return rootView;
     }
 
     public void onButtonPressed(Uri uri) {  // TODO: Rename method, update argument and hook into UI
@@ -95,5 +100,13 @@ public class SummaryFragment extends android.support.v4.app.Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    /**
+     * Need to calculate these asynchronously
+     * @return String[] array of stats to display
+     */
+    String[] getSummaryStats() {
+        return new String[] { "Stat 1\nValue", "Stat 2\nValue", "Stat 3\nValue" };
     }
  }

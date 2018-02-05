@@ -12,10 +12,10 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="-32dp"
-        android:layout_marginBottom="-64dp"
-        android:scaleX=".8"
-        android:scaleY=".8">
+        android:layout_marginTop="-24dp"
+        android:layout_marginBottom="-48dp"
+        android:scaleX=".9"
+        android:scaleY=".9">
 
         <CalendarView
             android:id="@+id/history"
