@@ -3,7 +3,6 @@
 
     <item android:state_pressed="true" >
         <shape android:shape="rectangle" >
-            <corners android:radius="3dip" />
             <stroke android:width="6dip" android:color="#ccc" />
             <solid android:color="#ccc" />
         </shape>
@@ -11,7 +10,6 @@
 
     <item android:state_checked="true">
         <shape android:shape="rectangle" >
-            <corners android:radius="3dip" />
             <stroke android:width="1dip" android:color="#ccc" />
             <solid android:color="#aaa" android:colorPressedHighlight="#888"/>
         </shape>
@@ -19,7 +17,6 @@
 
     <item>
         <shape android:shape="rectangle"  >
-            <corners android:radius="3dip" />
             <stroke android:width="6dip" android:color="#ccc" />
             <solid android:color="@android:color/transparent" />
         </shape>
