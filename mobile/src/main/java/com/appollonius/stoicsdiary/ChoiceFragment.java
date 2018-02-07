@@ -101,7 +101,7 @@ public class ChoiceFragment extends android.support.v4.app.Fragment implements V
      * @param choiceId int The id of the choice button selected
      */
     private void onClickChoice(int choiceId) {
-        mA.writeDayValue(mA.getCurrentDay(),R.id.BUTTON_YES == choiceId);
+        mA.ds.writeDayValue(mA.getCurrentDay(),R.id.BUTTON_YES == choiceId);
         mA.updateUI(getView());
         mA.viewPager.setCurrentItem(1, true);  // Switch to History tab
     }

@@ -66,15 +66,6 @@ import java.util.Random;
  */
 public class StoicActivity extends AppCompatActivity implements ChoiceFragment.OnFragmentInteractionListener,
         HistoryFragment.OnFragmentInteractionListener, SummaryFragment.OnFragmentInteractionListener {
-    // Database fields
-    static final String TABLE_BASE = "diary";
-    static final String TABLE_DESC = "feels";
-    static final String COLUMN_DAY = "time_stamp";
-    static final String COLUMN_CHOICE = "choice";
-    static final String COLUMN_UPDATE_DATE = "last_updated";
-    static final String COLUMN_UPDATE_COUNT = "update_count";
-    static final String COLUMN_DESC_F_KEY = "diary_id";
-    static final String COLUMN_WORDS = "words";
     // Fields used between activities/fragments
     static final String CHOICE_ISSET = "isSet";
     static final String CHOICE_ISMUTABLE = "isMutable";
@@ -92,8 +83,8 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     static final String EXPORT_FILENAME = "sd_export.csv";
 
     // Major internal components
-    private StoicDatabase db;
     SharedPreferences sp;
+    Datastore ds;
     ThemeColors themeColors;
     ThemeText themeText;
     Typeface font;
@@ -110,8 +101,8 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         Log.d("VERSION", String.format("%s, v%s", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE));
 
         setContentView(R.layout.activity_stoic);
-        db = new StoicDatabase(this);
         sp = PreferenceManager.getDefaultSharedPreferences(this);
+        ds = new Datastore();
         themeColors = new ThemeColors();
         themeText = new ThemeText();
         font = Typeface.createFromAsset(getAssets(), "font-awesome-5-free-regular-400.otf");
@@ -225,7 +216,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             }
             if (extras.getBoolean(INTENT_EXTRA_RESET_DB, false)) {
                 getIntent().removeExtra(INTENT_EXTRA_RESET_DB);
-                rebuildDatabase();  // or truncateTables();
+                ds.rebuildDatabase();
                 Log.d("DB", "Database was reset by user.");
             }
         }
@@ -261,14 +252,14 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
      * @return Boolean true, false or NULL
      */
     ContentValues getChoice(Long date) {
-        ContentValues dayValues = readDayValues(date);
+        ContentValues dayValues = ds.readDayValues(date);
         ContentValues dayChoice = new ContentValues();
         if (dayValues.size() > 0) {  // Update
             dayChoice.put(CHOICE_ISSET, true);
-            dayChoice.put(CHOICE_ISMUTABLE, dayValues.getAsInteger(COLUMN_UPDATE_COUNT) < MAX_CHANGES);
-            dayChoice.put(COLUMN_UPDATE_COUNT, dayValues.getAsInteger(COLUMN_UPDATE_COUNT));
-            dayChoice.put(COLUMN_CHOICE, dayValues.getAsBoolean(COLUMN_CHOICE));
-            dayChoice.put(COLUMN_WORDS, dayValues.getAsString(COLUMN_WORDS));
+            dayChoice.put(CHOICE_ISMUTABLE, dayValues.getAsInteger(Datastore.COLUMN_UPDATE_COUNT) < MAX_CHANGES);
+            dayChoice.put(Datastore.COLUMN_UPDATE_COUNT, dayValues.getAsInteger(Datastore.COLUMN_UPDATE_COUNT));
+            dayChoice.put(Datastore.COLUMN_CHOICE, dayValues.getAsBoolean(Datastore.COLUMN_CHOICE));
+            dayChoice.put(Datastore.COLUMN_WORDS, dayValues.getAsString(Datastore.COLUMN_WORDS));
         } else {
             dayChoice.put(CHOICE_ISSET, false);
         }
@@ -276,182 +267,6 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         return dayChoice;
     }
 
-    /**
-     * For checking the current value and whether / when the value was and can be changed
-     * @param date Long
-     * @return ContentValues database key/values corresponding to the date value in COLUMN_DAY
-     */
-    ContentValues readDayValues(Long date) {
-        String[] SELECT_COLS = new String[] {TABLE_BASE+".id", COLUMN_CHOICE, COLUMN_UPDATE_DATE, COLUMN_UPDATE_COUNT, COLUMN_WORDS};
-        String Q_SELECT = String.format(
-                "SELECT %s FROM %s LEFT OUTER JOIN %s ON %s.%s=%s.%s WHERE %s=%s;",
-                String.join(",", SELECT_COLS),
-                TABLE_BASE,
-                TABLE_DESC,
-                TABLE_DESC, COLUMN_DESC_F_KEY, TABLE_BASE, "id",
-                COLUMN_DAY, date);
-        ContentValues dayValues = new ContentValues();
-
-        SQLiteDatabase dbr = db.getReadableDatabase();
-
-        Cursor cursor = dbr.rawQuery(Q_SELECT,null);
-        if (cursor.moveToFirst()) {
-            for (int i=0; i < cursor.getColumnCount(); i++) {
-                dayValues.put(cursor.getColumnName(i), cursor.getString(i));
-            }
-        }
-        cursor.close();
-        return dayValues;
-    }
-
-    /**
-     * Would like to find a more elegant upsert behavior, sqlite has 'INSERT OR REPLACE'
-     * @param date Long from LocalDate
-     * @param theChoice Boolean value to assign
-     * @return Boolean whether the set was a success
-     */
-    Boolean writeDayValue(Long date, Boolean theChoice) {
-        SQLiteDatabase dbw = db.getWritableDatabase();
-        ContentValues oldValues = readDayValues(date);
-        ContentValues newValues = new ContentValues();
-        String LOG_STRING = "Setting long date %s to value %s, was %s";
-        Boolean didWriteSucceed = false;
-
-        newValues.put(COLUMN_CHOICE, theChoice);
-        newValues.put(COLUMN_UPDATE_DATE, Util.getLongVal(LocalDateTime.now()));
-
-        if (oldValues.size() > 0) {  // Update
-            if (!oldValues.getAsBoolean(COLUMN_CHOICE).equals(theChoice)) {  // #154818575
-                final short updates = Short.valueOf(oldValues.getAsString(COLUMN_UPDATE_COUNT));
-                if (updates < MAX_CHANGES) {
-                    newValues.put(COLUMN_UPDATE_COUNT, updates + 1);
-                    dbw.update(StoicActivity.TABLE_BASE, newValues, String.format("%s=%s", COLUMN_DAY, Long.toString(date)), null);
-                    didWriteSucceed = true;
-                } // else { // What to return when update fails due to count? }
-            }
-        } else {  // Insert
-            newValues.put(COLUMN_DAY, date);
-            newValues.put(COLUMN_UPDATE_COUNT, 1);
-            dbw.insert(StoicActivity.TABLE_BASE, null, newValues);
-            didWriteSucceed = true;
-        }
-        Log.d("DateSet", String.format(LOG_STRING, date, theChoice, oldValues.get(COLUMN_CHOICE)));
-        dbw.close();
-        return didWriteSucceed;
-    }
-
-    /**
-     *
-     * @param date Long from LocalDate
-     * @param feels String the text to save
-     * @return Boolean whether the set was a success
-     */
-    Boolean writeDayFeels(Long date, String feels) {
-        Boolean didWriteSucceed = false;
-        SQLiteDatabase dbw = db.getWritableDatabase();
-        ContentValues oldValues = readDayValues(date);
-        ContentValues newValues = new ContentValues();
-        newValues.put(COLUMN_WORDS, feels);
-        if (oldValues.size() > 0) {  // Update
-            newValues.put(COLUMN_DESC_F_KEY, oldValues.getAsInteger("id"));
-            if (oldValues.getAsString(COLUMN_WORDS) != null) {  // update
-                didWriteSucceed = 1 == dbw.update(StoicActivity.TABLE_DESC, newValues, String.format("%s=%s", COLUMN_DESC_F_KEY, oldValues.getAsString("id")), null);
-            } else {  // insert
-                didWriteSucceed = -1 < dbw.insert(StoicActivity.TABLE_DESC, null, newValues);
-            }
-        }
-        return didWriteSucceed;
-    }
-
-    /**
-     *
-     * @return Long Date of the first entry in the database
-     */
-    Long getEarliestEntryDate() {
-        Long earliestDate = Util.getLongVal(2017, 12, 2); // Hardcode debug
-        Long noEntryDate = Util.getLongVal(LocalDateTime.now());
-        if (!isDebugMode()) {
-            SQLiteDatabase dbr = db.getReadableDatabase();
-            Cursor c = dbr.query(StoicActivity.TABLE_BASE, new String[] { String.format("min(%s)", COLUMN_DAY) },
-                    null, null,null, null, null);
-            c.moveToFirst();
-            earliestDate = c.isNull(0) ? noEntryDate : c.getLong(0);
-            c.close();
-        }
-        return earliestDate;
-    }
-
-    /**
-     * This does what it says
-     */
-    private void rebuildDatabase() {
-        SQLiteDatabase dbw = db.getWritableDatabase();
-        String Q_TABLE_DROP = "DROP TABLE IF EXISTS %s;";
-        String Q_TABLE_MAKE = "CREATE TABLE %s (%s);";
-        String COLUMNS_BASE = String.format(
-                "id INTEGER PRIMARY KEY, %s DATE UNIQUE, %s DATE, %s TINYINT, %s BOOLEAN",
-                COLUMN_DAY, COLUMN_UPDATE_DATE, COLUMN_UPDATE_COUNT, COLUMN_CHOICE);
-        String COLUMNS_DESC = String.format(
-                "id INTEGER PRIMARY KEY, %s INTEGER, %s VARCHAR(255), FOREIGN KEY (%s) REFERENCES %s(id)",
-                COLUMN_DESC_F_KEY, COLUMN_WORDS, COLUMN_DESC_F_KEY, TABLE_BASE);
-
-        dbw.execSQL(String.format(Q_TABLE_DROP, TABLE_BASE));
-        dbw.execSQL(String.format(Q_TABLE_MAKE, TABLE_BASE, COLUMNS_BASE));
-        dbw.execSQL(String.format(Q_TABLE_DROP, TABLE_DESC));
-        dbw.execSQL(String.format(Q_TABLE_MAKE, TABLE_DESC, COLUMNS_DESC));
-    }
-
-    /* Other ways of clearing the data in the DB
-    private void truncateTables() {
-        SQLiteDatabase dbw = db.getWritableDatabase();
-        String Q_TABLETRUNC = "DELETE FROM %s; DELETE FROM SQLITE_SEQUENCE WHERE name='%s';";
-        dbw.execSQL(String.format(Q_TABLETRUNC, TABLE_DESC, TABLE_DESC));
-        dbw.execSQL(String.format(Q_TABLETRUNC, TABLE_BASE, TABLE_BASE));
-    }
-
-    private void dropAllUserTables(SQLiteDatabase db) {
-        Cursor cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'", null);
-        //noinspection TryFinallyCanBeTryWithResources not available with API < 19
-        try {
-            List<String> tables = new ArrayList<>(cursor.getCount());
-
-            while (cursor.moveToNext()) {
-                tables.add(cursor.getString(0));
-            }
-
-            for (String table : tables) {
-                if (table.startsWith("sqlite_")) {
-                    continue;
-                }
-                db.execSQL("DROP TABLE IF EXISTS " + table);
-                Log.v(LOG_TAG, "Dropped table " + table);
-            }
-        } finally {
-            cursor.close();
-        }
-    }
-    */
-
-    ArrayList<ContentValues> getExportData() {
-        String[] SELECT_COLS = new String[] {TABLE_BASE+".id", COLUMN_DAY, COLUMN_CHOICE, COLUMN_WORDS};
-        String Q_SELECT = String.format("SELECT %s FROM %s LEFT OUTER JOIN %s ON %s.%s=%s.%s ORDER BY %s;",
-                String.join(",", SELECT_COLS),
-                TABLE_BASE, TABLE_DESC, TABLE_DESC, COLUMN_DESC_F_KEY, TABLE_BASE, "id", COLUMN_DAY);
-
-        SQLiteDatabase dbr = db.getReadableDatabase();
-
-        Cursor cursor = dbr.rawQuery(Q_SELECT,null);
-        ArrayList<ContentValues> retVal = new ArrayList<>();
-        ContentValues map;
-
-        while (cursor.moveToNext()) {
-            map = new ContentValues();
-            DatabaseUtils.cursorRowToContentValues(cursor, map);
-            retVal.add(map);
-        }
-        cursor.close();
-        return retVal;
-    }
     /*
      * END Database accessors
      */
@@ -486,16 +301,16 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd", Locale.getDefault());
 
         try {
-            ArrayList<ContentValues> exportData = getExportData();
+            ArrayList<ContentValues> exportData = ds.getExportData();
             File internalFile = new File(getApplicationContext().getFilesDir(), EXPORT_FILENAME);
             PrintWriter csvWriter = new PrintWriter(new FileWriter(internalFile,false));
             csvWriter.printf("%s, %s, %s\r\n", HEADER_DATE, HEADER_CHOICE, HEADER_WORDS);
             for (ContentValues data : exportData) {
-                Date date = new Date(data.getAsLong(COLUMN_DAY));
+                Date date = new Date(data.getAsLong(Datastore.COLUMN_DAY));
                 String output = String.format("%s, %s, \"%s\"\r\n",
                         dateFormat.format(date),
-                        data.getAsString(COLUMN_CHOICE).equals("1") ? "1" : "-1",
-                        data.getAsString(COLUMN_WORDS) == null ? "" : data.getAsString(COLUMN_WORDS));
+                        data.getAsString(Datastore.COLUMN_CHOICE).equals("1") ? "1" : "-1",
+                        data.getAsString(Datastore.COLUMN_WORDS) == null ? "" : data.getAsString(Datastore.COLUMN_WORDS));
                 csvWriter.print(output);
                 Log.d("EXPORT_ROW", output);
             }
@@ -726,7 +541,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             radioGroupChoices.clearCheck();  // Clear previous selection in case choice not set
             if (isChoiceSet) {  // Check the proper choice, also confirm whether we can change it
                 isChoiceEnabled = selectedDayValues.getAsBoolean(StoicActivity.CHOICE_ISMUTABLE);
-                radioGroupChoices.check(selectedDayValues.getAsBoolean(StoicActivity.COLUMN_CHOICE) ? R.id.BUTTON_YES : R.id.BUTTON_NO);
+                radioGroupChoices.check(selectedDayValues.getAsBoolean(Datastore.COLUMN_CHOICE) ? R.id.BUTTON_YES : R.id.BUTTON_NO);
             } else {  // Prompt if today is selected but no choice has been made
                 if (Util.getLongVal(LocalDateTime.now()).equals(getCurrentDay())) {
                     Toast.makeText(this, themeText.prompt, Toast.LENGTH_LONG).show();
@@ -765,7 +580,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         if (editTextFeels != null) {
             editTextFeels.setHint(getText(isChoiceSet ? R.string.feels_prompt_enabled : R.string.feels_prompt_disabled));
             editTextFeels.setEnabled(isChoiceSet);
-            editTextFeels.setText(selectedDayValues.getAsString(StoicActivity.COLUMN_WORDS));
+            editTextFeels.setText(selectedDayValues.getAsString(Datastore.COLUMN_WORDS));
         }
     }
 
@@ -880,53 +695,279 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         }
     }
 
-    /**
-     * Encapsulates the data we'll display to the user in the Summary tab
-     * (visual) choices previous month (see 7 minute workout)
-     */
-    class UserStatistics {
-        String earliestChoiceMade;
-        String earliestWrittenHistory;
-        String latestTweet;  // Need to track this
-        Integer countCurrentConsecutiveChoicesMade;
-        Integer countMaximumConsecutiveChoicesMade;
-        Integer countChoicesMade;
-        Integer countChoicesChanged;  // sum of update_count minus count of choices
-        Integer countWrittenHistoryThisWeek;
-        Integer countWrittenHistoryThisMonth;
-        Integer countWrittenHistoryAllTime;
-        Integer sumValueChoicesMadeThisWeek;
-        Integer sumValueChoicesMadeThisMonth;
-        Integer sumValueChoicesMadeAllTime;
-        int[] sumValueChoicesMadeByDayOfWeek; // Array w/M-Su, can use for weekday/weekends too
-        int[] choicesMadeThisMonth;  //
-        /**
-         *
-         */
-        UserStatistics() {
-            recalculateStats();
+    class Datastore {
+        // Database fields
+        static final String TABLE_BASE = "diary";
+        static final String TABLE_DESC = "feels";
+        static final String COLUMN_DAY = "time_stamp";
+        static final String COLUMN_CHOICE = "choice";
+        static final String COLUMN_UPDATE_DATE = "last_updated";
+        static final String COLUMN_UPDATE_COUNT = "update_count";
+        static final String COLUMN_DESC_F_KEY = "diary_id";
+        static final String COLUMN_WORDS = "words";
+
+        private StoicDatabase db;
+        UserStatistics us;
+
+        Datastore() {
+            db = new StoicDatabase(getApplicationContext());
+            us = new UserStatistics();
         }
 
         /**
-         * Set the values of the member variables based on info in the DB
+         * For checking the current value and whether / when the value was and can be changed
+         * @param date Long
+         * @return ContentValues database key/values corresponding to the date value in COLUMN_DAY
          */
-        void recalculateStats() {
-            // Do some querying...
-            earliestChoiceMade = String.format("%s", Instant.now().toString());
-            earliestWrittenHistory = String.format("%s", Instant.now().toString());
-            latestTweet = String.format("%s", Instant.now().toString());
-            countCurrentConsecutiveChoicesMade = 0;
-            countMaximumConsecutiveChoicesMade = 0;
-            countChoicesMade = 0;
-            countChoicesChanged = 0;  // sum of update_count minus count of choices
-            countWrittenHistoryThisWeek = 0;
-            countWrittenHistoryThisMonth = 0;
-            countWrittenHistoryAllTime = 0;
-            sumValueChoicesMadeThisWeek = 0;
-            sumValueChoicesMadeThisMonth = 0;
-            sumValueChoicesMadeAllTime = 0;
-            sumValueChoicesMadeByDayOfWeek = new int[] {0, 0, 0, 0, 0, 0, 0};
-            choicesMadeThisMonth = new int[31];
+        ContentValues readDayValues(Long date) {
+            String[] SELECT_COLS = new String[] {TABLE_BASE+".id", COLUMN_CHOICE, COLUMN_UPDATE_DATE, COLUMN_UPDATE_COUNT, COLUMN_WORDS};
+            String Q_SELECT = String.format(
+                    "SELECT %s FROM %s LEFT OUTER JOIN %s ON %s.%s=%s.%s WHERE %s=%s;",
+                    String.join(",", SELECT_COLS),
+                    TABLE_BASE,
+                    TABLE_DESC,
+                    TABLE_DESC, COLUMN_DESC_F_KEY, TABLE_BASE, "id",
+                    COLUMN_DAY, date);
+            ContentValues dayValues = new ContentValues();
+
+            SQLiteDatabase dbr = db.getReadableDatabase();
+
+            Cursor cursor = dbr.rawQuery(Q_SELECT,null);
+            if (cursor.moveToFirst()) {
+                for (int i=0; i < cursor.getColumnCount(); i++) {
+                    dayValues.put(cursor.getColumnName(i), cursor.getString(i));
+                }
+            }
+            cursor.close();
+            return dayValues;
+        }
+
+        /**
+         * Would like to find a more elegant upsert behavior, sqlite has 'INSERT OR REPLACE'
+         * @param date Long from LocalDate
+         * @param theChoice Boolean value to assign
+         * @return Boolean whether the set was a success
+         */
+        Boolean writeDayValue(Long date, Boolean theChoice) {
+            SQLiteDatabase dbw = db.getWritableDatabase();
+            ContentValues oldValues = readDayValues(date);
+            ContentValues newValues = new ContentValues();
+            String LOG_STRING = "Setting long date %s to value %s, was %s";
+            Boolean didWriteSucceed = false;
+
+            newValues.put(COLUMN_CHOICE, theChoice);
+            newValues.put(COLUMN_UPDATE_DATE, Util.getLongVal(LocalDateTime.now()));
+
+            if (oldValues.size() > 0) {  // Update
+                if (!oldValues.getAsBoolean(COLUMN_CHOICE).equals(theChoice)) {  // #154818575
+                    final short updates = Short.valueOf(oldValues.getAsString(COLUMN_UPDATE_COUNT));
+                    if (updates < MAX_CHANGES) {
+                        newValues.put(COLUMN_UPDATE_COUNT, updates + 1);
+                        dbw.update(TABLE_BASE, newValues, String.format("%s=%s", COLUMN_DAY, Long.toString(date)), null);
+                        didWriteSucceed = true;
+                    } // else { // What to return when update fails due to count? }
+                }
+            } else {  // Insert
+                newValues.put(COLUMN_DAY, date);
+                newValues.put(COLUMN_UPDATE_COUNT, 1);
+                dbw.insert(TABLE_BASE, null, newValues);
+                didWriteSucceed = true;
+            }
+            Log.d("DateSet", String.format(LOG_STRING, date, theChoice, oldValues.get(COLUMN_CHOICE)));
+            dbw.close();
+            return didWriteSucceed;
+        }
+
+        /**
+         *
+         * @param date Long from LocalDate
+         * @param feels String the text to save
+         * @return Boolean whether the set was a success
+         */
+        Boolean writeDayFeels(Long date, String feels) {
+            Boolean didWriteSucceed = false;
+            SQLiteDatabase dbw = db.getWritableDatabase();
+            ContentValues oldValues = readDayValues(date);
+            ContentValues newValues = new ContentValues();
+            newValues.put(COLUMN_WORDS, feels);
+            if (oldValues.size() > 0) {  // Update
+                newValues.put(COLUMN_DESC_F_KEY, oldValues.getAsInteger("id"));
+                if (oldValues.getAsString(COLUMN_WORDS) != null) {  // update
+                    didWriteSucceed = 1 == dbw.update(TABLE_DESC, newValues, String.format("%s=%s", COLUMN_DESC_F_KEY, oldValues.getAsString("id")), null);
+                } else {  // insert
+                    didWriteSucceed = -1 < dbw.insert(TABLE_DESC, null, newValues);
+                }
+            }
+            return didWriteSucceed;
+        }
+
+        /**
+         *
+         * @return Long Date of the first entry in the database
+         */
+        Long getEarliestEntryDate() {
+            Long earliestDate = Util.getLongVal(2017, 12, 2); // Hardcode debug
+            Long noEntryDate = Util.getLongVal(LocalDateTime.now());
+            if (!isDebugMode()) {
+                SQLiteDatabase dbr = db.getReadableDatabase();
+                Cursor c = dbr.query(TABLE_BASE, new String[] { String.format("min(%s)", COLUMN_DAY) },
+                        null, null,null, null, null);
+                c.moveToFirst();
+                earliestDate = c.isNull(0) ? noEntryDate : c.getLong(0);
+                c.close();
+            }
+            return earliestDate;
+        }
+
+        /**
+         * This does what it says
+         */
+        private void rebuildDatabase() {
+            SQLiteDatabase dbw = db.getWritableDatabase();
+            String Q_TABLE_DROP = "DROP TABLE IF EXISTS %s;";
+            String Q_TABLE_MAKE = "CREATE TABLE %s (%s);";
+            String COLUMNS_BASE = String.format(
+                    "id INTEGER PRIMARY KEY, %s DATE UNIQUE, %s DATE, %s TINYINT, %s BOOLEAN",
+                    COLUMN_DAY, COLUMN_UPDATE_DATE, COLUMN_UPDATE_COUNT, COLUMN_CHOICE);
+            String COLUMNS_DESC = String.format(
+                    "id INTEGER PRIMARY KEY, %s INTEGER, %s VARCHAR(255), FOREIGN KEY (%s) REFERENCES %s(id)",
+                    COLUMN_DESC_F_KEY, COLUMN_WORDS, COLUMN_DESC_F_KEY, TABLE_BASE);
+
+            dbw.execSQL(String.format(Q_TABLE_DROP, TABLE_BASE));
+            dbw.execSQL(String.format(Q_TABLE_MAKE, TABLE_BASE, COLUMNS_BASE));
+            dbw.execSQL(String.format(Q_TABLE_DROP, TABLE_DESC));
+            dbw.execSQL(String.format(Q_TABLE_MAKE, TABLE_DESC, COLUMNS_DESC));
+        }
+
+        void truncateTables() {
+            SQLiteDatabase dbw = db.getWritableDatabase();
+            String Q_TABLETRUNC = "DELETE FROM %s; DELETE FROM SQLITE_SEQUENCE WHERE name='%s';";
+            dbw.execSQL(String.format(Q_TABLETRUNC, TABLE_DESC, TABLE_DESC));
+            dbw.execSQL(String.format(Q_TABLETRUNC, TABLE_BASE, TABLE_BASE));
+        }
+
+        void dropAllUserTables() {
+            SQLiteDatabase dbr = db.getWritableDatabase();
+            Cursor cursor = dbr.rawQuery("SELECT name FROM sqlite_master WHERE type='table'", null);
+            //noinspection TryFinallyCanBeTryWithResources not available with API < 19
+            try {
+                List<String> tables = new ArrayList<>(cursor.getCount());
+
+                while (cursor.moveToNext()) {
+                    tables.add(cursor.getString(0));
+                }
+
+                for (String table : tables) {
+                    if (table.startsWith("sqlite_")) {
+                        continue;
+                    }
+                    dbr.execSQL("DROP TABLE IF EXISTS " + table);
+                    Log.d("DB", "Dropped table " + table);
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+
+        ArrayList<ContentValues> getExportData() {
+            String[] SELECT_COLS = new String[] {TABLE_BASE+".id", COLUMN_DAY, COLUMN_CHOICE, COLUMN_WORDS};
+            String Q_SELECT = String.format("SELECT %s FROM %s LEFT OUTER JOIN %s ON %s.%s=%s.%s ORDER BY %s;",
+                    String.join(",", SELECT_COLS),
+                    TABLE_BASE, TABLE_DESC, TABLE_DESC, COLUMN_DESC_F_KEY, TABLE_BASE, "id", COLUMN_DAY);
+
+            SQLiteDatabase dbr = db.getReadableDatabase();
+
+            Cursor cursor = dbr.rawQuery(Q_SELECT,null);
+            ArrayList<ContentValues> retVal = new ArrayList<>();
+            ContentValues map;
+
+            while (cursor.moveToNext()) {
+                map = new ContentValues();
+                DatabaseUtils.cursorRowToContentValues(cursor, map);
+                retVal.add(map);
+            }
+            cursor.close();
+            return retVal;
+        }
+
+        /**
+         * Encapsulates the data we'll display to the user in the Summary tab
+         * (visual) choices previous month (see 7 minute workout)
+         */
+        class UserStatistics {
+            String earliestChoiceMade;
+            String earliestWrittenHistory;
+            String latestTweet;  // Need to track this
+            Integer countCurrentConsecutiveChoicesMade;
+            Integer countMaximumConsecutiveChoicesMade;
+            Integer countChoicesMade;
+            Integer countChoicesChanged;  // sum of update_count minus count of choices
+            Integer countWrittenHistoryThisWeek;
+            Integer countWrittenHistoryThisMonth;
+            Integer countWrittenHistoryAllTime;
+            Integer sumValueChoicesMadeThisWeek;
+            Integer sumValueChoicesMadeThisMonth;
+            Integer sumValueChoicesMadeAllTime;
+            int[] sumValueChoicesMadeByDayOfWeek; // Array w/M-Su, can use for weekday/weekends too
+            int[] choicesMadeThisMonth;  //
+
+            /**
+             *
+             */
+            private UserStatistics() {
+                recalculateStats();
+            }
+
+            /**
+             * Need to calculate these asynchronously
+             * @return Statistic[] array of stats to display
+             */
+            Statistic[] getStatsList() {
+                ArrayList<Statistic> statsList = new ArrayList<>();
+
+                statsList.add(new Statistic(
+                        getString(R.string.stat_title_count_choices_made),
+                        String.format(Locale.getDefault(), "%,d", countChoicesMade)));
+                statsList.add(new Statistic(
+                        getString(R.string.stat_title_count_choices_changed),
+                        String.format(Locale.getDefault(), "%,d", countChoicesChanged)));
+
+                Statistic[] retVal = new Statistic[statsList.size()];
+                retVal = statsList.toArray(retVal);
+                return retVal;
+            }
+
+            /**
+             * Set the values of the member variables based on info in the DB
+             */
+            private void recalculateStats() {
+                // Do some querying...
+                earliestChoiceMade = String.format("%s", Instant.now().toString());
+                earliestWrittenHistory = String.format("%s", Instant.now().toString());
+                latestTweet = String.format("%s", Instant.now().toString());
+                countCurrentConsecutiveChoicesMade = 0;
+                countMaximumConsecutiveChoicesMade = 0;
+                countChoicesMade = 1000;
+                countChoicesChanged = 100;  // sum of update_count minus count of choices
+                countWrittenHistoryThisWeek = 0;
+                countWrittenHistoryThisMonth = 0;
+                countWrittenHistoryAllTime = 0;
+                sumValueChoicesMadeThisWeek = 0;
+                sumValueChoicesMadeThisMonth = 0;
+                sumValueChoicesMadeAllTime = 0;
+                sumValueChoicesMadeByDayOfWeek = new int[] {0, 0, 0, 0, 0, 0, 0};
+                choicesMadeThisMonth = new int[31];
+            }
+
+            class Statistic {
+                String title;
+                String value;
+
+                Statistic(String theTitle, String theValue) {
+                    title = theTitle;
+                    value = theValue;
+                }
+            }
         }
     }
 

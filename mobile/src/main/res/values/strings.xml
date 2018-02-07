@@ -81,9 +81,19 @@
     <string name="quote_05">“Until we have begun to go without them, we fail to realize how unnecessary many things are. We\'ve been using them not because we needed them but because we had them.”\n ― Seneca, Letters from a Stoic</string>
     <string name="quote_06">“It is more necessary for the soul to be cured than the body; for it is better to die than to live badly.”\n ― Epictetus</string>
 
-    <!-- Strings related to Settings -->
+    <!-- Strings related to User statistics -->
+    <string name="stat_title_current_consecutive_choies">Current streak of consecutive choices</string>
+    <string name="stat_title_maximum_consecutive_choices_made">Longest streak of consecutive choices</string>
+    <string name="stat_title_count_choices_made">Number of choices made</string>
+    <string name="stat_title_count_choices_changed">Number of times a choice was changed</string>
+    <string name="stat_title_count_written_history_this_week">Notes written for the current week</string>
+    <string name="stat_title_count_written_history_this_month">Notes written this month</string>
+    <string name="stat_title_count_written_history_all_time">Number of notes written</string>
+    <string name="stat_title_sum_value_choices_made_this_week">Sum of the choices made this week</string>
+    <string name="stat_title_sum_value_choices_made_this_month">Sum of the choices made this month</string>
+    <string name="stat_title_sum_value_choices_made_all_time">Sum of all choices made</string>
 
-    <!-- Example General settings -->
+    <!-- Strings related to Settings -->
     <string name="pref_export_key">initiate_export</string>
     <string name="pref_export_title">Export data to CSV</string>
     <string name="pref_export_summary">Selecting this will generate a CSV and send it to any configured application</string>

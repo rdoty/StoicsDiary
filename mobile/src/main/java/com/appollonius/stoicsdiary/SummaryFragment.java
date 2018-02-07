@@ -9,6 +9,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import java.util.ArrayList;
 
 
 /**
@@ -57,6 +61,8 @@ public class SummaryFragment extends android.support.v4.app.ListFragment {
     }
 
     StoicActivity mA;  // rdoty - helps to call StoicActivity instance without null compiler warnings
+    StatsAdapter adapter;
+
     public SummaryFragment() { }  // Required empty public constructor
 
     @Override
@@ -73,9 +79,16 @@ public class SummaryFragment extends android.support.v4.app.ListFragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_summary, container,false);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                mA, android.R.layout.simple_list_item_1, getSummaryStats());
-        setListAdapter(adapter);
+        // Construct the data source
+        ArrayList<StoicActivity.Datastore.UserStatistics.Statistic> statsArray = new ArrayList<>();
+
+        adapter = new StatsAdapter(getContext(), statsArray);  // to convert the array to views
+
+        // Attach the adapter to a ListView
+        ListView listView = rootView.findViewById(android.R.id.list);
+        listView.setAdapter(adapter);
+
+        adapter.addAll(mA.ds.us.getStatsList());
         return rootView;
     }
 
@@ -102,11 +115,29 @@ public class SummaryFragment extends android.support.v4.app.ListFragment {
         mListener = null;
     }
 
-    /**
-     * Need to calculate these asynchronously
-     * @return String[] array of stats to display
-     */
-    String[] getSummaryStats() {
-        return new String[] { "Stat 1\nValue", "Stat 2\nValue", "Stat 3\nValue" };
+    public class StatsAdapter extends ArrayAdapter<StoicActivity.Datastore.UserStatistics.Statistic> {
+        StatsAdapter(Context context, ArrayList<StoicActivity.Datastore.UserStatistics.Statistic> stats) {
+            super(context, 0, stats);
+        }
+
+        @Override @NonNull
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+            // Get the data item for this position
+            StoicActivity.Datastore.UserStatistics.Statistic stat = getItem(position);
+
+            // Check if an existing view is being reused, otherwise inflate the view
+            if (convertView == null) {
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.fragment_summary_item, parent, false);
+            }
+            // Lookup view for data population
+            TextView statTitle = convertView.findViewById(R.id.statTitle);
+            TextView statValue = convertView.findViewById(R.id.statValue);
+
+            if (stat != null) {  // Populate the data into the template view using the data object
+                statTitle.setText(stat.title);
+                statValue.setText(stat.value);
+            }
+            return convertView;  // Return the completed view to render on screen
+        }
     }
- }
+}

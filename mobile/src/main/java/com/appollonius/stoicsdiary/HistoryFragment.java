@@ -131,7 +131,7 @@ public class HistoryFragment extends android.support.v4.app.Fragment implements 
     private void initializeCalendar() {
         CalendarView calendarView = mA.findViewById(R.id.history);
         calendarView.setMaxDate(Util.getLongVal(LocalDateTime.now()));
-        calendarView.setMinDate(mA.getEarliestEntryDate());
+        calendarView.setMinDate(mA.ds.getEarliestEntryDate());
         calendarView.setDate(Util.getLongVal(mA.getCurrentDay()));
     }
 
@@ -176,13 +176,13 @@ public class HistoryFragment extends android.support.v4.app.Fragment implements 
      * @param choiceId int The id of the choice button selected
      */
     private void onClickChoice(int choiceId) {
-        Boolean success = mA.writeDayValue(mA.getCurrentDay(), R.id.BUTTON_YES == choiceId);
+        Boolean success = mA.ds.writeDayValue(mA.getCurrentDay(), R.id.BUTTON_YES == choiceId);
         Log.d("DEBUG", String.format("writeDayValue result: %b", success));
         mA.updateUI(getView());
     }
 
     private void onClickFeelsSave() {
-        Boolean success = mA.writeDayFeels(mA.getCurrentDay(),
+        Boolean success = mA.ds.writeDayFeels(mA.getCurrentDay(),
                 ((EditText)mA.findViewById(R.id.EDIT_FEELS)).getText().toString());
         Log.d("DEBUG", String.format("writeDayFeels result: %b", success));
         mA.updateUI(getView());
