@@ -10,9 +10,11 @@ import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.text.Html;
+import android.util.Log;
 import android.view.MenuItem;
 
 
@@ -49,6 +51,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             } else {  // For all others, set the summary to the simple string representation.
                 preference.setSummary(stringValue);
             }
+            Log.d("prefs", String.format("Key changed: %s", stringValue));
             return true;
         }
     };
@@ -158,6 +161,22 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                                 public void onClick(DialogInterface arg0, int arg1) { } } );
                             builder.show();
                             return false;
+                        }
+                    });
+            findPreference("debug_mode")
+                    .setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                        @Override
+                        public boolean onPreferenceChange(Preference preference, Object newValue) {
+                            Log.d("prefs", String.format("Key changed: %s", String.valueOf(newValue)));
+                            PreferenceCategory prefCatOne= (PreferenceCategory)findPreference("debug_options");
+                            if (prefCatOne != null) {
+                                if (String.valueOf(newValue).equals("false")) {
+                                    prefCatOne.setEnabled(false);
+                                } else {
+                                    prefCatOne.setEnabled(true);
+                                }
+                            }
+                            return true;
                         }
                     });
         }

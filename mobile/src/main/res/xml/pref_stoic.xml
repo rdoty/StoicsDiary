@@ -79,5 +79,10 @@
             android:key="@string/pref_debug_key"
             android:title="@string/pref_debug_title" />
     </PreferenceCategory>
+    <!-- These should appear when the Debug Mode is enabled. Debug Mode can be shown based on some other attribute -->
+    <PreferenceCategory android:key="debug_options">
+        <Preference android:title="Some thing">
 
+        </Preference>
+    </PreferenceCategory>
 </PreferenceScreen>

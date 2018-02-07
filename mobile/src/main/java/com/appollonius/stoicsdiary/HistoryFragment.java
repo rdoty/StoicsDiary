@@ -189,6 +189,6 @@ public class HistoryFragment extends android.support.v4.app.Fragment implements 
     }
 
     private void onClickFeelsTweet() {
-        mA.notifyUser();
+        mA.sendTweet();
     }
 }

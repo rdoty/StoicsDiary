@@ -9,6 +9,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.database.Cursor;
@@ -96,6 +98,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     ThemeText themeText;
     Typeface font;
     Integer mLatestNotificationId;  // Tracking this so we can reference/delete at runtime if necessary
+    NotificationManager mNotificationManager;
 
     TabLayout tabLayout;
     ViewPager viewPager;
@@ -112,7 +115,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         themeColors = new ThemeColors();
         themeText = new ThemeText();
         font = Typeface.createFromAsset(getAssets(), "font-awesome-5-free-regular-400.otf");
-
+        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         viewPager = findViewById(R.id.viewpager);
         setupViewPager(viewPager);
 
@@ -589,9 +592,6 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     }
 */
     void initializeNotificationChannel() {
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
         if (mNotificationManager != null) {
             String id = getString(R.string.channel_id);  // of the channel.
             CharSequence name = getString(R.string.channel_name);  // user-visible
@@ -612,10 +612,10 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
 
     /**
      * This just fires off a test notification at the moment.
+     * mNotificationId is a unique integer your app uses to identify the notification.
+     * e.g. to cancel the notification, call NotificationManager.cancel(mLatestNotificationId).
      */
     void notifyUser() {
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (mNotificationManager != null) {
             NotificationCompat.Builder mBuilder =
                     new NotificationCompat.Builder(this, getString(R.string.channel_id))
@@ -632,13 +632,37 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
                     stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
             mBuilder.setContentIntent(resultPendingIntent);
 
-            // mNotificationId is a unique integer your app uses to identify the notification.
-            // e.g. to cancel the notification, call NotificationManager.cancel(mLatestNotificationId).
             mLatestNotificationId = new Random().nextInt();
             mNotificationManager.notify(mLatestNotificationId, mBuilder.build());
+        } else {
+            Log.d("ERROR", "Could not initializeNotificationChannel, NOTIFICATION_SERVICE null");
         }
     }
 
+    void sendTweet() {
+        Intent tweetIntent = new Intent(Intent.ACTION_SEND);
+        tweetIntent.putExtra(Intent.EXTRA_TEXT, "This is a Test."); // Contents
+        tweetIntent.setType("text/plain");
+
+        PackageManager packManager = getPackageManager();
+        List<ResolveInfo> resolvedInfoList = packManager.queryIntentActivities(tweetIntent,  PackageManager.MATCH_DEFAULT_ONLY);
+
+        boolean resolved = false;
+        for(ResolveInfo resolveInfo: resolvedInfoList){
+            if(resolveInfo.activityInfo.packageName.startsWith("com.twitter.android")){
+                tweetIntent.setClassName(
+                        resolveInfo.activityInfo.packageName,
+                        resolveInfo.activityInfo.name );
+                resolved = true;
+                break;
+            }
+        }
+        if (resolved) {
+            startActivity(tweetIntent);
+        } else {
+            Toast.makeText(this, "Twitter app isn't found", Toast.LENGTH_LONG).show();
+        }
+    }
     /**
      * This method checks the currently set preferences, and updates the scheduled
      * notifications accordingly.
@@ -853,6 +877,56 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
                 choiceTextDisabledSelected = cTDS;
                 choiceTextDisabledUnselected = cTDU;
             }
+        }
+    }
+
+    /**
+     * Encapsulates the data we'll display to the user in the Summary tab
+     * (visual) choices previous month (see 7 minute workout)
+     */
+    class UserStatistics {
+        String earliestChoiceMade;
+        String earliestWrittenHistory;
+        String latestTweet;  // Need to track this
+        Integer countCurrentConsecutiveChoicesMade;
+        Integer countMaximumConsecutiveChoicesMade;
+        Integer countChoicesMade;
+        Integer countChoicesChanged;  // sum of update_count minus count of choices
+        Integer countWrittenHistoryThisWeek;
+        Integer countWrittenHistoryThisMonth;
+        Integer countWrittenHistoryAllTime;
+        Integer sumValueChoicesMadeThisWeek;
+        Integer sumValueChoicesMadeThisMonth;
+        Integer sumValueChoicesMadeAllTime;
+        int[] sumValueChoicesMadeByDayOfWeek; // Array w/M-Su, can use for weekday/weekends too
+        int[] choicesMadeThisMonth;  //
+        /**
+         *
+         */
+        UserStatistics() {
+            recalculateStats();
+        }
+
+        /**
+         * Set the values of the member variables based on info in the DB
+         */
+        void recalculateStats() {
+            // Do some querying...
+            earliestChoiceMade = String.format("%s", Instant.now().toString());
+            earliestWrittenHistory = String.format("%s", Instant.now().toString());
+            latestTweet = String.format("%s", Instant.now().toString());
+            countCurrentConsecutiveChoicesMade = 0;
+            countMaximumConsecutiveChoicesMade = 0;
+            countChoicesMade = 0;
+            countChoicesChanged = 0;  // sum of update_count minus count of choices
+            countWrittenHistoryThisWeek = 0;
+            countWrittenHistoryThisMonth = 0;
+            countWrittenHistoryAllTime = 0;
+            sumValueChoicesMadeThisWeek = 0;
+            sumValueChoicesMadeThisMonth = 0;
+            sumValueChoicesMadeAllTime = 0;
+            sumValueChoicesMadeByDayOfWeek = new int[] {0, 0, 0, 0, 0, 0, 0};
+            choicesMadeThisMonth = new int[31];
         }
     }
 
