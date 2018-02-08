@@ -82,16 +82,22 @@
     <string name="quote_06">“It is more necessary for the soul to be cured than the body; for it is better to die than to live badly.”\n ― Epictetus</string>
 
     <!-- Strings related to User statistics -->
+    <string name="stat_title_earliest_choice_made">earliest_choice_made</string>
+    <string name="stat_title_earliest_written_note">earliest_written_note</string>
+    <string name="stat_title_latest_tweet">latest_tweet</string>
     <string name="stat_title_current_consecutive_choies">Current streak of consecutive choices</string>
     <string name="stat_title_maximum_consecutive_choices_made">Longest streak of consecutive choices</string>
     <string name="stat_title_count_choices_made">Number of choices made</string>
     <string name="stat_title_count_choices_changed">Number of times a choice was changed</string>
+    <string name="stat_title_count_choices_locked">Number of choices locked from indecision</string>
     <string name="stat_title_count_written_history_this_week">Notes written for the current week</string>
     <string name="stat_title_count_written_history_this_month">Notes written this month</string>
     <string name="stat_title_count_written_history_all_time">Number of notes written</string>
     <string name="stat_title_sum_value_choices_made_this_week">Sum of the choices made this week</string>
     <string name="stat_title_sum_value_choices_made_this_month">Sum of the choices made this month</string>
     <string name="stat_title_sum_value_choices_made_all_time">Sum of all choices made</string>
+    <string name="stat_title_sum_value_by_day_of_week">Sum of all choices made by day of week</string>
+    <string name="stat_title_choices_made_this_month">Choices made this month</string>
 
     <!-- Strings related to Settings -->
     <string name="pref_export_key">initiate_export</string>

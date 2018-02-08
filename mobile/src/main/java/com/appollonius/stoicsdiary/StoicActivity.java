@@ -715,6 +715,26 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         }
 
         /**
+         * This does what it says
+         */
+        private void rebuildDatabase() {
+            SQLiteDatabase dbw = db.getWritableDatabase();
+            String Q_TABLE_DROP = "DROP TABLE IF EXISTS %s;";
+            String Q_TABLE_MAKE = "CREATE TABLE %s (%s);";
+            String COLUMNS_BASE = String.format(
+                    "id INTEGER PRIMARY KEY, %s DATE UNIQUE, %s DATE, %s TINYINT, %s BOOLEAN",
+                    COLUMN_DAY, COLUMN_UPDATE_DATE, COLUMN_UPDATE_COUNT, COLUMN_CHOICE);
+            String COLUMNS_DESC = String.format(
+                    "id INTEGER PRIMARY KEY, %s INTEGER, %s VARCHAR(255), FOREIGN KEY (%s) REFERENCES %s(id)",
+                    COLUMN_DESC_F_KEY, COLUMN_WORDS, COLUMN_DESC_F_KEY, TABLE_BASE);
+
+            dbw.execSQL(String.format(Q_TABLE_DROP, TABLE_BASE));
+            dbw.execSQL(String.format(Q_TABLE_MAKE, TABLE_BASE, COLUMNS_BASE));
+            dbw.execSQL(String.format(Q_TABLE_DROP, TABLE_DESC));
+            dbw.execSQL(String.format(Q_TABLE_MAKE, TABLE_DESC, COLUMNS_DESC));
+        }
+
+        /**
          * For checking the current value and whether / when the value was and can be changed
          * @param date Long
          * @return ContentValues database key/values corresponding to the date value in COLUMN_DAY
@@ -819,26 +839,6 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             return earliestDate;
         }
 
-        /**
-         * This does what it says
-         */
-        private void rebuildDatabase() {
-            SQLiteDatabase dbw = db.getWritableDatabase();
-            String Q_TABLE_DROP = "DROP TABLE IF EXISTS %s;";
-            String Q_TABLE_MAKE = "CREATE TABLE %s (%s);";
-            String COLUMNS_BASE = String.format(
-                    "id INTEGER PRIMARY KEY, %s DATE UNIQUE, %s DATE, %s TINYINT, %s BOOLEAN",
-                    COLUMN_DAY, COLUMN_UPDATE_DATE, COLUMN_UPDATE_COUNT, COLUMN_CHOICE);
-            String COLUMNS_DESC = String.format(
-                    "id INTEGER PRIMARY KEY, %s INTEGER, %s VARCHAR(255), FOREIGN KEY (%s) REFERENCES %s(id)",
-                    COLUMN_DESC_F_KEY, COLUMN_WORDS, COLUMN_DESC_F_KEY, TABLE_BASE);
-
-            dbw.execSQL(String.format(Q_TABLE_DROP, TABLE_BASE));
-            dbw.execSQL(String.format(Q_TABLE_MAKE, TABLE_BASE, COLUMNS_BASE));
-            dbw.execSQL(String.format(Q_TABLE_DROP, TABLE_DESC));
-            dbw.execSQL(String.format(Q_TABLE_MAKE, TABLE_DESC, COLUMNS_DESC));
-        }
-
         void truncateTables() {
             SQLiteDatabase dbw = db.getWritableDatabase();
             String Q_TABLETRUNC = "DELETE FROM %s; DELETE FROM SQLITE_SEQUENCE WHERE name='%s';";
@@ -895,21 +895,22 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
          * (visual) choices previous month (see 7 minute workout)
          */
         class UserStatistics {
-            String earliestChoiceMade;
-            String earliestWrittenHistory;
-            String latestTweet;  // Need to track this
-            Integer countCurrentConsecutiveChoicesMade;
-            Integer countMaximumConsecutiveChoicesMade;
-            Integer countChoicesMade;
-            Integer countChoicesChanged;  // sum of update_count minus count of choices
-            Integer countWrittenHistoryThisWeek;
-            Integer countWrittenHistoryThisMonth;
-            Integer countWrittenHistoryAllTime;
-            Integer sumValueChoicesMadeThisWeek;
-            Integer sumValueChoicesMadeThisMonth;
-            Integer sumValueChoicesMadeAllTime;
-            int[] sumValueChoicesMadeByDayOfWeek; // Array w/M-Su, can use for weekday/weekends too
-            int[] choicesMadeThisMonth;  //
+            Long earliestChoiceMade;
+            Long earliestWrittenHistory;
+            Long latestTweet;  // Need to track this
+            Long countCurrentConsecutiveChoicesMade;
+            Long countMaximumConsecutiveChoicesMade;
+            Long countChoicesMade;
+            Long countChoicesChanged;  // sum of update_count minus count of choices
+            Long countChoicesLocked;
+            Long countWrittenHistoryThisWeek;
+            Long countWrittenHistoryThisMonth;
+            Long countWrittenHistoryAllTime;
+            Long sumValueChoicesMadeThisWeek;
+            Long sumValueChoicesMadeThisMonth;
+            Long sumValueChoicesMadeAllTime;
+            ContentValues sumValueChoicesMadeByDayOfWeek; // Array w/M-Su, can use for weekday/weekends too
+            ContentValues choicesMadeThisMonth;  //
 
             /**
              *
@@ -926,11 +927,54 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
                 ArrayList<Statistic> statsList = new ArrayList<>();
 
                 statsList.add(new Statistic(
+                        getString(R.string.stat_title_earliest_choice_made),
+                        Instant.ofEpochMilli(earliestChoiceMade).toString()));
+                statsList.add(new Statistic(
+                        getString(R.string.stat_title_earliest_written_note),
+                        Instant.ofEpochMilli(earliestWrittenHistory).toString()));
+                statsList.add(new Statistic(
                         getString(R.string.stat_title_count_choices_made),
                         String.format(Locale.getDefault(), "%,d", countChoicesMade)));
                 statsList.add(new Statistic(
                         getString(R.string.stat_title_count_choices_changed),
                         String.format(Locale.getDefault(), "%,d", countChoicesChanged)));
+                statsList.add(new Statistic(
+                        getString(R.string.stat_title_count_choices_locked),
+                        String.format(Locale.getDefault(), "%,d", countChoicesLocked)));
+                statsList.add(new Statistic(
+                        getString(R.string.stat_title_sum_value_choices_made_all_time),
+                        String.format(Locale.getDefault(), "%,d", sumValueChoicesMadeAllTime)));
+                statsList.add(new Statistic(
+                        getString(R.string.stat_title_count_written_history_all_time),
+                        String.format(Locale.getDefault(), "%,d", countWrittenHistoryAllTime)));
+
+                statsList.add(new Statistic(
+                        getString(R.string.stat_title_count_written_history_this_month),
+                        String.format(Locale.getDefault(), "%,d", countWrittenHistoryThisMonth)));
+                statsList.add(new Statistic(
+                        getString(R.string.stat_title_count_written_history_this_week),
+                        String.format(Locale.getDefault(), "%,d", countWrittenHistoryThisWeek)));
+                statsList.add(new Statistic(
+                        getString(R.string.stat_title_sum_value_choices_made_this_month),
+                        String.format(Locale.getDefault(), "%,d", sumValueChoicesMadeThisMonth)));
+                statsList.add(new Statistic(
+                        getString(R.string.stat_title_sum_value_choices_made_this_week),
+                        String.format(Locale.getDefault(), "%,d", sumValueChoicesMadeThisWeek)));
+                statsList.add(new Statistic(
+                        getString(R.string.stat_title_sum_value_by_day_of_week),
+                        sumValueChoicesMadeByDayOfWeek.toString()));
+                statsList.add(new Statistic(
+                        getString(R.string.stat_title_choices_made_this_month),
+                        choicesMadeThisMonth.toString()));
+                statsList.add(new Statistic(
+                        getString(R.string.stat_title_current_consecutive_choies),
+                        String.format(Locale.getDefault(), "%,d", countCurrentConsecutiveChoicesMade)));
+                statsList.add(new Statistic(
+                        getString(R.string.stat_title_maximum_consecutive_choices_made),
+                        String.format(Locale.getDefault(), "%,d", countMaximumConsecutiveChoicesMade)));
+                statsList.add(new Statistic(
+                        getString(R.string.stat_title_latest_tweet),
+                        Instant.ofEpochMilli(latestTweet).toString()));
 
                 Statistic[] retVal = new Statistic[statsList.size()];
                 retVal = statsList.toArray(retVal);
@@ -941,22 +985,53 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
              * Set the values of the member variables based on info in the DB
              */
             private void recalculateStats() {
+                // All these queries are hardcoded, clean them up and use constants and formatting as above
+                final String qECM = "SELECT min(time_stamp) FROM diary";
+                final String qEWH = "SELECT d.time_stamp, f.words FROM diary d LEFT OUTER JOIN feels f ON f.diary_id = d.id ORDER BY d.time_stamp;";
+                final String qCCM = "SELECT count(1) FROM diary";
+                final String qCCC = "SELECT (sum(update_count)-count(update_count)) AS count FROM diary";
+                final String qCCL = "SELECT count(update_count) FROM diary WHERE update_count > 2";
+                final String qCWHTAT = "SELECT count(words) FROM feels";
+                final String qSVCMTAT = "SELECT sum(choice) FROM diary";
+                // These are yet to be written, but doable
+                final String qCWHTM = "SELECT -99 AS count";
+                final String qCWHTW = "SELECT -99 AS count";
+                final String qSVCMTM = "SELECT -99 AS sum";
+                final String qSVCMTW = "SELECT -99 AS sum";
+                final String qCCCCM = "SELECT -99 AS count";
+                final String qCMCCM = "SELECT -99 AS count";
+                // Don't have a field for this in the DB currently, so faking it
+                final String qLT = String.format(Locale.US, "SELECT %d AS time_stamp", Instant.now().toEpochMilli());
+                // Have to decide how to represent this (and query it)
+                final String qSVCMBDOW = "SELECT * FROM (VALUES('0'),('0'),('0'),('0'),('0'),('0'),('0')) AS sub(c)";
+                final String qCMTM = qSVCMBDOW; // Fix this, should return all choices for the current month
+
+                SQLiteDatabase dbr = db.getReadableDatabase();
+                Cursor cursor;
+
                 // Do some querying...
-                earliestChoiceMade = String.format("%s", Instant.now().toString());
-                earliestWrittenHistory = String.format("%s", Instant.now().toString());
-                latestTweet = String.format("%s", Instant.now().toString());
-                countCurrentConsecutiveChoicesMade = 0;
-                countMaximumConsecutiveChoicesMade = 0;
-                countChoicesMade = 1000;
-                countChoicesChanged = 100;  // sum of update_count minus count of choices
-                countWrittenHistoryThisWeek = 0;
-                countWrittenHistoryThisMonth = 0;
-                countWrittenHistoryAllTime = 0;
-                sumValueChoicesMadeThisWeek = 0;
-                sumValueChoicesMadeThisMonth = 0;
-                sumValueChoicesMadeAllTime = 0;
-                sumValueChoicesMadeByDayOfWeek = new int[] {0, 0, 0, 0, 0, 0, 0};
-                choicesMadeThisMonth = new int[31];
+                latestTweet                         = DatabaseUtils.longForQuery(dbr, qLT, null);
+                earliestChoiceMade                  = DatabaseUtils.longForQuery(dbr, qECM, null);
+                earliestWrittenHistory              = DatabaseUtils.longForQuery(dbr, qEWH, null);
+                countChoicesMade                    = DatabaseUtils.longForQuery(dbr, qCCM, null);
+                countChoicesChanged                 = DatabaseUtils.longForQuery(dbr, qCCC, null);
+                countChoicesLocked                  = DatabaseUtils.longForQuery(dbr, qCCL, null);
+                sumValueChoicesMadeAllTime          = DatabaseUtils.longForQuery(dbr, qSVCMTAT, null);
+                countWrittenHistoryAllTime          = DatabaseUtils.longForQuery(dbr, qCWHTAT, null);
+                countWrittenHistoryThisMonth        = DatabaseUtils.longForQuery(dbr, qCWHTM, null);
+                countWrittenHistoryThisWeek         = DatabaseUtils.longForQuery(dbr, qCWHTW, null);
+                sumValueChoicesMadeThisMonth        = DatabaseUtils.longForQuery(dbr, qSVCMTM, null);
+                sumValueChoicesMadeThisWeek         = DatabaseUtils.longForQuery(dbr, qSVCMTW, null);
+                countCurrentConsecutiveChoicesMade  = DatabaseUtils.longForQuery(dbr, qCCCCM, null);
+                countMaximumConsecutiveChoicesMade  = DatabaseUtils.longForQuery(dbr, qCMCCM, null);
+
+                cursor = dbr.rawQuery(qSVCMBDOW, null);
+                cursor.moveToFirst();
+                DatabaseUtils.cursorRowToContentValues(cursor, sumValueChoicesMadeByDayOfWeek);
+
+                cursor = dbr.rawQuery(qCMTM, null);
+                cursor.moveToFirst();
+                DatabaseUtils.cursorRowToContentValues(cursor, choicesMadeThisMonth);
             }
 
             class Statistic {
