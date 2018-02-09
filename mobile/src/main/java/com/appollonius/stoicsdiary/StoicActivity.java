@@ -847,36 +847,6 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             return earliestDate;
         }
 
-        void truncateTables() {
-            SQLiteDatabase dbw = db.getWritableDatabase();
-            String Q_TABLETRUNC = "DELETE FROM %s; DELETE FROM SQLITE_SEQUENCE WHERE name='%s';";
-            dbw.execSQL(String.format(Q_TABLETRUNC, TABLE_DESC, TABLE_DESC));
-            dbw.execSQL(String.format(Q_TABLETRUNC, TABLE_BASE, TABLE_BASE));
-        }
-
-        void dropAllUserTables() {
-            SQLiteDatabase dbr = db.getWritableDatabase();
-            Cursor cursor = dbr.rawQuery("SELECT name FROM sqlite_master WHERE type='table'", null);
-            //noinspection TryFinallyCanBeTryWithResources not available with API < 19
-            try {
-                List<String> tables = new ArrayList<>(cursor.getCount());
-
-                while (cursor.moveToNext()) {
-                    tables.add(cursor.getString(0));
-                }
-
-                for (String table : tables) {
-                    if (table.startsWith("sqlite_")) {
-                        continue;
-                    }
-                    dbr.execSQL("DROP TABLE IF EXISTS " + table);
-                    Log.d("DB", "Dropped table " + table);
-                }
-            } finally {
-                cursor.close();
-            }
-        }
-
         ArrayList<ContentValues> getExportData() {
             String[] SELECT_COLS = new String[] {TABLE_BASE+".id", COLUMN_DAY, COLUMN_CHOICE, COLUMN_WORDS};
             String Q_SELECT = String.format("SELECT %s FROM %s LEFT OUTER JOIN %s ON %s.%s=%s.%s ORDER BY %s;",
@@ -917,6 +887,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             Long sumValueChoicesMadeThisWeek;
             Long sumValueChoicesMadeThisMonth;
             Long sumValueChoicesMadeAllTime;
+            ContentValues countChoicesMadeByDayOfWeek = new ContentValues();
             ContentValues sumValueChoicesMadeByDayOfWeek = new ContentValues(); // Array w/M-Su, can use for weekday/weekends too
             ContentValues choicesMadeThisMonth = new ContentValues();  //
 
@@ -933,7 +904,17 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
              */
             Statistic[] getStatsList() {
                 ArrayList<Statistic> statsList = new ArrayList<>();
-
+                String[] days = getResources().getStringArray(R.array.stat_day_abbr);
+                ArrayList<String> sumChoicesByDayOfWeek = new ArrayList<>();
+                ArrayList<String> countChoicesByDayOfWeek = new ArrayList<>();
+                for (int day = 0; day < 7; day++) {
+                    Integer dayCount = sumValueChoicesMadeByDayOfWeek.getAsInteger(String.valueOf(day));
+                    sumChoicesByDayOfWeek.add(String.format(Locale.US, "%s: %+d", days[day], dayCount != null ? dayCount : 0));
+                }
+                for (int day = 0; day < 7; day++) {
+                    Integer dayCount = countChoicesMadeByDayOfWeek.getAsInteger(String.valueOf(day));
+                    countChoicesByDayOfWeek.add(String.format(Locale.US, "%s: %d", days[day], dayCount != null ? dayCount : 0));
+                }
                 statsList.add(new Statistic(getString(R.string.stat_title_earliest_choice_made),
                         Instant.ofEpochMilli(earliestChoiceMade).toString()));
                 statsList.add(new Statistic(getString(R.string.stat_title_earliest_written_note),
@@ -946,8 +927,8 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
                         String.format(Locale.getDefault(), "%,d", countChoicesChanged)));
                 statsList.add(new Statistic(getString(R.string.stat_title_count_choices_locked),
                         String.format(Locale.getDefault(), "%,d", countChoicesLocked)));
-                statsList.add(new Statistic(getString(R.string.stat_title_sum_value_choices_made_all_time),
-                        String.format(Locale.getDefault(), "%,d", sumValueChoicesMadeAllTime)));
+                statsList.add(new Statistic(getString(R.string.stat_title_count_choices_locked),
+                        String.format(Locale.getDefault(), "%,d", countChoicesLocked)));
                 statsList.add(new Statistic(getString(R.string.stat_title_count_written_history_all_time),
                         String.format(Locale.getDefault(), "%,d", countWrittenHistoryAllTime)));
                 statsList.add(new Statistic(getString(R.string.stat_title_count_written_history_this_month),
@@ -962,8 +943,10 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
                         String.format(Locale.getDefault(), "%,d", countCurrentConsecutiveChoicesMade)));
                 statsList.add(new Statistic(getString(R.string.stat_title_maximum_consecutive_choices_made),
                         String.format(Locale.getDefault(), "%,d", countMaximumConsecutiveChoicesMade)));
+                statsList.add(new Statistic(getString(R.string.stat_title_count_choices_by_day_of_week),
+                        countChoicesByDayOfWeek.toString()));
                 statsList.add(new Statistic(getString(R.string.stat_title_sum_value_by_day_of_week),
-                        sumValueChoicesMadeByDayOfWeek.toString()));
+                        sumChoicesByDayOfWeek.toString()));
                 statsList.add(new Statistic(getString(R.string.stat_title_choices_made_this_month),
                         choicesMadeThisMonth.toString()));
 
@@ -994,19 +977,12 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
                 // Don't have a field for this in the DB currently, so faking it
                 final String qLT = String.format(Locale.US, "SELECT %d AS time_stamp", Instant.now().toEpochMilli());
                 // Have to decide how to represent this (and query it)
-                final String qSVCMBDOW  = "SELECT \n" +
-                        "  CASE (strftime('%w', date(time_stamp / 1000, 'unixepoch', 'localtime')))\n" +
-                        "  when '0' then 'Sunday'\n" +
-                        "  when '1' then 'Monday'\n" +
-                        "  when '2' then 'Tuesday'\n" +
-                        "  when '3' then 'Wednesday'\n" +
-                        "  when '4' then 'Thursday'\n" +
-                        "  when '5' then 'Friday'\n" +
-                        "  when '6' then 'Saturday'\n" +
-                        "  else 'Invalid'\n" +
-                        "  end as dayofweek, count(*) \n" +
+                final String qCCMBDOW  = "SELECT strftime('%w', date(time_stamp / 1000, 'unixepoch', 'localtime')) AS dayofweek, count(1) \n" +
                         "FROM diary GROUP BY dayofweek ORDER BY dayofweek";
-                final String qCMTM = "SELECT * FROM (VALUES('0','0','0','0','0','0','0')) AS days";
+                final String qSVCMBDOW  = "SELECT strftime('%w', date(time_stamp / 1000, 'unixepoch', 'localtime')) AS dayofweek, " +
+                        "sum(CASE (choice) WHEN 0 THEN -1 WHEN 1 THEN 1 END) as choiceValue \n" +
+                        "FROM diary GROUP BY dayofweek ORDER BY dayofweek";
+//                final String qCMTM = "SELECT * FROM (VALUES('0','0','0','0','0','0','0')) AS days";
 
                 SQLiteDatabase dbr = db.getReadableDatabase();
                 Cursor cursor;
@@ -1031,11 +1007,16 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
                 while (cursor.moveToNext()) {
                     sumValueChoicesMadeByDayOfWeek.put(cursor.getString(0), cursor.getInt(1));
                 }
+                cursor = dbr.rawQuery(qCCMBDOW, null);
+                while (cursor.moveToNext()) {
+                    countChoicesMadeByDayOfWeek.put(cursor.getString(0), cursor.getInt(1));
+                }
 
 //                cursor = dbr.rawQuery(qCMTM, null);
 //                if (cursor.moveToFirst()) {
 //                    DatabaseUtils.cursorRowToContentValues(cursor, sumValueChoicesMadeThisMonth);
 //                }
+                cursor.close();
             }
 
             class Statistic {

@@ -32,8 +32,8 @@
 
     <!-- Themed strings for translation -->
     <string name="theme_color_01_name">Basic Color Theme</string>
-    <string name="theme_color_02_name">Ugly Color Theme</string>
-    <string name="theme_color_03_name">Unhelpful Theme</string>
+    <string name="theme_color_02_name">Unhelpful Theme</string>
+    <string name="theme_color_03_name">Ugly Color Theme</string>
 
     <string name="theme_text_01_name">Basic Text Theme</string>
     <string name="theme_text_01_prompt">Was today a good day? You choose.</string>
@@ -90,6 +90,7 @@
     <string name="stat_title_count_choices_made">Number of choices made</string>
     <string name="stat_title_count_choices_changed">Number of times a choice was changed</string>
     <string name="stat_title_count_choices_locked">Number of choices locked from indecision</string>
+    <string name="stat_title_count_choices_by_day_of_week">Count of choices made by day of week</string>
     <string name="stat_title_count_written_history_this_week">Notes written for the current week</string>
     <string name="stat_title_count_written_history_this_month">Notes written this month</string>
     <string name="stat_title_count_written_history_all_time">Number of notes written</string>
@@ -98,6 +99,16 @@
     <string name="stat_title_sum_value_choices_made_all_time">Sum of all choices made</string>
     <string name="stat_title_sum_value_by_day_of_week">Sum of all choices made by day of week</string>
     <string name="stat_title_choices_made_this_month">Choices made this month</string>
+
+    <string-array name="stat_day_abbr">
+        <item>Su</item>
+        <item>Mo</item>
+        <item>Tu</item>
+        <item>We</item>
+        <item>Th</item>
+        <item>Fr</item>
+        <item>Sa</item>
+    </string-array>
 
     <!-- Strings related to Settings -->
     <string name="pref_export_key">initiate_export</string>

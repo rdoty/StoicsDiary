@@ -53,10 +53,10 @@
         <item name="displayName">@string/theme_color_02_name</item>
         <item name="colorPrimary">@android:color/background_dark</item>
         <item name="colorAccent">@android:color/holo_blue_light</item>
-        <item name="colorGoodBg">@android:color/holo_green_light</item>
-        <item name="colorGoodFg">@android:color/holo_orange_dark</item>
-        <item name="colorBadBg">@android:color/holo_orange_dark</item>
-        <item name="colorBadFg">@android:color/holo_green_light</item>
+        <item name="colorGoodBg">#757575</item>
+        <item name="colorGoodFg">#424242</item>
+        <item name="colorBadBg">#424242</item>
+        <item name="colorBadFg">#757575</item>
     </style>
 
     <style name="StoicColorTheme_03">
