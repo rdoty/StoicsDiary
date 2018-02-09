@@ -715,9 +715,17 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         }
 
         /**
+         * For unit testing
+         * @return SQLiteDatabase
+         */
+        SQLiteDatabase getWritableDatabase() {
+            return db.getWritableDatabase();
+        }
+
+        /**
          * This does what it says
          */
-        private void rebuildDatabase() {
+        void rebuildDatabase() {
             SQLiteDatabase dbw = db.getWritableDatabase();
             String Q_TABLE_DROP = "DROP TABLE IF EXISTS %s;";
             String Q_TABLE_MAKE = "CREATE TABLE %s (%s);";
@@ -909,8 +917,8 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             Long sumValueChoicesMadeThisWeek;
             Long sumValueChoicesMadeThisMonth;
             Long sumValueChoicesMadeAllTime;
-            ContentValues sumValueChoicesMadeByDayOfWeek; // Array w/M-Su, can use for weekday/weekends too
-            ContentValues choicesMadeThisMonth;  //
+            ContentValues sumValueChoicesMadeByDayOfWeek = new ContentValues(); // Array w/M-Su, can use for weekday/weekends too
+            ContentValues choicesMadeThisMonth = new ContentValues();  //
 
             /**
              *
@@ -920,61 +928,44 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             }
 
             /**
-             * Need to calculate these asynchronously
+             * This just formats the data currently in the UserStatistics class for display
              * @return Statistic[] array of stats to display
              */
             Statistic[] getStatsList() {
                 ArrayList<Statistic> statsList = new ArrayList<>();
 
-                statsList.add(new Statistic(
-                        getString(R.string.stat_title_earliest_choice_made),
+                statsList.add(new Statistic(getString(R.string.stat_title_earliest_choice_made),
                         Instant.ofEpochMilli(earliestChoiceMade).toString()));
-                statsList.add(new Statistic(
-                        getString(R.string.stat_title_earliest_written_note),
+                statsList.add(new Statistic(getString(R.string.stat_title_earliest_written_note),
                         Instant.ofEpochMilli(earliestWrittenHistory).toString()));
-                statsList.add(new Statistic(
-                        getString(R.string.stat_title_count_choices_made),
-                        String.format(Locale.getDefault(), "%,d", countChoicesMade)));
-                statsList.add(new Statistic(
-                        getString(R.string.stat_title_count_choices_changed),
-                        String.format(Locale.getDefault(), "%,d", countChoicesChanged)));
-                statsList.add(new Statistic(
-                        getString(R.string.stat_title_count_choices_locked),
-                        String.format(Locale.getDefault(), "%,d", countChoicesLocked)));
-                statsList.add(new Statistic(
-                        getString(R.string.stat_title_sum_value_choices_made_all_time),
-                        String.format(Locale.getDefault(), "%,d", sumValueChoicesMadeAllTime)));
-                statsList.add(new Statistic(
-                        getString(R.string.stat_title_count_written_history_all_time),
-                        String.format(Locale.getDefault(), "%,d", countWrittenHistoryAllTime)));
-
-                statsList.add(new Statistic(
-                        getString(R.string.stat_title_count_written_history_this_month),
-                        String.format(Locale.getDefault(), "%,d", countWrittenHistoryThisMonth)));
-                statsList.add(new Statistic(
-                        getString(R.string.stat_title_count_written_history_this_week),
-                        String.format(Locale.getDefault(), "%,d", countWrittenHistoryThisWeek)));
-                statsList.add(new Statistic(
-                        getString(R.string.stat_title_sum_value_choices_made_this_month),
-                        String.format(Locale.getDefault(), "%,d", sumValueChoicesMadeThisMonth)));
-                statsList.add(new Statistic(
-                        getString(R.string.stat_title_sum_value_choices_made_this_week),
-                        String.format(Locale.getDefault(), "%,d", sumValueChoicesMadeThisWeek)));
-                statsList.add(new Statistic(
-                        getString(R.string.stat_title_sum_value_by_day_of_week),
-                        sumValueChoicesMadeByDayOfWeek.toString()));
-                statsList.add(new Statistic(
-                        getString(R.string.stat_title_choices_made_this_month),
-                        choicesMadeThisMonth.toString()));
-                statsList.add(new Statistic(
-                        getString(R.string.stat_title_current_consecutive_choies),
-                        String.format(Locale.getDefault(), "%,d", countCurrentConsecutiveChoicesMade)));
-                statsList.add(new Statistic(
-                        getString(R.string.stat_title_maximum_consecutive_choices_made),
-                        String.format(Locale.getDefault(), "%,d", countMaximumConsecutiveChoicesMade)));
-                statsList.add(new Statistic(
-                        getString(R.string.stat_title_latest_tweet),
+                statsList.add(new Statistic(getString(R.string.stat_title_latest_tweet),
                         Instant.ofEpochMilli(latestTweet).toString()));
+                statsList.add(new Statistic(getString(R.string.stat_title_count_choices_made),
+                        String.format(Locale.getDefault(), "%,d", countChoicesMade)));
+                statsList.add(new Statistic(getString(R.string.stat_title_count_choices_changed),
+                        String.format(Locale.getDefault(), "%,d", countChoicesChanged)));
+                statsList.add(new Statistic(getString(R.string.stat_title_count_choices_locked),
+                        String.format(Locale.getDefault(), "%,d", countChoicesLocked)));
+                statsList.add(new Statistic(getString(R.string.stat_title_sum_value_choices_made_all_time),
+                        String.format(Locale.getDefault(), "%,d", sumValueChoicesMadeAllTime)));
+                statsList.add(new Statistic(getString(R.string.stat_title_count_written_history_all_time),
+                        String.format(Locale.getDefault(), "%,d", countWrittenHistoryAllTime)));
+                statsList.add(new Statistic(getString(R.string.stat_title_count_written_history_this_month),
+                        String.format(Locale.getDefault(), "%,d", countWrittenHistoryThisMonth)));
+                statsList.add(new Statistic(getString(R.string.stat_title_count_written_history_this_week),
+                        String.format(Locale.getDefault(), "%,d", countWrittenHistoryThisWeek)));
+                statsList.add(new Statistic(getString(R.string.stat_title_sum_value_choices_made_this_month),
+                        String.format(Locale.getDefault(), "%,d", sumValueChoicesMadeThisMonth)));
+                statsList.add(new Statistic(getString(R.string.stat_title_sum_value_choices_made_this_week),
+                        String.format(Locale.getDefault(), "%,d", sumValueChoicesMadeThisWeek)));
+                statsList.add(new Statistic(getString(R.string.stat_title_current_consecutive_choies),
+                        String.format(Locale.getDefault(), "%,d", countCurrentConsecutiveChoicesMade)));
+                statsList.add(new Statistic(getString(R.string.stat_title_maximum_consecutive_choices_made),
+                        String.format(Locale.getDefault(), "%,d", countMaximumConsecutiveChoicesMade)));
+                statsList.add(new Statistic(getString(R.string.stat_title_sum_value_by_day_of_week),
+                        sumValueChoicesMadeByDayOfWeek.toString()));
+                statsList.add(new Statistic(getString(R.string.stat_title_choices_made_this_month),
+                        choicesMadeThisMonth.toString()));
 
                 Statistic[] retVal = new Statistic[statsList.size()];
                 retVal = statsList.toArray(retVal);
@@ -1003,8 +994,19 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
                 // Don't have a field for this in the DB currently, so faking it
                 final String qLT = String.format(Locale.US, "SELECT %d AS time_stamp", Instant.now().toEpochMilli());
                 // Have to decide how to represent this (and query it)
-                final String qSVCMBDOW = "SELECT * FROM (VALUES('0'),('0'),('0'),('0'),('0'),('0'),('0')) AS sub(c)";
-                final String qCMTM = qSVCMBDOW; // Fix this, should return all choices for the current month
+                final String qSVCMBDOW  = "SELECT \n" +
+                        "  CASE (strftime('%w', date(time_stamp / 1000, 'unixepoch', 'localtime')))\n" +
+                        "  when '0' then 'Sunday'\n" +
+                        "  when '1' then 'Monday'\n" +
+                        "  when '2' then 'Tuesday'\n" +
+                        "  when '3' then 'Wednesday'\n" +
+                        "  when '4' then 'Thursday'\n" +
+                        "  when '5' then 'Friday'\n" +
+                        "  when '6' then 'Saturday'\n" +
+                        "  else 'Invalid'\n" +
+                        "  end as dayofweek, count(*) \n" +
+                        "FROM diary GROUP BY dayofweek ORDER BY dayofweek";
+                final String qCMTM = "SELECT * FROM (VALUES('0','0','0','0','0','0','0')) AS days";
 
                 SQLiteDatabase dbr = db.getReadableDatabase();
                 Cursor cursor;
@@ -1026,12 +1028,14 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
                 countMaximumConsecutiveChoicesMade  = DatabaseUtils.longForQuery(dbr, qCMCCM, null);
 
                 cursor = dbr.rawQuery(qSVCMBDOW, null);
-                cursor.moveToFirst();
-                DatabaseUtils.cursorRowToContentValues(cursor, sumValueChoicesMadeByDayOfWeek);
+                while (cursor.moveToNext()) {
+                    sumValueChoicesMadeByDayOfWeek.put(cursor.getString(0), cursor.getInt(1));
+                }
 
-                cursor = dbr.rawQuery(qCMTM, null);
-                cursor.moveToFirst();
-                DatabaseUtils.cursorRowToContentValues(cursor, choicesMadeThisMonth);
+//                cursor = dbr.rawQuery(qCMTM, null);
+//                if (cursor.moveToFirst()) {
+//                    DatabaseUtils.cursorRowToContentValues(cursor, sumValueChoicesMadeThisMonth);
+//                }
             }
 
             class Statistic {
