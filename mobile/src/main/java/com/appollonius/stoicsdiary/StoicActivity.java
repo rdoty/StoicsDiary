@@ -876,11 +876,13 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
          * (visual) choices previous month (see 7 minute workout)
          */
         class UserStatistics {
-            LocalDate now = LocalDate.now(ZoneId.systemDefault());
+            final LocalDate now = LocalDate.now(ZoneId.systemDefault());
+            final Integer MONTH_LENGTH = now.lengthOfMonth();
+            final Integer TODAY_OF_MONTH = now.getDayOfMonth();
+            final String DAYS_HEADER = String.join(" ", Arrays.asList(getResources().getStringArray(R.array.stat_day_abbr)));
+
             Long thisMonth = now.withDayOfMonth(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
             Long thisWeek = now.with(ChronoField.DAY_OF_WEEK, 1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-            Integer daysThisMonth = now.lengthOfMonth();
-            Integer todayDayOfMonth = now.getDayOfMonth();
 
             Long earliestChoiceMade;
             Long earliestWrittenHistory;
@@ -976,7 +978,8 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
              */
             String assembleChoicesByDOW(ContentValues cv) {
                 StringBuilder output = new StringBuilder();
-                output.append("Sun Mon Tue Wed Thu Fri Sat \n");
+
+                output.append(String.format("%s \n", DAYS_HEADER));
                 for (int i = 0; i < 7; i++) {
                     String v = String.format(Locale.getDefault(),"%03d ", cv.getAsInteger(Integer.toString(i)));
                     output.append(v.equals("null ") ? "000 " : v);
@@ -984,35 +987,43 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
                 return output.toString();
             }
 
+            /**
+             * @param cv ContentValues keys corresponding to any values in the DB for the current month
+             * @return String multiline monospaced representing calendar of current month choices made
+             */
             String assembleChoicesByCal(ContentValues cv) {
+                final String CHOICE_NOT_MADE = ".";
+                final String CHOICE_NOT_PAST = "?";
+                final String FORMAT_VALUE = "%3s ";
+
                 StringBuilder output = new StringBuilder();
                 LocalDate date = now.withDayOfMonth(1);
-                int month = date.getMonthValue();
-                LocalDate endOfMonth = date.withDayOfMonth(date.lengthOfMonth()).plusDays(1);
+                int month = now.getMonthValue();
+                LocalDate endOfMonth = date.withDayOfMonth(MONTH_LENGTH).plusDays(1);
                 while (date.getDayOfWeek() != DayOfWeek.SUNDAY) {
                     date = date.minusDays(1);
                 }
-
-                String format = "%3s ";
-                output.append("Sun Mon Tue Wed Thu Fri Sat\n");
+                output.append(String.format("%s\n", DAYS_HEADER));
                 while (date.isBefore(endOfMonth)) {
                     StringBuilder row = new StringBuilder(7 * 5);
                     for (int index = 0; index < 7; index++) {
-                        String value = (month != date.getMonthValue()) ? "" : cv.getAsString(String.format(Locale.getDefault(),"%02d", date.getDayOfMonth()));
-                        row.append(String.format(Locale.getDefault(), format, value));
+                        String dbValue = cv.getAsString(String.valueOf(date.getDayOfMonth()));
+                        if (dbValue == null) {
+                            dbValue = (date.getDayOfMonth() <= TODAY_OF_MONTH) ? CHOICE_NOT_MADE : CHOICE_NOT_PAST;
+                        }
+                        String value = (month != date.getMonthValue()) ? "" : dbValue;
+                        row.append(String.format(Locale.getDefault(), FORMAT_VALUE, value));
                         date = date.plusDays(1);
                     }
                     output.append(String.format("%s\n",row));
                 }
                 return output.toString();
             }
+
             /**
              * Set the values of the member variables based on info in the DB
              */
             private void recalculateStats() {
-                final String CHOICE_NOT_MADE = ".";
-                final String CHOICE_NOT_PAST = "?";
-
                 // These are yet to be written, but the data exists
                 final String qCCCCM = "SELECT -99 AS count";
                 final String qCMCCM = "SELECT -99 AS count";
@@ -1049,14 +1060,9 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
                 }
 
                 cursor = dbr.rawQuery(String.format(qCMTM, thisMonth), null);
-                while (cursor.moveToNext()) {
+                while (cursor.moveToNext()) {  // Get all of the choices recorded
                     Integer dayOfMonth = LocalDate.from(Instant.ofEpochMilli(cursor.getLong(0)).atZone(ZoneId.systemDefault())).getDayOfMonth();
-                    choicesMadeThisMonth.put(String.format(Locale.getDefault(), "%02d", dayOfMonth), cursor.getInt(1));
-                }
-                for (int i = 1; i <= daysThisMonth; i++) {  // Fill in the dates before today and the rest of the month
-                    if (choicesMadeThisMonth.getAsInteger(String.format(Locale.getDefault(), "%02d", i)) == null) {
-                        choicesMadeThisMonth.put(String.format(Locale.getDefault(), "%02d", i), (i <= todayDayOfMonth) ? CHOICE_NOT_MADE : CHOICE_NOT_PAST);
-                    }
+                    choicesMadeThisMonth.put(String.valueOf(dayOfMonth), cursor.getInt(1));
                 }
                 cursor.close();
             }

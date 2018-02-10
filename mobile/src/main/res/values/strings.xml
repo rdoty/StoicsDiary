@@ -101,13 +101,13 @@
     <string name="stat_title_choices_made_this_month">Choices made this month</string>
 
     <string-array name="stat_day_abbr">
-        <item>Su</item>
-        <item>Mo</item>
-        <item>Tu</item>
-        <item>We</item>
-        <item>Th</item>
-        <item>Fr</item>
-        <item>Sa</item>
+        <item>Sun</item>
+        <item>Mon</item>
+        <item>Tue</item>
+        <item>Wed</item>
+        <item>Thu</item>
+        <item>Fri</item>
+        <item>Sat</item>
     </string-array>
 
     <!-- Strings related to Settings -->
