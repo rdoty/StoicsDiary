@@ -120,6 +120,17 @@ public class SummaryFragment extends android.support.v4.app.ListFragment {
             super(context, 0, stats);
         }
 
+        @Override
+        public int getItemViewType(int position) {
+            return 0; // To support heterogeneous items getItem(position).color.ordinal();
+        }
+
+        // Total number of types is the number of enum values
+        @Override
+        public int getViewTypeCount() {
+            return 1; // To support heterogeneous itemsSimpleColor.ColorValues.values().length;
+        }
+
         @Override @NonNull
         public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             // Get the data item for this position
