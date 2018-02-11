@@ -82,9 +82,9 @@
     <string name="quote_06">“It is more necessary for the soul to be cured than the body; for it is better to die than to live badly.”\n ― Epictetus</string>
 
     <!-- Strings related to User statistics -->
-    <string name="stat_title_earliest_choice_made">earliest_choice_made</string>
-    <string name="stat_title_earliest_written_note">earliest_written_note</string>
-    <string name="stat_title_latest_tweet">latest_tweet</string>
+    <string name="stat_title_earliest_choice_made">First choice made</string>
+    <string name="stat_title_earliest_written_note">First note written</string>
+    <string name="stat_title_latest_tweet">Most recent tweet</string>
     <string name="stat_title_current_consecutive_choies">Current streak of consecutive choices</string>
     <string name="stat_title_maximum_consecutive_choices_made">Longest streak of consecutive choices</string>
     <string name="stat_title_count_choices_made">Number of choices made</string>
