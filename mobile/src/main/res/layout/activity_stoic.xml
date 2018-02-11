@@ -17,13 +17,10 @@
             android:id="@+id/tabs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:theme="@android:style/Widget.TabWidget"
-            app:tabGravity="fill"
-            app:tabIndicatorColor="?attr/colorAccent"
-            app:tabIndicatorHeight="4dp"
-            app:tabMode="fixed"
+            android:theme="@style/CustomTabLayout"
             app:tabSelectedTextColor="@android:color/white"
-            app:tabTextColor="@android:color/darker_gray" />
+            app:tabGravity="fill"
+            app:tabMode="fixed" />
 
     </android.support.design.widget.AppBarLayout>
 
