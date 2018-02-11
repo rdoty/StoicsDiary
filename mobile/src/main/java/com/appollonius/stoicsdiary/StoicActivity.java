@@ -148,9 +148,11 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
 
             @Override
             public void onPageSelected(int position) {
-                Log.d("DEBUG", String.format("Selected Tab #%d", position));
                 if (adapter.getItem(position).getView() != null) {
                     updateUI(adapter.getItem(position).getView());
+                    if (position == 2) {  // stats, refresh stat list in adapter
+                        ((SummaryFragment)(adapter.getItem(position))).updateStatList();
+                    }
                 }
             }
 
@@ -775,6 +777,14 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             return dayValues;
         }
 
+        void threadReCalc() {
+            new Thread(new Runnable() {
+                public void run(){
+                    ds.us.recalculateStats();
+                }
+            }).start();
+        }
+
         /**
          * Would like to find a more elegant upsert behavior, sqlite has 'INSERT OR REPLACE'
          * @param date Long from LocalDate
@@ -808,6 +818,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             }
             Log.d("DateSet", String.format(LOG_STRING, date, theChoice, oldValues.get(COLUMN_CHOICE)));
             dbw.close();
+            if (didWriteSucceed) { threadReCalc(); }
             return didWriteSucceed;
         }
 
@@ -831,6 +842,8 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
                     didWriteSucceed = -1 < dbw.insert(TABLE_DESC, null, newValues);
                 }
             }
+            dbw.close();
+            if (didWriteSucceed) { threadReCalc(); }
             return didWriteSucceed;
         }
 
@@ -1029,7 +1042,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             /**
              * Set the values of the member variables based on info in the DB
              */
-            private void recalculateStats() {
+            public void recalculateStats() {
                 // Don't have a field for this in the DB currently, so faking it
                 final String qLT = String.format(Locale.US, "SELECT %d AS time_stamp", dateWeekStart);
 
@@ -1092,6 +1105,10 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
                         numConsec = 1;
                     }
                 }
+                if (numConsec > countMaximumConsecutiveChoicesMade) {  // If max was at end, assign
+                    countMaximumConsecutiveChoicesMade = Integer.toUnsignedLong(numConsec);
+                }
+
                 numConsec = 1;
                 if (datesChoiceMade.get(datesChoiceMade.size() - 1) != now.toEpochDay()) {
                     countCurrentConsecutiveChoicesMade = 0L;

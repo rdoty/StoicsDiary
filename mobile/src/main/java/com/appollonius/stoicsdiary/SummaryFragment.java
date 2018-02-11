@@ -81,14 +81,12 @@ public class SummaryFragment extends android.support.v4.app.ListFragment {
 
         // Construct the data source
         ArrayList<StoicActivity.Datastore.UserStatistics.Statistic> statsArray = new ArrayList<>();
-
         adapter = new StatsAdapter(getContext(), statsArray);  // to convert the array to views
 
-        // Attach the adapter to a ListView
         ListView listView = rootView.findViewById(android.R.id.list);
-        listView.setAdapter(adapter);
+        listView.setAdapter(adapter);  // Attach the adapter to a ListView
 
-        adapter.addAll(mA.ds.us.getStatsList());
+        updateStatList();
         return rootView;
     }
 
@@ -115,6 +113,17 @@ public class SummaryFragment extends android.support.v4.app.ListFragment {
         mListener = null;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateStatList();
+    }
+
+    void updateStatList() {
+        adapter.clear();
+        adapter.addAll(mA.ds.us.getStatsList());
+    }
+
     public class StatsAdapter extends ArrayAdapter<StoicActivity.Datastore.UserStatistics.Statistic> {
         StatsAdapter(Context context, ArrayList<StoicActivity.Datastore.UserStatistics.Statistic> stats) {
             super(context, 0, stats);
@@ -122,13 +131,13 @@ public class SummaryFragment extends android.support.v4.app.ListFragment {
 
         @Override
         public int getItemViewType(int position) {
-            return 0; // To support heterogeneous items getItem(position).color.ordinal();
+            return 0; // To support heterogeneous items e.g. getItem(position).color.ordinal();
         }
 
         // Total number of types is the number of enum values
         @Override
         public int getViewTypeCount() {
-            return 1; // To support heterogeneous itemsSimpleColor.ColorValues.values().length;
+            return 1; // To support heterogeneous items e.g. SimpleColor.ColorValues.values().length;
         }
 
         @Override @NonNull
