@@ -75,7 +75,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     static final String CHOICE_ISSET = "isSet";
     static final String CHOICE_ISMUTABLE = "isMutable";
     static final String CHOICE_DATE = "choiceDate";
-    // Information for stored preferences / data / business rules
+    // Information for stored preferences, data, or business rules
     static final String INTENT_EXTRA_EXPORT = "initiate_export";  // Same as pref_export_key
     static final String INTENT_EXTRA_RESET_DB = "reset_db";  // Save as @string/pref_reset_key
 
@@ -84,7 +84,6 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     static final String PREF_KEY_CUR_COLOR_THEME = "currentColorTheme";
 
     static final Integer MAX_CHANGES = 3;
-    static final Integer NUM_QUOTES = 6;  // Figure count out dynamically
     static final String EXPORT_FILENAME = "sd_export.csv";
 
     // Major internal components
@@ -297,7 +296,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
 
     /**
      * Export database fields into more friendly CSV format
-     * For export, format date as yyyy-mm-dd, choice as 1 / -1, words null value as empty string
+     * For export, format date as yyyy-mm-dd, choice as 1 or -1, words null value as empty string
      * @return File filename, null if failure
      */
     File exportToCSVFile() {
@@ -437,25 +436,37 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
      * mNotificationId is a unique integer your app uses to identify the notification.
      * e.g. to cancel the notification, call NotificationManager.cancel(mLatestNotificationId).
      */
-    void notifyUser() {
+    void initializeNotifications() {
         if (mNotificationManager != null) {
-            NotificationCompat.Builder mBuilder =
-                    new NotificationCompat.Builder(this, getString(R.string.channel_id))
-                            .setSmallIcon(R.drawable.common_google_signin_btn_icon_light)
-                            .setContentTitle(getText(R.string.notification_title))
-                            .setContentText(getText(R.string.notification_text));
-
-            Intent resultIntent = new Intent(this, StoicActivity.class);
-
-            TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-            stackBuilder.addParentStack(StoicActivity.class);  // Adds the back stack for the Intent
-            stackBuilder.addNextIntent(resultIntent);  // Adds the Intent that starts the Activity to the top of the stack
-            PendingIntent resultPendingIntent =
-                    stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-            mBuilder.setContentIntent(resultPendingIntent);
-
             mLatestNotificationId = new Random().nextInt();
-            mNotificationManager.notify(mLatestNotificationId, mBuilder.build());
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+            Intent resultIntent = new Intent(this, StoicActivity.class);
+            AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
+            if (alarmManager != null) {
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(Calendar.HOUR_OF_DAY, 12);  // From settings
+                calendar.set(Calendar.MINUTE, 0);
+                calendar.set(Calendar.SECOND, 0);
+
+                stackBuilder.addParentStack(StoicActivity.class);  // Adds the back stack for the Intent
+                stackBuilder.addNextIntent(resultIntent);  // Adds the Intent that starts the Activity to the top of the stack
+                PendingIntent resultPendingIntent =
+                        stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                NotificationCompat.Builder mBuilder =
+                        new NotificationCompat.Builder(this, getString(R.string.channel_id))
+                                .setSmallIcon(R.drawable.common_google_signin_btn_icon_light)
+                                .setContentTitle(getText(R.string.notification_title))
+                                .setContentText(getText(R.string.notification_text));
+
+                mBuilder.setContentIntent(resultPendingIntent);
+
+                mNotificationManager.notify(mLatestNotificationId, mBuilder.build());
+
+                PendingIntent pendingIntent = PendingIntent.getService(StoicActivity.this, 0, resultIntent, 0);
+
+                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), 24*60*60*1000 , pendingIntent);  //set repeating every 24 hours
+            }
         } else {
             Log.d("ERROR", "Could not initializeNotificationChannel, NOTIFICATION_SERVICE null");
         }
@@ -515,7 +526,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
      */
     @NonNull
     public String getQuote() {
-        return getQuote(new Random().nextInt(StoicActivity.NUM_QUOTES) + 1);
+        return getQuote(new Random().nextInt(getResources().getStringArray(R.array.quotations).length));
     }
 
     /**
@@ -525,8 +536,8 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
      */
     @NonNull
     private String getQuote(Integer quoteId) {
-        String num = String.format(Locale.US, "%02d", quoteId);
-        return this.getText(getResources().getIdentifier("quote_" + num,"string", BuildConfig.APPLICATION_ID)).toString();
+        String[] array = getResources().getStringArray(R.array.quotations);
+        return array[quoteId];
     }
 
     /**
@@ -750,7 +761,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         }
 
         /**
-         * For checking the current value and whether / when the value was and can be changed
+         * For checking the current value and whether/when the value was and can be changed
          * @param date Long
          * @return ContentValues database key/values corresponding to the date value in COLUMN_DAY
          */
@@ -947,25 +958,36 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
 
             /**
              * This just formats the data currently in the UserStatistics class for display
+             * These are displayed in the UI in the same order they're added to the list
              * @return Statistic[] array of stats to display
              */
             Statistic[] getStatsList() {
                 ArrayList<Statistic> statsList = new ArrayList<>();
 
-                statsList.add(new Statistic(getString(R.string.stat_title_earliest_choice_made),
-                        dateFormatter.format(Instant.ofEpochMilli(earliestChoiceMade))));
-                statsList.add(new Statistic(getString(R.string.stat_title_earliest_written_note),
-                        dateFormatter.format(Instant.ofEpochMilli(earliestWrittenHistory))));
-                statsList.add(new Statistic(getString(R.string.stat_title_latest_tweet),
-                        dateFormatter.format(Instant.ofEpochMilli(latestTweet))));
+                statsList.add(new Statistic(getString(R.string.stat_title_choices_made_this_month),
+                        assembleChoicesByCal(choicesMadeThisMonth)));
+                statsList.add(new Statistic(getString(R.string.stat_title_count_choices_by_day_of_week),
+                        assembleChoicesByDOW(countChoicesMadeByDayOfWeek)));
+                statsList.add(new Statistic(getString(R.string.stat_title_sum_value_by_day_of_week),
+                        assembleChoicesByDOW(sumValueChoicesMadeByDayOfWeek)));
                 statsList.add(new Statistic(getString(R.string.stat_title_count_choices_made),
                         String.format(Locale.getDefault(), "%,d", countChoicesMade)));
                 statsList.add(new Statistic(getString(R.string.stat_title_count_choices_changed),
                         String.format(Locale.getDefault(), "%,d", countChoicesChanged)));
                 statsList.add(new Statistic(getString(R.string.stat_title_count_choices_locked),
                         String.format(Locale.getDefault(), "%,d", countChoicesLocked)));
+                statsList.add(new Statistic(getString(R.string.stat_title_current_consecutive_choies),
+                        String.format(Locale.getDefault(), "%,d", countCurrentConsecutiveChoicesMade)));
+                statsList.add(new Statistic(getString(R.string.stat_title_maximum_consecutive_choices_made),
+                        String.format(Locale.getDefault(), "%,d", countMaximumConsecutiveChoicesMade)));
                 statsList.add(new Statistic(getString(R.string.stat_title_count_written_history_all_time),
                         String.format(Locale.getDefault(), "%,d", countWrittenHistoryAllTime)));
+                statsList.add(new Statistic(getString(R.string.stat_title_earliest_choice_made),
+                        dateFormatter.format(Instant.ofEpochMilli(earliestChoiceMade))));
+                statsList.add(new Statistic(getString(R.string.stat_title_earliest_written_note),
+                        dateFormatter.format(Instant.ofEpochMilli(earliestWrittenHistory))));
+                statsList.add(new Statistic(getString(R.string.stat_title_latest_tweet),
+                        dateFormatter.format(Instant.ofEpochMilli(latestTweet))));
                 statsList.add(new Statistic(getString(R.string.stat_title_count_written_history_this_month),
                         String.format(Locale.getDefault(), "%,d", countWrittenHistoryThisMonth)));
                 statsList.add(new Statistic(getString(R.string.stat_title_count_written_history_this_week),
@@ -974,17 +996,6 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
                         String.format(Locale.getDefault(), "%,d", sumValueChoicesMadeThisMonth)));
                 statsList.add(new Statistic(getString(R.string.stat_title_sum_value_choices_made_this_week),
                         String.format(Locale.getDefault(), "%,d", sumValueChoicesMadeThisWeek)));
-                statsList.add(new Statistic(getString(R.string.stat_title_count_choices_by_day_of_week),
-                        assembleChoicesByDOW(countChoicesMadeByDayOfWeek)));
-                statsList.add(new Statistic(getString(R.string.stat_title_sum_value_by_day_of_week),
-                        assembleChoicesByDOW(sumValueChoicesMadeByDayOfWeek)));
-                statsList.add(new Statistic(getString(R.string.stat_title_choices_made_this_month),
-                        assembleChoicesByCal(choicesMadeThisMonth)));
-
-                statsList.add(new Statistic(getString(R.string.stat_title_current_consecutive_choies),
-                        String.format(Locale.getDefault(), "%,d", countCurrentConsecutiveChoicesMade)));
-                statsList.add(new Statistic(getString(R.string.stat_title_maximum_consecutive_choices_made),
-                        String.format(Locale.getDefault(), "%,d", countMaximumConsecutiveChoicesMade)));
 
                 Statistic[] retVal = new Statistic[statsList.size()];
                 retVal = statsList.toArray(retVal);
@@ -1042,7 +1053,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             /**
              * Set the values of the member variables based on info in the DB
              */
-            public void recalculateStats() {
+            void recalculateStats() {
                 // Don't have a field for this in the DB currently, so faking it
                 final String qLT = String.format(Locale.US, "SELECT %d AS time_stamp", dateWeekStart);
 

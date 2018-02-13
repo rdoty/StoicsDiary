@@ -74,18 +74,20 @@
     <string name="notification_title">Are you ready to make a choice?</string>
     <string name="notification_text">Make your choice and perhaps write something to remind yourself about the day.</string>
 
-    <string name="quote_01">“If you are distressed by anything external, the pain is not due to the thing itself, but to your estimate of it; and this you have the power to revoke at any moment.”\n ― Marcus Aurelius, Meditations</string>
-    <string name="quote_02">“Never let the future disturb you. You will meet it, if you have to, with the same weapons of reason which today arm you against the present.”\n ― Marcus Aurelius, Meditations</string>
-    <string name="quote_03">“Complaining does not work as a strategy. We all have finite time and energy. Any time we spend whining is unlikely to help us achieve our goals. And it won\'t make us happier.”\n ― Randy Pausch, The Last Lecture</string>
-    <string name="quote_04">“It is the power of the mind to be unconquerable.”\n ― Seneca</string>
-    <string name="quote_05">“Until we have begun to go without them, we fail to realize how unnecessary many things are. We\'ve been using them not because we needed them but because we had them.”\n ― Seneca, Letters from a Stoic</string>
-    <string name="quote_06">“It is more necessary for the soul to be cured than the body; for it is better to die than to live badly.”\n ― Epictetus</string>
+    <string-array name="quotations">
+        <item>“If you are distressed by anything external, the pain is not due to the thing itself, but to your estimate of it; and this you have the power to revoke at any moment.”\n ― Marcus Aurelius, Meditations</item>
+        <item>“Never let the future disturb you. You will meet it, if you have to, with the same weapons of reason which today arm you against the present.”\n ― Marcus Aurelius, Meditations</item>
+        <item>“Complaining does not work as a strategy. We all have finite time and energy. Any time we spend whining is unlikely to help us achieve our goals. And it won\'t make us happier.”\n ― Randy Pausch, The Last Lecture</item>
+        <item>“It is the power of the mind to be unconquerable.”\n ― Seneca</item>
+        <item>“Until we have begun to go without them, we fail to realize how unnecessary many things are. We\'ve been using them not because we needed them but because we had them.”\n ― Seneca, Letters from a Stoic</item>
+        <item>“It is more necessary for the soul to be cured than the body; for it is better to die than to live badly.”\n ― Epictetus</item>
+    </string-array>
 
     <!-- Strings related to User statistics -->
     <string name="stat_title_earliest_choice_made">First choice made</string>
     <string name="stat_title_earliest_written_note">First note written</string>
     <string name="stat_title_latest_tweet">Most recent tweet</string>
-    <string name="stat_title_current_consecutive_choies">Current streak of consecutive choices</string>
+    <string name="stat_title_current_consecutive_choies">Current choice streak (incl. today)</string>
     <string name="stat_title_maximum_consecutive_choices_made">Longest streak of consecutive choices</string>
     <string name="stat_title_count_choices_made">Number of choices made</string>
     <string name="stat_title_count_choices_changed">Number of times a choice was changed</string>
@@ -121,7 +123,7 @@
 
     <string name="pref_debug_key">debug_mode</string>
     <string name="pref_debug_title">Debug Mode</string>
-    <string name="pref_debug_summary">Allow additional UI / feature for testing.</string>
+    <string name="pref_debug_summary">Enable additional UI and features for testing.</string>
 
     <string name="pref_header_general">General</string>
 
