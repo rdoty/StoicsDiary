@@ -122,7 +122,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         initializeCurrentDay();
         initializeStartingTab();
         initializeNotificationChannel();
-        initializeDailyReminder();
+        initializeNotifications();
     }
 
     private void initializeStartingTab() {
@@ -431,47 +431,6 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         }
     }
 
-    /**
-     * This just fires off a test notification at the moment.
-     * mNotificationId is a unique integer your app uses to identify the notification.
-     * e.g. to cancel the notification, call NotificationManager.cancel(mLatestNotificationId).
-     */
-    void initializeNotifications() {
-        if (mNotificationManager != null) {
-            mLatestNotificationId = new Random().nextInt();
-            TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-            Intent resultIntent = new Intent(this, StoicActivity.class);
-            AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
-            if (alarmManager != null) {
-                Calendar calendar = Calendar.getInstance();
-                calendar.set(Calendar.HOUR_OF_DAY, 12);  // From settings
-                calendar.set(Calendar.MINUTE, 0);
-                calendar.set(Calendar.SECOND, 0);
-
-                stackBuilder.addParentStack(StoicActivity.class);  // Adds the back stack for the Intent
-                stackBuilder.addNextIntent(resultIntent);  // Adds the Intent that starts the Activity to the top of the stack
-                PendingIntent resultPendingIntent =
-                        stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                NotificationCompat.Builder mBuilder =
-                        new NotificationCompat.Builder(this, getString(R.string.channel_id))
-                                .setSmallIcon(R.drawable.common_google_signin_btn_icon_light)
-                                .setContentTitle(getText(R.string.notification_title))
-                                .setContentText(getText(R.string.notification_text));
-
-                mBuilder.setContentIntent(resultPendingIntent);
-
-                mNotificationManager.notify(mLatestNotificationId, mBuilder.build());
-
-                PendingIntent pendingIntent = PendingIntent.getService(StoicActivity.this, 0, resultIntent, 0);
-
-                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), 24*60*60*1000 , pendingIntent);  //set repeating every 24 hours
-            }
-        } else {
-            Log.d("ERROR", "Could not initializeNotificationChannel, NOTIFICATION_SERVICE null");
-        }
-    }
-
     void sendTweet() {
         Intent tweetIntent = new Intent(Intent.ACTION_SEND);
         tweetIntent.putExtra(Intent.EXTRA_TEXT, "This is a Test."); // Contents
@@ -497,24 +456,47 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         }
     }
     /**
-     * This method checks the currently set preferences, and updates the scheduled
-     * notifications accordingly.
+     * This just fires off a test notification at the moment.
+     * mNotificationId is a unique integer your app uses to identify the notification.
+     * e.g. to cancel the notification, call NotificationManager.cancel(mLatestNotificationId).
      */
-    void initializeDailyReminder() {
-        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        if (alarmManager != null) {
-            Intent myIntent = new Intent(StoicActivity.this, StoicActivity.class);
-            PendingIntent pending = PendingIntent.getService(StoicActivity.this, 0, myIntent, 0);
+    void initializeNotifications() {
+        Integer reminderTime = Integer.valueOf(sp.getString("reminder_time", ""));
+        if (reminderTime > 0) {
+            if (mNotificationManager != null) {
+                mLatestNotificationId = new Random().nextInt();
+                TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+                Intent resultIntent = new Intent(this, StoicActivity.class);
+                AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
+                if (alarmManager != null) {
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.set(Calendar.HOUR_OF_DAY, reminderTime);
+                    calendar.set(Calendar.MINUTE, 0);
+                    calendar.set(Calendar.SECOND, 0);
 
-            Calendar calendar = Calendar.getInstance();
-            calendar.set(Calendar.HOUR_OF_DAY, sp.getInt("notification_hour", 21));
-            calendar.set(Calendar.MINUTE, 0);
-            calendar.set(Calendar.SECOND, 0);
-            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), 24 * 60 * 60 * 1000, pending);  //set repeating every 24 hours
-        } else {
-            Log.d("ERROR", "initializeDailyReminder failed to getSystemService(ALARM_SERVICE)");
+                    stackBuilder.addParentStack(StoicActivity.class);  // Adds the back stack for the Intent
+                    stackBuilder.addNextIntent(resultIntent);  // Adds the Intent that starts the Activity to the top of the stack
+                    PendingIntent resultPendingIntent =
+                            stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                    NotificationCompat.Builder mBuilder =
+                            new NotificationCompat.Builder(this, getString(R.string.channel_id))
+                                    .setSmallIcon(R.drawable.ic_info_white_24dp)
+                                    .setContentTitle(getText(R.string.notification_title))
+                                    .setContentText(getText(R.string.notification_text));
+
+                    mBuilder.setContentIntent(resultPendingIntent);
+
+                    //mNotificationManager.notify(mLatestNotificationId, mBuilder.build());
+                    PendingIntent pendingIntent = PendingIntent.getService(StoicActivity.this, 0, resultIntent, 0);
+                    alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), 24*60*60*1000 , pendingIntent);  //set repeating every 24 hours
+                }
+            } else {
+                Log.d("ERROR", "Could not initializeNotificationChannel, NOTIFICATION_SERVICE null");
+            }
         }
     }
+
 
     public Boolean isDebugMode() {
         return sp.getBoolean(getString(R.string.pref_debug_key), false);
@@ -909,7 +891,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             final Integer TODAY_OF_MONTH = now.getDayOfMonth();
             final String DAYS_HEADER = String.join(" ", Arrays.asList(getResources().getStringArray(R.array.stat_day_abbr)));
             final DateTimeFormatter dateFormatter =
-                    DateTimeFormatter.ofLocalizedDate( FormatStyle.SHORT )
+                    DateTimeFormatter.ofLocalizedDate( FormatStyle.LONG )
                             .withLocale( Locale.getDefault() ).withZone( ZoneId.systemDefault() );
 
             Long earliestChoiceMade;
@@ -927,27 +909,24 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             Long sumValueChoicesMadeThisMonth;
             Long sumValueChoicesMadeAllTime;
             ContentValues countChoicesMadeByDayOfWeek = new ContentValues();
-            ContentValues sumValueChoicesMadeByDayOfWeek = new ContentValues(); // Array w/M-Su, can use for weekday/weekends too
-            ContentValues choicesMadeThisMonth = new ContentValues();  //
+            ContentValues sumValueChoicesMadeByDayOfWeek = new ContentValues();
+            ContentValues choicesMadeThisMonth = new ContentValues();
             // All these queries are hardcoded, clean them up and use constants and formatting as above
-            final static String qECM = "SELECT min(time_stamp) FROM diary";
-            final static String qEWH = "SELECT d.time_stamp, f.words FROM diary d LEFT OUTER JOIN feels f ON f.diary_id = d.id ORDER BY d.time_stamp;";
-            final static String qCCM = "SELECT count(1) FROM diary";
-            final static String qCCC = "SELECT (sum(update_count)-count(update_count)) AS count FROM diary";
-            final static String qCCL = "SELECT count(update_count) FROM diary WHERE update_count > 2";
-            final static String qCWHTAT = "SELECT count(words) FROM feels";
-            final static String qSVCMTAT = "SELECT sum(choice) FROM diary";
-            final static String qCWHTM = "SELECT count(words) FROM feels JOIN diary ON feels.diary_id=diary.id WHERE diary.time_stamp >= %s";
-            final static String qCWHTW = "SELECT count(words) FROM feels JOIN diary ON feels.diary_id=diary.id WHERE diary.time_stamp >= %s";
-            final static String qSVCMTM = "SELECT sum(CASE (choice) WHEN 0 THEN -1 WHEN 1 THEN 1 END) as choiceValue FROM diary WHERE time_stamp >= %s";
-            final static String qSVCMTW = "SELECT sum(CASE (choice) WHEN 0 THEN -1 WHEN 1 THEN 1 END) as choiceValue FROM diary WHERE time_stamp >= %s";
-            final static String qCMTM = "SELECT time_stamp, CASE (choice) WHEN 0 THEN -1 WHEN 1 THEN 1 END AS choice FROM diary WHERE time_stamp >= %s";
-            final static String qCCCM = "SELECT strftime('%s', date(time_stamp / 1000, 'unixepoch', 'localtime')) / 86400 as day_num FROM diary ORDER BY day_num;";
-            final static String qCCMBDOW  = "SELECT strftime('%w', date(time_stamp / 1000, 'unixepoch', 'localtime')) AS dayofweek, count(1) \n" +
-                    "FROM diary GROUP BY dayofweek ORDER BY dayofweek";
-            final static String qSVCMBDOW  = "SELECT strftime('%w', date(time_stamp / 1000, 'unixepoch', 'localtime')) AS dayofweek, " +
-                    "sum(CASE (choice) WHEN 0 THEN -1 WHEN 1 THEN 1 END) as choiceValue \n" +
-                    "FROM diary GROUP BY dayofweek ORDER BY dayofweek";
+            final static String qECM        = "SELECT min(time_stamp) FROM diary";
+            final static String qEWH        = "SELECT d.time_stamp, f.words FROM diary d LEFT OUTER JOIN feels f ON f.diary_id = d.id ORDER BY d.time_stamp;";
+            final static String qCCM        = "SELECT count(1) FROM diary";
+            final static String qCCC        = "SELECT (sum(update_count)-count(update_count)) AS count FROM diary";
+            final static String qCCL        = "SELECT count(update_count) FROM diary WHERE update_count > 2";
+            final static String qCWHTAT     = "SELECT count(words) FROM feels";
+            final static String qSVCMTAT    = "SELECT sum(choice) FROM diary";
+            final static String qCWHTM      = "SELECT count(words) FROM feels JOIN diary ON feels.diary_id=diary.id WHERE diary.time_stamp >= %s";
+            final static String qCWHTW      = "SELECT count(words) FROM feels JOIN diary ON feels.diary_id=diary.id WHERE diary.time_stamp >= %s";
+            final static String qSVCMTM     = "SELECT sum(CASE (choice) WHEN 0 THEN -1 WHEN 1 THEN 1 END) as choiceValue FROM diary WHERE time_stamp >= %s";
+            final static String qSVCMTW     = "SELECT sum(CASE (choice) WHEN 0 THEN -1 WHEN 1 THEN 1 END) as choiceValue FROM diary WHERE time_stamp >= %s";
+            final static String qCMTM       = "SELECT time_stamp, CASE (choice) WHEN 0 THEN -1 WHEN 1 THEN 1 END AS choice FROM diary WHERE time_stamp >= %s";
+            final static String qCCCM       = "SELECT strftime('%s', date(time_stamp / 1000, 'unixepoch', 'localtime')) / 86400 as day_num FROM diary ORDER BY day_num;";
+            final static String qCCMBDOW    = "SELECT strftime('%w', date(time_stamp / 1000, 'unixepoch', 'localtime')) AS dayofweek, count(1) FROM diary GROUP BY dayofweek ORDER BY dayofweek";
+            final static String qSVCMBDOW   = "SELECT strftime('%w', date(time_stamp / 1000, 'unixepoch', 'localtime')) AS dayofweek, sum(CASE (choice) WHEN 0 THEN -1 WHEN 1 THEN 1 END) as choiceValue FROM diary GROUP BY dayofweek ORDER BY dayofweek";
 
             /**
              *

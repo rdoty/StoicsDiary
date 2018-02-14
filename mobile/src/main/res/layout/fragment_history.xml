@@ -7,7 +7,6 @@
     tools:context="com.appollonius.stoicsdiary.HistoryFragment" >
 
     <android.support.constraint.ConstraintLayout
-        android:id="@+id/history_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -33,7 +32,6 @@
         android:textSize="18sp" />
 
     <android.support.constraint.ConstraintLayout
-        android:id="@+id/FEELS_LAYOUT"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:focusableInTouchMode="true"

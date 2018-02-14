@@ -78,10 +78,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         // Set the listener to watch for value changes.
         preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
 
-        // Trigger the listener immediately with the preference's
-        // current value.
-        sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
-                PreferenceManager
+        // Trigger the listener immediately with the preference's current value.
+        sBindPreferenceSummaryToValueListener
+                .onPreferenceChange(preference, PreferenceManager
                         .getDefaultSharedPreferences(preference.getContext())
                         .getString(preference.getKey(), ""));
     }
@@ -124,8 +123,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
             /* Bind the summaries of EditText/List/Dialog/Ringtone preferences
                to their values. When their values change, their summaries are
-               updated to reflect the new value, per the Android Design guidelines.
-             */
+               updated to reflect the new value, per the Android Design guidelines. */
             bindPreferenceSummaryToValue(findPreference(StoicActivity.PREF_KEY_USERNAME));
             bindPreferenceSummaryToValue(findPreference("reminder_time"));
             bindPreferenceSummaryToValue(findPreference(StoicActivity.PREF_KEY_CUR_COLOR_THEME));

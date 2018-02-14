@@ -14,10 +14,6 @@
         <!-- Customize your theme here. -->
     </style>
 
-    <style name="AppTheme.PopupOverlay">
-        <!-- Customize your theme here. -->
-    </style>
-
     <style name="CustomTabLayout" parent="Widget.Design.TabLayout">
         <item name="tabIndicatorColor">@android:color/white</item>
         <item name="tabIndicatorHeight">3dp</item>

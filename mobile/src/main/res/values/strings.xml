@@ -1,8 +1,5 @@
 <resources>
     <string name="app_name">Stoic\'s Diary</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
     <string name="title_activity_settings">Settings</string>
 
     <!-- https://developer.android.com/guide/topics/resources/string-resource.html#FormattingAndStyling -->
@@ -26,9 +23,6 @@
     </string>
 
     <!-- Fragment text -->
-    <string name="fragment_choice">Choice fragment</string>
-    <string name="fragment_history">History fragment</string>
-    <string name="fragment_summary">Summary fragment</string>
 
     <!-- Themed strings for translation -->
     <string name="theme_color_01_name">Basic Color Theme</string>
@@ -55,8 +49,6 @@
     <string name="feels_prompt_disabled">Write your thoughts on this day&#8230;\nonce you make your choice.</string>
     <string name="button_save">Save</string>
     <string name="button_tweet">Tweet</string>
-    <string name="button_export">Export</string>
-    <string name="button_theme">Rotate</string>
     <string name="menu_about">About Application</string>
     <string name="menu_settings">Settings</string>
 
@@ -158,11 +150,10 @@
     <string name="pref_title_system_sync_settings">System sync settings</string>
 
     <!-- Example settings for Notifications -->
-    <string name="pref_header_notifications">Notifications</string>
 
     <string name="pref_title_choice_reminders">Reminders to make your choice</string>
-    <string name="pref_title_choice_reminder_times">Hour to remind</string>
     <string name="pref_choice_reminder_disabled">Disabled</string>
+
     <!-- Internationalize the time titles -->
     <string-array name="pref_choice_reminder_titles">
         <item>@string/pref_choice_reminder_disabled</item>
@@ -178,9 +169,5 @@
         <item>22</item>
         <item>23</item>
     </string-array>
-
-    <string name="pref_title_ringtone">Ringtone</string>
-    <string name="pref_title_vibrate">Vibrate</string>
-    <string name="pref_ringtone_silent">Silent</string>
 
 </resources>

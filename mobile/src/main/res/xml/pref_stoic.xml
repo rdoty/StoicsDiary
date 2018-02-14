@@ -21,7 +21,7 @@
         <!-- key 'reminder_time' is bound in DataSyncPreferenceFragment onCreate -->
         <ListPreference
             android:key="reminder_time"
-            android:defaultValue=" "
+            android:defaultValue="0"
             android:title="@string/pref_title_choice_reminders"
             android:entries="@array/pref_choice_reminder_titles"
             android:entryValues="@array/pref_choice_reminder_values"
@@ -54,14 +54,12 @@
         <!-- NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to dismiss it. -->
         <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->
         <Preference
-            android:id="@+id/BUTTON_EXPORT"
             android:key="@string/pref_export_key"
             android:title="@string/pref_export_title"
             android:summary="@string/pref_export_summary" >
         </Preference>
 
         <Preference
-            android:id="@+id/BUTTON_RESET_DB"
             android:key="@string/pref_reset_key"
             android:title="@string/pref_reset_title"
             android:summary="@string/pref_reset_summary" >
