@@ -461,7 +461,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
      * e.g. to cancel the notification, call NotificationManager.cancel(mLatestNotificationId).
      */
     void initializeNotifications() {
-        Integer reminderTime = Integer.valueOf(sp.getString("reminder_time", ""));
+        Integer reminderTime = Integer.valueOf(sp.getString("reminder_time", "0"));
         if (reminderTime > 0) {
             if (mNotificationManager != null) {
                 mLatestNotificationId = new Random().nextInt();
@@ -697,6 +697,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
 
     class Datastore {
         // Database fields
+        static final String TABLE_LIST = "SELECT name FROM sqlite_master WHERE type='table'";
         static final String TABLE_BASE = "diary";
         static final String TABLE_DESC = "feels";
         static final String COLUMN_DAY = "time_stamp";
@@ -711,6 +712,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
 
         Datastore() {
             db = new StoicDatabase(getApplicationContext());
+            confirmDB();
             us = new UserStatistics();
         }
 
@@ -723,9 +725,29 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         }
 
         /**
+         * If the database doesn't exist (new install, data loss) then rebuild
+         * the database and inform via toast
+         */
+        void confirmDB() {
+            SQLiteDatabase dbr = db.getReadableDatabase();
+            Cursor cursor = dbr.rawQuery(TABLE_LIST, null);
+            List<String> currentTables = new ArrayList<>(cursor.getCount());
+            try {
+                while (cursor.moveToNext()) {
+                    currentTables.add(cursor.getString(0));
+                }
+            } finally {
+                cursor.close();
+            }
+            if (!currentTables.containsAll(Arrays.asList(TABLE_BASE, TABLE_DESC))) {
+                rebuildDatabase();
+            }
+        }
+        /**
          * This does what it says
          */
         void rebuildDatabase() {
+            Toast.makeText(getApplication(), R.string.app_rebuild_db, Toast.LENGTH_LONG).show();
             SQLiteDatabase dbw = db.getWritableDatabase();
             String Q_TABLE_DROP = "DROP TABLE IF EXISTS %s;";
             String Q_TABLE_MAKE = "CREATE TABLE %s (%s);";
@@ -751,15 +773,11 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             String[] SELECT_COLS = new String[] {TABLE_BASE+".id", COLUMN_CHOICE, COLUMN_UPDATE_DATE, COLUMN_UPDATE_COUNT, COLUMN_WORDS};
             String Q_SELECT = String.format(
                     "SELECT %s FROM %s LEFT OUTER JOIN %s ON %s.%s=%s.%s WHERE %s=%s;",
-                    String.join(",", SELECT_COLS),
-                    TABLE_BASE,
-                    TABLE_DESC,
-                    TABLE_DESC, COLUMN_DESC_F_KEY, TABLE_BASE, "id",
-                    COLUMN_DAY, date);
+                    String.join(",", SELECT_COLS), TABLE_BASE, TABLE_DESC, TABLE_DESC,
+                    COLUMN_DESC_F_KEY, TABLE_BASE, "id", COLUMN_DAY, date);
             ContentValues dayValues = new ContentValues();
 
             SQLiteDatabase dbr = db.getReadableDatabase();
-
             Cursor cursor = dbr.rawQuery(Q_SELECT,null);
             if (cursor.moveToFirst()) {
                 for (int i=0; i < cursor.getColumnCount(); i++) {
@@ -884,33 +902,6 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
          * (visual) choices previous month (see 7 minute workout)
          */
         class UserStatistics {
-            final LocalDate now = LocalDate.now(ZoneId.systemDefault());
-            final Long dateMonthStart = now.withDayOfMonth(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-            final Long dateWeekStart = now.with(ChronoField.DAY_OF_WEEK, 1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-            final Integer MONTH_LENGTH = now.lengthOfMonth();
-            final Integer TODAY_OF_MONTH = now.getDayOfMonth();
-            final String DAYS_HEADER = String.join(" ", Arrays.asList(getResources().getStringArray(R.array.stat_day_abbr)));
-            final DateTimeFormatter dateFormatter =
-                    DateTimeFormatter.ofLocalizedDate( FormatStyle.LONG )
-                            .withLocale( Locale.getDefault() ).withZone( ZoneId.systemDefault() );
-
-            Long earliestChoiceMade;
-            Long earliestWrittenHistory;
-            Long latestTweet;  // Need to track this
-            Long countCurrentConsecutiveChoicesMade;
-            Long countMaximumConsecutiveChoicesMade;
-            Long countChoicesMade;
-            Long countChoicesChanged;  // sum of update_count minus count of choices
-            Long countChoicesLocked;
-            Long countWrittenHistoryThisWeek;
-            Long countWrittenHistoryThisMonth;
-            Long countWrittenHistoryAllTime;
-            Long sumValueChoicesMadeThisWeek;
-            Long sumValueChoicesMadeThisMonth;
-            Long sumValueChoicesMadeAllTime;
-            ContentValues countChoicesMadeByDayOfWeek = new ContentValues();
-            ContentValues sumValueChoicesMadeByDayOfWeek = new ContentValues();
-            ContentValues choicesMadeThisMonth = new ContentValues();
             // All these queries are hardcoded, clean them up and use constants and formatting as above
             final static String qECM        = "SELECT min(time_stamp) FROM diary";
             final static String qEWH        = "SELECT d.time_stamp, f.words FROM diary d LEFT OUTER JOIN feels f ON f.diary_id = d.id ORDER BY d.time_stamp;";
@@ -927,6 +918,36 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             final static String qCCCM       = "SELECT strftime('%s', date(time_stamp / 1000, 'unixepoch', 'localtime')) / 86400 as day_num FROM diary ORDER BY day_num;";
             final static String qCCMBDOW    = "SELECT strftime('%w', date(time_stamp / 1000, 'unixepoch', 'localtime')) AS dayofweek, count(1) FROM diary GROUP BY dayofweek ORDER BY dayofweek";
             final static String qSVCMBDOW   = "SELECT strftime('%w', date(time_stamp / 1000, 'unixepoch', 'localtime')) AS dayofweek, sum(CASE (choice) WHEN 0 THEN -1 WHEN 1 THEN 1 END) as choiceValue FROM diary GROUP BY dayofweek ORDER BY dayofweek";
+
+            final LocalDate now = LocalDate.now(ZoneId.systemDefault());
+            final Long dateMonthStart = now.withDayOfMonth(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            final Long dateWeekStart = now.with(ChronoField.DAY_OF_WEEK, 1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            final Integer MONTH_LENGTH = now.lengthOfMonth();
+            final Integer TODAY_OF_MONTH = now.getDayOfMonth();
+            final String DAYS_HEADER = String.join(" ", Arrays.asList(getResources().getStringArray(R.array.stat_day_abbr)));
+            final DateTimeFormatter dateFormatter =
+                    DateTimeFormatter.ofLocalizedDate( FormatStyle.LONG )
+                            .withLocale( Locale.getDefault() ).withZone( ZoneId.systemDefault() );
+            // Don't have a field for this in the DB currently, so faking it
+            final String qLT = String.format(Locale.US, "SELECT %d AS time_stamp", dateWeekStart);
+
+            Long earliestChoiceMade = 0L;
+            Long earliestWrittenHistory = 0L;
+            Long latestTweet = 0L;  // Need to track this
+            Long countCurrentConsecutiveChoicesMade = 0L;
+            Long countMaximumConsecutiveChoicesMade = 0L;
+            Long countChoicesMade = 0L;
+            Long countChoicesChanged = 0L;  // sum of update_count minus count of choices
+            Long countChoicesLocked = 0L;
+            Long countWrittenHistoryThisWeek = 0L;
+            Long countWrittenHistoryThisMonth = 0L;
+            Long countWrittenHistoryAllTime = 0L;
+            Long sumValueChoicesMadeThisWeek = 0L;
+            Long sumValueChoicesMadeThisMonth = 0L;
+            Long sumValueChoicesMadeAllTime = 0L;
+            ContentValues countChoicesMadeByDayOfWeek = new ContentValues();
+            ContentValues sumValueChoicesMadeByDayOfWeek = new ContentValues();
+            ContentValues choicesMadeThisMonth = new ContentValues();
 
             /**
              *
@@ -1033,12 +1054,12 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
              * Set the values of the member variables based on info in the DB
              */
             void recalculateStats() {
-                // Don't have a field for this in the DB currently, so faking it
-                final String qLT = String.format(Locale.US, "SELECT %d AS time_stamp", dateWeekStart);
-
                 SQLiteDatabase dbr = db.getReadableDatabase();
                 Cursor cursor;
-
+                if (0L == DatabaseUtils.longForQuery(dbr, "SELECT COUNT(1) FROM diary", null)) {
+                    // Empty database, don't calculate stats
+                    return;
+                }
                 // Do some querying...
                 latestTweet                         = DatabaseUtils.longForQuery(dbr, qLT, null);
                 earliestChoiceMade                  = DatabaseUtils.longForQuery(dbr, qECM, null);

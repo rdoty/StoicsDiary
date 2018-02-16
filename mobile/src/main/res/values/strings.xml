@@ -21,7 +21,7 @@
     <string name="app_reset_db" formatted="true">
         This is the text warning about clearing out the database. Blah, blah, blah.
     </string>
-
+    <string name="app_rebuild_db">Rebuilding application database.</string>
     <!-- Fragment text -->
 
     <!-- Themed strings for translation -->
@@ -30,16 +30,17 @@
     <string name="theme_color_03_name">Ugly Color Theme</string>
 
     <string name="theme_text_01_name">Basic Text Theme</string>
+    <string name="theme_text_02_name">Vulcan Text Theme</string>
+    <string name="theme_text_03_name">Iconography Theme</string>
+
     <string name="theme_text_01_prompt">Was today a good day? You choose.</string>
     <string name="theme_text_01_good">Yes</string>
     <string name="theme_text_01_bad">No</string>
 
-    <string name="theme_text_02_name">Vulcan Text Theme</string>
     <string name="theme_text_02_prompt">Was today fascinating?</string>
     <string name="theme_text_02_good">Indeed</string>
     <string name="theme_text_02_bad">Negative</string>
 
-    <string name="theme_text_03_name">Iconography Theme</string>
     <string name="theme_text_03_prompt">&#129335;</string>
     <string name="theme_text_03_good">&#x1f44d;</string>
     <string name="theme_text_03_bad">&#x1f44e;</string>
