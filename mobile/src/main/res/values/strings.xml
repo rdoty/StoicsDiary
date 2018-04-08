@@ -154,6 +154,7 @@
 
     <string name="pref_title_choice_reminders">Reminders to make your choice</string>
     <string name="pref_choice_reminder_disabled">Disabled</string>
+    <string name="notification_prompt">Test prompt</string>
 
     <!-- Internationalize the time titles -->
     <string-array name="pref_choice_reminder_titles">

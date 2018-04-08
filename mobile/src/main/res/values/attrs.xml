@@ -12,6 +12,8 @@
         <attr name="colorGoodBg" />
         <attr name="colorBadFg" />
         <attr name="colorBadBg" />
+        <attr name="colorStatTitle" />
+        <attr name="colorStatValue" />
     </declare-styleable>
 
     <declare-styleable name="StoicTextStyle" >

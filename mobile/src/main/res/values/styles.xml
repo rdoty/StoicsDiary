@@ -44,6 +44,8 @@
         <item name="colorGoodFg">@android:color/holo_red_dark</item>
         <item name="colorBadBg">@android:color/holo_red_dark</item>
         <item name="colorBadFg">@android:color/holo_green_dark</item>
+        <item name="colorStatTitle">@android:color/holo_green_dark</item>
+        <item name="colorStatValue">@android:color/holo_red_dark</item>
     </style>
 
     <style name="StoicColorTheme_02">
@@ -54,6 +56,8 @@
         <item name="colorGoodFg">#424242</item>
         <item name="colorBadBg">#424242</item>
         <item name="colorBadFg">#757575</item>
+        <item name="colorStatTitle">#757575</item>
+        <item name="colorStatValue">#424242</item>
     </style>
 
     <style name="StoicColorTheme_03">
@@ -64,6 +68,8 @@
         <item name="colorGoodFg">@android:color/holo_blue_bright</item>
         <item name="colorBadBg">@android:color/holo_blue_bright</item>
         <item name="colorBadFg">@android:color/holo_purple</item>
+        <item name="colorStatTitle">@android:color/holo_purple</item>
+        <item name="colorStatValue">@android:color/holo_blue_bright</item>
     </style>
 
     <style name="StoicTextTheme_01">

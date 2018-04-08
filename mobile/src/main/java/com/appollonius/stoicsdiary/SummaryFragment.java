@@ -163,6 +163,9 @@ public class SummaryFragment extends android.support.v4.app.ListFragment {
             if (stat != null) {  // Populate the data into the template view using the data object
                 statTitle.setText(stat.title);
                 statValue.setText(stat.value);
+                // #156601325 Style items
+                statTitle.setTextColor(StoicActivity.themeColors.colorStatTitle);
+                statValue.setTextColor(StoicActivity.themeColors.colorStatValue);
             }
             return convertView;  // Return the completed view to render on screen
         }

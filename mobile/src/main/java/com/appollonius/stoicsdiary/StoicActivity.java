@@ -89,7 +89,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     // Major internal components
     SharedPreferences sp;
     Datastore ds;
-    ThemeColors themeColors;
+    static public ThemeColors themeColors;
     ThemeText themeText;
     Typeface font;
     Integer mLatestNotificationId;  // Tracking this so we can reference/delete at runtime if necessary
@@ -598,6 +598,8 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         final Integer choiceColorBadBg;
         final Integer choiceColorBadFg;
         final Integer appColorBg;
+        final Integer colorStatTitle;
+        final Integer colorStatValue;
 
         /**
          * Base constructor should get the themeId preference and loads the values associated
@@ -614,9 +616,9 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
         ThemeColors(Integer themeId) {
             id = themeId;  // Need to do validation on the number
             String style = String.format(Locale.US, "StoicColorTheme_%02d", themeId);
-            Integer cCGB, cCGF, cCBB, cCBF, aCB;
+            Integer cCGB, cCGF, cCBB, cCBF, aCB, cCST, cCSV;
             String n = null;
-            cCGB = cCGF = cCBB = cCBF = aCB = null;
+            cCGB = cCGF = cCBB = cCBF = cCST = cCSV = aCB = null;
 
             try {
                 TypedArray ta = obtainStyledAttributes(getResources().getIdentifier(style, "style", getPackageName()), R.styleable.StoicColorStyle);
@@ -626,6 +628,8 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
                 cCGF = ta.getColor(R.styleable.StoicColorStyle_colorGoodFg, Color.TRANSPARENT);
                 cCBB = ta.getColor(R.styleable.StoicColorStyle_colorBadBg, Color.TRANSPARENT);
                 cCBF = ta.getColor(R.styleable.StoicColorStyle_colorBadFg, Color.TRANSPARENT);
+                cCST = ta.getColor(R.styleable.StoicColorStyle_colorStatTitle, Color.TRANSPARENT);
+                cCSV = ta.getColor(R.styleable.StoicColorStyle_colorStatValue, Color.TRANSPARENT);
                 ta.recycle();
             } catch (Resources.NotFoundException e) {
                 Log.d("Exception", e.getMessage());  // Report to user?
@@ -635,6 +639,8 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
                 choiceColorGoodFg = cCGF;
                 choiceColorBadBg = cCBB;
                 choiceColorBadFg = cCBF;
+                colorStatTitle = cCST;
+                colorStatValue = cCSV;
                 appColorBg = aCB;
             }
         }
