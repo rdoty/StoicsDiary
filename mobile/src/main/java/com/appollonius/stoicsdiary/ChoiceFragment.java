@@ -1,8 +1,6 @@
 package com.appollonius.stoicsdiary;
 
-import android.app.TabActivity;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.support.annotation.NonNull;
@@ -35,8 +33,7 @@ public class ChoiceFragment extends android.support.v4.app.Fragment implements V
      * >Communicating with Other Fragments</a> for more information.
      * NOTE: Update argument type and name for onFragmentInteraction as desired
      */
-    public interface OnFragmentInteractionListener {
-        void onFragmentInteraction(Uri uri);
+    interface OnFragmentInteractionListener {
     }
     private OnFragmentInteractionListener mListener;
 
