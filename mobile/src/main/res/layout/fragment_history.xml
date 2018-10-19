@@ -6,7 +6,7 @@
     android:orientation="vertical"
     tools:context="com.appollonius.stoicsdiary.HistoryFragment" >
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -23,7 +23,7 @@
             android:layout_gravity="center_horizontal"
             />
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
         android:id="@+id/TEXT_QUOTE"
@@ -31,7 +31,7 @@
         android:layout_height="wrap_content"
         android:textSize="18sp" />
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:focusableInTouchMode="true"
@@ -85,6 +85,7 @@
             android:labelFor="@+id/EDIT_FEELS"
             android:maxLength="140"
             android:visibility="visible"
+            android:importantForAutofill="no"
             app:layout_constraintBottom_toTopOf="@+id/BUTTON_FEELS_SAVE"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -112,5 +113,5 @@
             android:text="@string/button_tweet"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

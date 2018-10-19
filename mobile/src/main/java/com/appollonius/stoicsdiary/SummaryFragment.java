@@ -3,8 +3,8 @@ package com.appollonius.stoicsdiary;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
-import android.app.Fragment;
-import android.support.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +12,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.util.ArrayList;
 
 
@@ -24,7 +23,7 @@ import java.util.ArrayList;
  * Use the {@link SummaryFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class SummaryFragment extends android.support.v4.app.ListFragment {
+public class SummaryFragment extends androidx.fragment.app.ListFragment {
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -43,7 +42,7 @@ public class SummaryFragment extends android.support.v4.app.ListFragment {
 
     // TODO: Rename fragment initialization parameter argument(s) change types, choose names that match.
     private static final String ARG_PARAM1 = "param1";
-    String mParam1;
+    private String mParam1;
 
     /**
      * Use this factory method to create a new instance of
@@ -53,7 +52,7 @@ public class SummaryFragment extends android.support.v4.app.ListFragment {
      * @return A new instance of fragment SummaryFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static SummaryFragment newInstance(String param1) {
+    static SummaryFragment newInstance(String param1) {
         SummaryFragment fragment = new SummaryFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);  // TODO: Rename and change types and number of parameters
@@ -61,8 +60,8 @@ public class SummaryFragment extends android.support.v4.app.ListFragment {
         return fragment;
     }
 
-    StoicActivity mA;  // rdoty - helps to call StoicActivity instance without null compiler warnings
-    StatsAdapter adapter;
+    private StoicActivity mA;  // rdoty - helps to call StoicActivity instance without null compiler warnings
+    private StatsAdapter adapter;
 
     public SummaryFragment() { }  // Required empty public constructor
 

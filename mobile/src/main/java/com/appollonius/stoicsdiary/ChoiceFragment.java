@@ -2,9 +2,9 @@ package com.appollonius.stoicsdiary;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.app.Fragment;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +21,7 @@ import java.util.ArrayList;
  * Use the {@link ChoiceFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class ChoiceFragment extends android.support.v4.app.Fragment implements View.OnClickListener {
+public class ChoiceFragment extends androidx.fragment.app.Fragment implements View.OnClickListener {
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -39,7 +39,7 @@ public class ChoiceFragment extends android.support.v4.app.Fragment implements V
 
     // TODO: Rename fragment initialization parameter argument(s) change types, choose names that match.
     private static final String ARG_PARAM1 = "param1";
-    String mParam1;
+    private String mParam1;
 
     /**
      * Use this factory method to create a new instance of
@@ -48,7 +48,7 @@ public class ChoiceFragment extends android.support.v4.app.Fragment implements V
      * @param param1 Parameter 1.
      * @return A new instance of fragment ChoiceFragment.
      */
-    public static ChoiceFragment newInstance(String param1) {
+    static ChoiceFragment newInstance(String param1) {
         ChoiceFragment fragment = new ChoiceFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);  // TODO: Rename and change types and number of parameters
@@ -56,7 +56,7 @@ public class ChoiceFragment extends android.support.v4.app.Fragment implements V
         return fragment;
     }
 
-    StoicActivity mA;  // rdoty - helps to call StoicActivity instance without null compiler warnings
+    private StoicActivity mA;  // rdoty - helps to call StoicActivity instance without null compiler warnings
     public ChoiceFragment() { }  // Required empty public constructor
 
    @Override

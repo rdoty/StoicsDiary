@@ -3,9 +3,9 @@ package com.appollonius.stoicsdiary;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,11 +30,11 @@ import com.appollonius.stoicsdiary.StoicActivity.Util;
  * Use the {@link HistoryFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class HistoryFragment extends android.support.v4.app.Fragment implements View.OnClickListener,
+public class HistoryFragment extends androidx.fragment.app.Fragment implements View.OnClickListener,
         CalendarView.OnDateChangeListener {
 
     private static final String ARG_PARAM1 = "param1";
-    String mParam1;
+    private String mParam1;
     /**
      * Use this factory method to create a new instance of this fragment using the provided parameters.
      * (choose names that match the fragment initialization parameters)
@@ -42,7 +42,7 @@ public class HistoryFragment extends android.support.v4.app.Fragment implements 
      * @param param1 String TODO: Rename/change types and number of parameters, incl arguments above
      * @return A new instance of fragment HistoryFragment.
      */
-    public static HistoryFragment newInstance(String param1) {
+    static HistoryFragment newInstance(String param1) {
         HistoryFragment fragment = new HistoryFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
@@ -69,7 +69,7 @@ public class HistoryFragment extends android.support.v4.app.Fragment implements 
     private OnFragmentInteractionListener mListener;
 
     public HistoryFragment() { }  // Required empty public constructor
-    StoicActivity mA;  // rdoty - helps to call StoicActivity instance without null compiler warnings
+    private StoicActivity mA;  // rdoty - helps to call StoicActivity instance without null compiler warnings
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

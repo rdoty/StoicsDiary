@@ -22,14 +22,14 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
-import android.support.v4.content.FileProvider;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.TaskStackBuilder;
+import androidx.core.content.FileProvider;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
@@ -37,7 +37,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.support.design.widget.TabLayout;
+import com.google.android.material.tabs.TabLayout;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -162,15 +162,15 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
-        private final List<android.support.v4.app.Fragment> mFragmentList = new ArrayList<>();
+        private final List<androidx.fragment.app.Fragment> mFragmentList = new ArrayList<>();
         private final List<String> mFragmentTitleList = new ArrayList<>();
 
-        ViewPagerAdapter(android.support.v4.app.FragmentManager manager) {
+        ViewPagerAdapter(androidx.fragment.app.FragmentManager manager) {
             super(manager);
         }
 
         @Override
-        public android.support.v4.app.Fragment getItem(int position) {
+        public androidx.fragment.app.Fragment getItem(int position) {
             return mFragmentList.get(position);
         }
 
@@ -179,7 +179,7 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
             return mFragmentList.size();
         }
 
-        void addFragment(android.support.v4.app.Fragment fragment, String title) {
+        void addFragment(androidx.fragment.app.Fragment fragment, String title) {
             mFragmentList.add(fragment);
             mFragmentTitleList.add(title);
         }
@@ -1073,12 +1073,12 @@ public class StoicActivity extends AppCompatActivity implements ChoiceFragment.O
                 countChoicesMade                    = DatabaseUtils.longForQuery(dbr, qCCM, null);
                 countChoicesChanged                 = DatabaseUtils.longForQuery(dbr, qCCC, null);
                 countChoicesLocked                  = DatabaseUtils.longForQuery(dbr, qCCL, null);
-                sumValueChoicesMadeAllTime          = DatabaseUtils.longForQuery(dbr, qSVCMTAT, null);
-                countWrittenHistoryAllTime          = DatabaseUtils.longForQuery(dbr, qCWHTAT, null);
                 countWrittenHistoryThisMonth        = DatabaseUtils.longForQuery(dbr, String.format(qCWHTM, dateMonthStart), null);
                 countWrittenHistoryThisWeek         = DatabaseUtils.longForQuery(dbr, String.format(qCWHTW, dateWeekStart), null);
+                countWrittenHistoryAllTime          = DatabaseUtils.longForQuery(dbr, qCWHTAT, null);
                 sumValueChoicesMadeThisMonth        = DatabaseUtils.longForQuery(dbr, String.format(qSVCMTM, dateMonthStart), null);
                 sumValueChoicesMadeThisWeek         = DatabaseUtils.longForQuery(dbr, String.format(qSVCMTW, dateWeekStart), null);
+                sumValueChoicesMadeAllTime          = DatabaseUtils.longForQuery(dbr, qSVCMTAT, null);
                 countMaximumConsecutiveChoicesMade  = 0L;
                 countCurrentConsecutiveChoicesMade  = 0L;
 

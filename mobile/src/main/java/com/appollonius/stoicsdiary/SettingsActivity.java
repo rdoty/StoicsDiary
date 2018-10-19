@@ -144,7 +144,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     .setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                         @Override
                         public boolean onPreferenceClick(Preference preference) {
-                            final android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getContext());
+                            final androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(getContext());
                             String aboutText = getString(R.string.app_reset_db);
                             builder.setMessage(Html.fromHtml(aboutText, Html.FROM_HTML_MODE_COMPACT));
                             builder.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
