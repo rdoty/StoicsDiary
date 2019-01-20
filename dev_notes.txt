@@ -1,0 +1,52 @@
+Just added this here since easier than Google Drive
+
+/* rebuild database */
+DROP TABLE IF EXISTS diary;
+DROP TABLE IF EXISTS feels;
+DROP TABLE IF EXISTS streaks;
+
+CREATE TABLE diary (id integer PRIMARY KEY, timestamp date UNIQUE, last_updated datetime, update_count tinyint, value boolean);
+CREATE TABLE feels (id integer PRIMARY KEY, diary_id integer, words text, FOREIGN KEY (diary_id) REFERENCES diary(id));
+CREATE TABLE streaks (date date);
+
+/* statistics queries */
+
+/* earliestChoiceMade; */
+SELECT min(timestamp)
+ FROM diary;
+
+/* earliestWrittenHistory */
+SELECT d.timestamp, f.words
+ FROM diary d
+  LEFT OUTER JOIN feels f ON f.diary_id = d.id
+ ORDER BY d.timestamp;
+
+/* latestTweet */
+
+/* countCurrentConsecutiveChoicesMade */
+SELECT diary.date,
+       CASE
+         WHEN streaks.DATE IS NULL THEN 0
+         ELSE 1
+       END AS Result
+FROM   diary
+       LEFT JOIN streaks
+         ON diary.DATE = streaks.date
+WHERE  diary.DATE BETWEEN (SELECT MIN(date) AS MinDate
+                           FROM   streaks) AND (SELECT MAX(date) AS MaxDate
+                                                    FROM   streaks);
+/*
+    countCurrentConsecutiveChoicesMade;
+    countMaximumConsecutiveChoicesMade;
+    countChoicesMade;
+    countChoicesChanged;  // sum of update_count minus count of choices
+    countWrittenHistoryThisWeek;
+    countWrittenHistoryThisMonth;
+    countWrittenHistoryAllTime;
+    sumValueChoicesMadeThisWeek;
+    sumValueChoicesMadeThisMonth;
+    sumValueChoicesMadeAllTime;
+
+    int[] sumValueChoicesMadeByDayOfWeek; // Array w/M-Su, can use for weekday/weekends too
+    int[] choicesMadeThisMonth;  //
+*/
