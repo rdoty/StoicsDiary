@@ -5,23 +5,23 @@
     </declare-styleable>
 
     <declare-styleable name="StoicColorStyle" >
-        <attr name="displayName" />
-        <attr name="colorPrimary" />
-        <attr name="colorAccent" />
-        <attr name="colorGoodFg" />
-        <attr name="colorGoodBg" />
-        <attr name="colorBadFg" />
-        <attr name="colorBadBg" />
-        <attr name="colorStatTitle" />
-        <attr name="colorStatValue" />
+        <attr name="displayName" format="string" />
+        <attr name="colorPrimary" format="color" />
+        <attr name="colorAccent" format="color" />
+        <attr name="colorGoodFg" format="color" />
+        <attr name="colorGoodBg" format="color" />
+        <attr name="colorBadFg" format="color" />
+        <attr name="colorBadBg" format="color" />
+        <attr name="colorStatTitle" format="color" />
+        <attr name="colorStatValue" format="color" />
     </declare-styleable>
 
     <declare-styleable name="StoicTextStyle" >
         <attr name="displayName" />
-        <attr name="choicePrompt" />
-        <attr name="choiceGood" />
-        <attr name="choiceBad" />
-        <attr name="choiceDisabledSelected" />
-        <attr name="choiceDisabledUnselected" />
+        <attr name="choicePrompt" format="string" />
+        <attr name="choiceGood" format="string" />
+        <attr name="choiceBad" format="string" />
+        <attr name="choiceDisabledSelected" format="string" />
+        <attr name="choiceDisabledUnselected" format="string" />
     </declare-styleable>
  </resources>
