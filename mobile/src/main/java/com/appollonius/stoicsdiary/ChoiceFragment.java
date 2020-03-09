@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.RadioButton;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 
 /**
@@ -99,7 +100,7 @@ public class ChoiceFragment extends androidx.fragment.app.Fragment implements Vi
      */
     private void onClickChoice(int choiceId) {
         mA.ds.writeDayValue(mA.getCurrentDay(),R.id.BUTTON_YES == choiceId);
-        mA.updateUI(getView());
+        mA.updateUI(Objects.requireNonNull(getView()));
         mA.viewPager.setCurrentItem(1, true);  // Switch to History tab
     }
 
@@ -115,11 +116,11 @@ public class ChoiceFragment extends androidx.fragment.app.Fragment implements Vi
     @Override
     public void onResume() {
         super.onResume();
-        mA.updateUI(getView());
+        mA.updateUI(Objects.requireNonNull(getView()));
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
